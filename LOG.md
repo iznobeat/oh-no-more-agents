@@ -12086,3 +12086,15 @@ scopes. Stamps refreshed. No merge, push or deploy.
 
 **Next:** review these additions alongside the owner's frozen corridor ponds
 when merged; keep the snow mass pass separate from the floor-surface hook.
+
+## 459 — 2026-11-15 · Deploy: frozen ponds, sleigh bells, snow strata
+
+**Deployed** build ad596f26 (Worker version b364d30c), replacing e8b3d449. It
+covers 457, 458 and C3 (Codex's third Christmas round: snow strata and depth
+shading on North Pole terrain, the report card in snow and lights at the
+Pole and in season, a flare and a puff of snow at the workshop door).
+Reviewed C3 before merging: close crops read as packed snow and ice, the
+ponds still stand out against it; native pin re-captured once for both.
+**Before:** gate 1697/1697, CRAP green; `npm run smoke -- --level 21 --season
+christmas` passed (21–27).
+**After:** `npm run verify -- --previous e8b3d449` passed.
