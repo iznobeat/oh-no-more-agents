@@ -12,8 +12,8 @@ const source=fs.readFileSync(new URL("../public/agents/season.js",import.meta.ur
 const api=season(source,"?season=christmas"),off=season(source,"?season=none")
 const hash=x=>createHash("sha256").update(x).digest("hex")
 function calls(draw,res=1){const img=canvas(800,496),list=[],ctx=img.ctx;ctx.setTransform(res,0,0,res,0,0);const fill=ctx.fillRect.bind(ctx);ctx.fillRect=(...a)=>{assert.ok(list.length<4000,"bounded recording");assert.ok(a.every(Number.isFinite)&&a[2]>0&&a[3]>0);assert.ok(a.every(n=>n*res===Math.round(n*res)),"resolution grid");list.push([...a,ctx.fillStyle,ctx.globalAlpha]);fill(...a)};ctx.fillStyle="#123456";ctx.globalAlpha=0.75;draw(ctx);assert.equal(ctx.fillStyle,"#123456");assert.equal(ctx.globalAlpha,0.75);return{list,hash:hash(img.buf)}}
-test("Christmas renders read-only, RNG-free and repeatably in nineteen biomes, both resolutions and five palettes",()=>{
- for(let level=1;level<=19;level++) {
+test("Christmas renders read-only, RNG-free and repeatably in twenty biomes, both resolutions and five palettes",()=>{
+ for(let level=1;level<=S.BIOMES.length;level++) {
   const w=christmasWorld(level,api);api.paint(canvas(400,248).ctx,w)
   for(const res of[1,2])for(const theme of Object.keys(THEMES)){
    w.res=res;const stable=hash(JSON.stringify(w)),pal=P.build(themeOf(theme).theme,level);api.tint(pal)
@@ -57,8 +57,8 @@ test("snow and wrapping preserve the complete portal opening and visible arrivin
   w.reducedMotion=true;const a=calls(ctx=>api.paint(ctx,w),res);w.ticks+=7;assert.equal(calls(ctx=>api.paint(ctx,w),res).hash,a.hash)
  }
 })
-test("falling snow and gift paint leave complete living sprite envelopes unchanged in all nineteen biomes",()=>{
- for(let level=1;level<=19;level++)for(const res of[1,2]){
+test("falling snow and gift paint leave complete living sprite envelopes unchanged in all twenty biomes",()=>{
+ for(let level=1;level<=S.BIOMES.length;level++)for(const res of[1,2]){
   const w=christmasWorld(level,api);w.res=res;const pal=P.build(themeOf("tokyo-night").theme,level),img=canvas(400*res,248*res)
   D.drawTerrain(img.ctx,w,pal);D.drawActors(img.ctx,w,pal,{})
   const boxes=w.agents.filter(a=>!a.gone&&a.state!=="dead"&&a.state!=="saved").map(a=>({x:Math.max(0,Math.round(a.x*4-(a.floater?10:5))),y:Math.max(0,Math.round((a.y+1)*4-(a.floater?29:23))),width:a.floater?20:10,height:a.floater?29:23}))
@@ -66,10 +66,10 @@ test("falling snow and gift paint leave complete living sprite envelopes unchang
   const before=hashes();api.paint(img.ctx,w);assert.deepEqual(hashes(),before)
  }
 })
-test("Christmas dressing and painting preserve complete gameplay digests in all nineteen biomes",()=>{
+test("Christmas dressing and painting preserve complete gameplay digests in all twenty biomes",()=>{
  const random=Math.random,seeded=n=>()=>((n=(Math.imul(n,1664525)+1013904223)>>>0)/4294967296)
  const digest=w=>hash(JSON.stringify(w,(k,v)=>k.startsWith("season")?undefined:v))
- try{for(let level=1;level<=19;level++){
+ try{for(let level=1;level<=S.BIOMES.length;level++){
   const a=S.generate(level,0,level*7919+13),b=S.generate(level,0,level*7919+13),img=canvas(400,248);api.dress(a)
   for(let tick=0;tick<600;tick++){Math.random=seeded(level*997+tick);S.step(a);Math.random=seeded(level*997+tick);S.step(b);api.paint(img.ctx,a);if(tick%120===0)assert.equal(digest(a),digest(b),`${level}:${tick}`)}
  }}finally{Math.random=random}
@@ -81,9 +81,9 @@ test("the host dresses the world before painting cached seasonal terrain",()=>{
 
 test("the bounded Christmas comparison command covers all biomes and keeps native full frames",()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"christmas-art-test-"))
- try{const r=run("HEAD",dir);assert.equal(r.biomes,19);assert.equal(r.frames,76)
-  for(const level of[1,10,19])for(const res of[1,2])for(const tag of["before","after"]){const b=fs.readFileSync(path.join(dir,`level-${level}-${tag}-res${res}.png`));assert.equal(b.readUInt32BE(16),400*res);assert.equal(b.readUInt32BE(20),248*res)}
-  for(const file of["contact-sheet.png","exits-sheet.png","hatches-sheet.png","umbrellas-sheet.png"])assert.ok(fs.statSync(path.join(dir,file)).size>1000)
+ try{const r=run("HEAD",dir);assert.equal(r.biomes,S.BIOMES.length);assert.equal(r.frames,S.BIOMES.length*4)
+  for(const level of[1,10,20])for(const res of[1,2])for(const tag of["before","after"]){const b=fs.readFileSync(path.join(dir,`level-${level}-${tag}-res${res}.png`));assert.equal(b.readUInt32BE(16),400*res);assert.equal(b.readUInt32BE(20),248*res)}
+  for(const file of["full-res1-sheet.png","full-res2-sheet.png","contact-sheet.png","exits-sheet.png","hatches-sheet.png","umbrellas-sheet.png"])assert.ok(fs.statSync(path.join(dir,file)).size>1000)
   assert.throws(()=>run("not-a-ref",dir),/Cannot read/)
  }finally{fs.rmSync(dir,{recursive:true,force:true})}
 })

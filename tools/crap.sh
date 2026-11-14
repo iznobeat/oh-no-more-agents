@@ -16,4 +16,6 @@ if [ ! -x "$DIR/crapper" ]; then
 fi
 cd "$ROOT"
 if [ $# -eq 0 ] || [ "${1#-}" != "$1" ]; then set -- "$@" public/agents src tools; fi
-exec "$DIR/crapper" "$@"
+"$DIR/crapper" "$@"
+# The web season is an IIFE; the top-level scanner otherwise misses its helpers.
+exec "$DIR/.venv/bin/python" tools/season-crap

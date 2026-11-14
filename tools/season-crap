@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""Audit the season IIFE's functions, which CRAP's top-level scanner skips.
+
+Run with .crapper/.venv/bin/python tools/season-crap after npm run crap.
+Only the outer wrapper is blanked; real source line numbers and LCOV remain.
+"""
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / ".crapper/src"))
+from crapper.languages.typescript import functions_in_source
+from crapper.coverage import load_bundle
+from crapper.crap import make_entry
+
+source = ROOT / "public/agents/season.js"
+text = source.read_text()
+assert text.count("(function () {") == 1 and text.rstrip().endswith("})()")
+text = text.replace("(function () {", " " * 14, 1)
+end = text.rfind("})()")
+text = text[:end] + "    " + text[end + 4:]
+coverage = load_bundle(ROOT)
+entries = [make_entry(fn, coverage.percent_for(fn))
+           for fn in functions_in_source(text, str(source))]
+assert entries, "No season functions found"
+for entry in sorted(entries, key=lambda e: e.crap or 0, reverse=True):
+    print(f"{entry.name:24} CC {entry.complexity:2} coverage {entry.coverage} CRAP {entry.crap}")
+assert all(e.crap is not None and e.crap < 30 for e in entries), "Season CRAP must stay below 30"

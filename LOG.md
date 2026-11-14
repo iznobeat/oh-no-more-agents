@@ -11776,3 +11776,45 @@ somebody in front of it, while reeling, or for the Head Bouncer, whose crown
 would not follow the head. The res-2 cheek and chin follow the head.
 
 **Test:** guard-patrol (kinds, rarity, exclusions). Gate 1647/1647; CRAP green.
+
+## C1 — 2026-11-14 · Advent lights, a wreath and a snowman
+
+**Changed (cosmetic, web season only):** Christmas now begins on the first
+Sunday of Advent, computed each year from Nov 27, and still ends Dec 26.
+Previews and ordinary/wrapping season ranges retain their behaviour. Cached
+layout placements add coloured fairy-light swags to ledge undersides, a green
+wreath with red bow and glint beside the hatch, and a scarfed snowman whose head
+occasionally turns. Tick-only animation freezes under reduced motion. Current
+actor/umbrella, enemy and mission envelopes suppress overlapping props; hazard
+zones, portal faces, original decor and surviving support are checked too.
+No new per-frame prop allocations. Snow/gift now share one actor-envelope pass.
+Unknown biome names use the same dressing; North Pole opts out of the extra
+props and seasonal ground/hat kit. Sim.js and Draw.js are unchanged, as is the
+panel with no season. No text added.
+
+**Looked at:** two rounds of `christmas-art --base main`, now covering the whole
+BIOMES catalogue (20 here), plus newly retained side-by-side full-frame sheets.
+Inspected `/tmp/xmas-dressing/round1/full-res1-sheet.png`, then
+`/tmp/xmas-dressing/round2/full-res1-sheet.png` at native 400×248 and
+`/tmp/xmas-dressing/round2/full-res2-sheet.png` at page resolution. Also looked
+at the individual Cavern native and Cloud page frames and ordinary Cloud
+`npm run shot` outputs at both resolutions. First-round lights and snowmen
+read clearly, but wreaths were absent beside solid hatch shafts: second round
+hangs them on the adjacent wall, with alternate nearby offsets and exclusions.
+
+**Validation/tools:** baseline had 1,647 tests, 1,646 passing: published share
+PNG compression differed on this runtime. All four decoded published images
+were byte-identical to regenerated pixels; the test now compares pixel digests,
+keeping the immutable assets untouched. Final suite/coverage: 1,652 passing.
+New tests cover every biome, North Pole/default names, moving floater/enemy
+exclusions, hazard/exit clearance, grid alignment, cache identity, tick purity,
+reduced motion, missing support, plates/blackouts and all seven Advent dates.
+Heavy runs used the shared test lock and a 3 GB systemd scope. Coverage now
+creates its output directory and prints readable test results. Seasonal VM
+sources have filenames; the CRAP gate additionally unwraps only the IIFE for
+analysis, preserving real line numbers and LCOV (the ordinary scanner skips
+these functions). Standard changed-source maximum 17; season maximum 12,
+new season helpers at most 11.1. Stamps refreshed. No push or deploy.
+
+**Next:** inspect the merged North Pole artwork when it is available; its
+opt-out is currently checked using the biome name on an existing world.

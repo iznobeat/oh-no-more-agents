@@ -21,14 +21,16 @@ export function run(base,out) {
   const source=file=>{try{return execFileSync("git",["show",`${base}:public/agents/${file}`],{cwd:ROOT,maxBuffer:4*1024*1024,stdio:["ignore","pipe","pipe"]}).toString()}catch(e){throw Error("Cannot read "+file+" at "+base+": "+(e.code||e.status))}}
   const before=renderer(source("Draw.js")),after=load("Draw.js"),old=source("season.js"),now=fs.readFileSync(path.join(ROOT,"public/agents/season.js"),"utf8")
   const versions=[["before",before,season(old,"?season=christmas")],["after",after,season(now,"?season=christmas")]]
-  const sheet=canvas(1760,19*278,"#121822"),details=canvas(1760,19*278,"#121822"),trees=canvas(1760,19*278,"#121822"),umbrellas=canvas(1760,19*278,"#121822")
-  for(let level=1;level<=19;level++) {
+  const count=S.BIOMES.length, native=canvas(800,count*248), page=canvas(1600,count*496)
+  const sheet=canvas(1760,count*278,"#121822"),details=canvas(1760,count*278,"#121822"),trees=canvas(1760,count*278,"#121822"),umbrellas=canvas(1760,count*278,"#121822")
+  for(let level=1;level<=count;level++) {
     const shots=[],exits=[],hatches=[],canopies=[];let name
     const world=christmasWorld(level,season(now,"?season=none"))
     for(const res of [1,2])for(const[tag,D,api]of versions) {
       for(const key of Object.keys(world))if(key.startsWith("season"))delete world[key]
       const w=world;api.dress(w);const img=christmasFrame(D,api,w,res);name=w.biome
       writePNG(path.join(out,`level-${level}-${tag}-res${res}.png`),img)
+      copyPixels(res===1?native:page,img,tag==="before"?0:400*res,(level-1)*248*res)
       const ag=w.agents.find(a=>a.floater&&!a.gone)||w.agents.find(a=>!a.gone)||{x:25,y:25}
       const view=crop(img,Math.max(0,Math.min(180,Math.round(ag.x*4-80)))*res,Math.max(28,Math.min(128,Math.round(ag.y*4-65)))*res,220*res,120*res),e=w.exit
       const c=w.corridors[0],hx=(c.startX+c.dir*8)*4
@@ -45,8 +47,9 @@ export function run(base,out) {
     copyPixels(trees,sheetRow(after,`${level} ${name} HATCH`,hatches),0,(level-1)*278)
     copyPixels(umbrellas,sheetRow(after,`${level} ${name} UMBRELLA`,canopies),0,(level-1)*278)
   }
+  writePNG(path.join(out,"full-res1-sheet.png"),native);writePNG(path.join(out,"full-res2-sheet.png"),page)
   writePNG(path.join(out,"contact-sheet.png"),sheet);writePNG(path.join(out,"exits-sheet.png"),details);writePNG(path.join(out,"hatches-sheet.png"),trees);writePNG(path.join(out,"umbrellas-sheet.png"),umbrellas)
-  return {base,biomes:19,frames:76,peakRssMB:Math.round(process.resourceUsage().maxRSS/1024)}
+  return {base,biomes:count,frames:count*4,peakRssMB:Math.round(process.resourceUsage().maxRSS/1024)}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
  const args=process.argv.slice(2),get=(n,d)=>args.includes(n)?args[args.indexOf(n)+1]:d

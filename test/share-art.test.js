@@ -66,7 +66,8 @@ test("numbered share art is reproducible, compact and refuses to overwrite any e
     for (const [i, f] of files.entries()) {
       const b = fs.readFileSync(f.file), decoded = pixels(b), committed = fs.readFileSync(new URL(FILES[i], root))
       assert.equal(decoded.width, sizes[i][0]); assert.equal(decoded.height, sizes[i][1])
-      assert.equal(digest(b), digest(committed), FILES[i]); assert.ok(b.length < (i ? 2000 : 100000))
+      // Compressor versions may change PNG bytes without changing artwork.
+      assert.equal(digest(decoded.buf), digest(pixels(committed).buf), FILES[i]); assert.ok(b.length < (i ? 2000 : 100000))
     }
     assert.ok(files.slice(1).reduce((n, f) => n + f.bytes, 0) < 2000)
     assert.throws(() => build(dir), /Refusing to overwrite/)
