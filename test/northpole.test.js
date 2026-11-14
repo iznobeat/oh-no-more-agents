@@ -223,3 +223,66 @@ test("workshop elves: at benches clear of everything, hammering, waving at passe
   w.biome = "Cavern"
   assert.equal(shot(5), digest(canvas(400, 248, "#000000").buf))
 })
+
+test("frozen ponds: on open floors clear of everything, never under the door, and walkers skate across at a glide", () => {
+  let total = 0
+  for (let level = 21; level <= 420; level += 21) {
+    const w = S.generate(level, 0, 3)
+    assert.ok(w.ponds.length <= 3); total += w.ponds.length
+    for (const p of w.ponds) {
+      assert.ok(p.y <= w.exit.y + w.exit.h - 1, "not under the door")
+      for (let x = p.x0; x < p.x1; x++) {
+        assert.equal(w.iceAt[p.y * w.k.COLS + x], 1)
+        assert.ok(S.solid(w, x, p.y + 1) && !S.solid(w, x, p.y), "flat, open floor")
+      }
+      for (let x = p.x0 - 1; x <= p.x1; x++) assert.ok(S.giftClear(w, x, p.y), `${level}: ${x} clear`)
+    }
+  }
+  assert.ok(total >= 15, "most levels have a pond: " + total)
+  assert.equal(S.generate(1, 0, 3).iceAt, null, "nowhere else")
+  const w = S.generate(42, 0, 3), p = w.ponds[0]
+  const ag = Object.assign(S.spawn(w), { x: p.x0 + 2.5, y: p.y, state: "walk", dir: -1 })
+  const off = Object.assign({}, ag, { x: p.x0 - 3.5 })
+  assert.ok(S.onIce(w, ag) && !S.onIce(w, off))
+  assert.equal(+(S.walkStep(ag, w) / S.walkStep(off, w)).toFixed(3), S.ICE_GLIDE, "a glide, whichever way")
+  ag.dir = 1
+  assert.equal(+(S.walkStep(ag, w) / S.walkStep(off, w)).toFixed(3), S.ICE_GLIDE)
+  w.terrain[(p.y + 1) * w.k.COLS + p.x0 + 2] = w.k.EMPTY
+  assert.ok(!S.onIce(w, ag), "dug out, it is not ice any more")
+})
+
+test("frozen ponds drawn: ice at both resolutions, skaters on blades, a glint that moves, still under reduced motion", () => {
+  const w = S.generate(42, 0, 3), p = w.ponds[0], pal = P.build(theme, 42), C = w.k.CELL
+  for (const res of [1, 2]) {
+    const img = canvas(400 * res, 248 * res, "#000000")
+    img.ctx.setTransform(res, 0, 0, res, 0, 0)
+    w.res = res
+    D.drawNorthPoleSurfaces(img.ctx, w)
+    const at = (x, y) => { const i = ((y * res) * img.W + x * res) * 3; return [img.buf[i], img.buf[i + 1], img.buf[i + 2]] }
+    assert.deepEqual(at((p.x0 + 3) * C + 2, (p.y + 1) * C + 2), [0x8c, 0xc4, 0xe6], "ice, not snow")
+    assert.deepEqual(at((p.x0 + 3) * C + 2, (p.y + 1) * C + 4), [0x4a, 0x7f, 0xae], "deep under the skin")
+  }
+  w.res = 2
+  const shot = (ticks, agents) => {
+    w.ticks = ticks; w.agents = agents
+    const img = canvas(800, 496, "#000000"), before = JSON.stringify(w)
+    img.ctx.setTransform(2, 0, 0, 2, 0, 0)
+    D.drawNorthPondLife(img.ctx, w)
+    assert.equal(JSON.stringify(w), before, "drawing wrote to the world")
+    return digest(img.buf)
+  }
+  const blank = digest(canvas(800, 496, "#000000").buf)
+  const glints = new Set([0, 20, 40, 60].map(t => shot(t, [])))
+  assert.ok(glints.size > 2, "the glint slides along")
+  const skater = Object.assign(S.spawn(w), { x: p.x0 + 3.5, y: p.y, state: "walk", dir: 1, anim: 4 })
+  const walker = Object.assign({}, skater, { x: p.x0 - 4.5 })
+  assert.ok(D.skating(w, skater) && !D.skating(w, walker))
+  assert.notEqual(shot(500, [skater]), shot(500, []), "blades and spray")
+  assert.equal(D.agentDrawMotion(w, skater, "walk", null).drop, 0, "a glide has no bob")
+  w.reducedMotion = true
+  assert.equal(shot(10, [skater]), shot(70, [Object.assign({}, skater, { anim: 9 })]), "still")
+  assert.notEqual(shot(10, [skater]), blank, "the blades stay")
+  w.reducedMotion = false
+  w.iceAt = null
+  assert.equal(shot(10, [skater]), blank, "no ponds, nothing")
+})

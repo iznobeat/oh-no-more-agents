@@ -12002,3 +12002,28 @@ my clock check was off; the next waits a full hour.
 passed (19–25); a headless look at level 21 with the season on (title card,
 play) showed no page errors.
 **After:** `npm run verify -- --previous 313e8118` passed first time.
+
+## 457 — 2026-11-15 · Frozen ponds at the North Pole
+
+**Changed (Sim):** a second North Pole mechanism. Up to three stretches of
+corridor floor (8–14 cells, `placePonds`, a stream of its own, so the rest
+of each level is what it was) are a frozen pond, clear of the hatch, door,
+mission, hazards and presents (`giftClear`, every cell), and never on a floor
+under the door's, which the colony seldom walks. A walker on the ice skates
+across at 1.6× whichever way it is going (`w.iceAt`, read by `walkStep` like
+the Factory's belts, without a direction), so the colony bunches and spreads
+again, and a crossing timed at walking pace is taken quicker. Dig the floor
+out and that stretch is not ice any more. Elves keep their benches off it.
+**Changed (Draw):** the ice replaces the snow cap in the cached terrain pass
+(a pale skin, blue body, a deeper blue under it, shines and seen-through
+cracks, a snow bank at each end), at every resolution; live, a glint slides
+along each pond, and skaters stand on blades with a curled toe, hold each
+stride with no bob, and kick a spray of shavings behind (half-pixel at res 2).
+Under reduced motion the blades stay and nothing moves.
+**Measured:** 26 ponds on the first 20 North Pole levels, 17 of them skated in
+play; 10 levels × 16 colonies: 97% home (97.5% before; 189's two stalls are
+there without ponds too).
+**Test:** northpole (placement, glide both ways, dug out, other biomes;
+ice colours at both resolutions, blades, glint, reduced motion, no world
+writes). The native North Pole pin in christmas-round2 re-captured for the
+ice.

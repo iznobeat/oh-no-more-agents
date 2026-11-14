@@ -435,7 +435,8 @@ function walkStep(ag, w) {
   var belt = w && w.beltAt ? 1 + beltUnder(w, ag) * ag.dir * BELT_PUSH : 1
   var pep = w && w.ticks < (ag.pepUntil || 0) ? PEP_PACE : 1
   var aisle = w && w.aisleAt ? aislePace(aisleUnder(w, ag)) : 1
-  return WALK_SPEED * (traitOf(ag).pace || 1) * (ag.chilledFor > 0 ? 0.48 : 1) * swim * wind * run * belt * pep * aisle
+  var ice = w && w.iceAt && onIce(w, ag) ? ICE_GLIDE : 1
+  return WALK_SPEED * (traitOf(ag).pace || 1) * (ag.chilledFor > 0 ? 0.48 : 1) * swim * wind * run * belt * pep * aisle * ice
 }
 
 // ---------------------------------------------------------------------------
@@ -983,6 +984,8 @@ function newWorld(level, attempt, colonySeed) {
     ziplines: [],     // the Rooftops' washing-line cables; see placeZiplines
     gifts: null,      // the North Pole's presents; see placeGifts
     sleighRuns: [],   // and the sleigh's passes overhead, each with a drop
+    ponds: [],        // the North Pole's frozen ponds; see placePonds
+    iceAt: null,      // and which feet cells are on the ice, 0/1
     trains: [],       // the Subway's shuttle on the last corridor; see placeTrains
     gates: [],        // the Clock Tower's clockwork gates; see placeGates         // the Spaceship's transporter pairs; see placePads
     sinkholes: [],    // the Cavern's thin floors; see placeSinkholes
@@ -3462,6 +3465,7 @@ function placeGifts(w, corridors) {
     if (gx < 0) continue
     w.sleighRuns.push({ t: SLEIGH_FIRST + r * SLEIGH_EVERY, x: gx + 0.5, y: c.floorY - CORR_H, floorY: c.floorY - 1, dir: crng() < 0.5 ? 1 : -1, colour: Math.floor(crng() * 4), dropped: false })
   }
+  placePonds(w, corridors)
 }
 
 function addGift(w, x, y, landed, rng) {
@@ -3548,6 +3552,58 @@ function openGift(w, g, ag) {
   g.by = ag.id
   w.giftsOpened++
   w.lastEvent = "secret santa " + skill
+}
+
+// Frozen ponds: the North Pole's second mechanism. A stretch of some corridor
+// floors is a pond frozen hard, and whoever walks onto it skates: across it at
+// a glide whichever way they are going, so the colony bunches up and spreads
+// out again on the far bank, and a crossing timed for walking pace is taken
+// quicker. One number per feet cell (`w.iceAt`), read by `walkStep` — the
+// belt's rule without a direction. Dig or blow the floor out from under it
+// and that stretch is not ice any more. Clear of the hatch, the door, the
+// mission, every hazard and every present. From a stream of its own.
+var POND_CHANCE = 0.85     // per corridor
+var POND_MAX = 3
+var POND_MIN = 8, POND_LEN = 14
+var ICE_GLIDE = 1.6        // pace on the ice, either way
+
+function placePonds(w, corridors) {
+  var prng = makeRng(w.level * 5501 + 3301)
+  w.ponds = []
+  w.iceAt = new Uint8Array(COLS * ROWS)
+  for (var ci = 0; ci < corridors.length && w.ponds.length < POND_MAX; ci++) {
+    var c = corridors[ci]
+    if (prng() >= POND_CHANCE || belowDoor(w, c)) continue
+    var len = irand(prng, POND_MIN, POND_LEN)
+    var x0 = pondRun(w, c, irand(prng, c.x0 + 4, c.x1 - 4 - len), len)
+    if (x0 < 0) continue
+    var feet = c.floorY - 1
+    for (var x = x0; x < x0 + len; x++) w.iceAt[feet * COLS + x] = 1
+    w.ponds.push({ x0: x0, x1: x0 + len, y: feet })
+  }
+}
+
+// The belt's flat open stretch, with every cell of it clear the way a
+// present's spot is.
+function pondRun(w, c, from, len) {
+  for (var x0 = beltRun(w, c, from, len); x0 >= 0; x0 = beltRun(w, c, x0 + 1, len)) {
+    var ok = true
+    for (var x = x0 - 1; x <= x0 + len && ok; x++) ok = giftClear(w, x, c.floorY - 1)
+    if (ok) return x0
+  }
+  return -1
+}
+
+// A floor under the door's own is one the colony seldom walks: it has to
+// fall past home to get there.
+function belowDoor(w, c) {
+  return !!w.exit && c.floorY - 1 > w.exit.y + w.exit.h - 1
+}
+
+function onIce(w, ag) {
+  var cx = Math.floor(ag.x), fy = Math.floor(ag.y)
+  if (fy < 0 || fy >= ROWS - 1) return false
+  return w.iceAt[fy * COLS + cx] === 1 && solid(w, cx, fy + 1)
 }
 
 // Sandstone laid down by wind: long gentle bands that rise and fall across the

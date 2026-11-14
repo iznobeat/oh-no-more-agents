@@ -2373,6 +2373,7 @@ function drawMachines(ctx, w, pal) {
   drawAmbience(ctx, w, pal)
   if (w.biome === "Factory") drawFactoryMachines(ctx, w, pal)
   drawNorthElves(ctx, w)
+  drawNorthPondLife(ctx, w)
   if (w.gifts) drawNorthPoleGifts(ctx, w, pal)
   if (w.sleighRuns && w.sleighRuns.length) drawNorthPoleSleigh(ctx, w, pal)
 }
@@ -3346,6 +3347,7 @@ function elfSpotClear(w, x, y) {
   if (e && x > e.x - 8 && x < e.x + e.w + 8) return false
   for (var h = 0; h < w.hazards.length; h++) if (x >= w.hazards[h].zx0 - 5 && x <= w.hazards[h].zx1 + 5) return false
   for (var g = 0; g < (w.gifts || []).length; g++) if (Math.abs(w.gifts[g].x - x) < 5) return false
+  for (var p = 0; p < (w.ponds || []).length; p++) if (w.ponds[p].y === y && x > w.ponds[p].x0 - 6 && x < w.ponds[p].x1 + 6) return false
   var m = w.mission
   if (m) for (var t = 0; t < m.targets.length; t++) if (Math.abs(m.targets[t].x - x) < 7) return false
   return true
@@ -14290,8 +14292,12 @@ function agentDrawMotion(w, ag, st, idle) {
   if (idle && st === "walk") { walkLead = 0; squash = 0; bodyDrop = 0 }
   if ((w.res || 1) >= 2 && st === "bomb") bodyDrop = bombCrouch(ag)
 
-  return pageAgentMotion(w, ag, st, idle, { lead: walkLead, squash: squash, drop: bodyDrop })
+  var m = pageAgentMotion(w, ag, st, idle, { lead: walkLead, squash: squash, drop: bodyDrop })
+  if (!idle && skating(w, ag)) { m.lead = SKATE_GAIT[(ag.anim >> 3) % 4]; m.drop = 0 }
+  return m
 }
+// On the ice the stride is held: a long push one leg, a long push the other.
+var SKATE_GAIT = [1, 1, -1, -1]
 
 function drawAgentDetail(ctx, w, pal, ag, ox, oy, dir, drop, lead, squash, robe, idle) {
   if ((w.res || 1) < 2) return
@@ -24887,9 +24893,10 @@ function drawNorthPoleSurfaces(ctx, w) {
   for (var y = k.SKY; y < k.ROWS - 1; y++) for (var x = 0; x < cols; x++) {
     var m = w.terrain[y * cols + x]
     if (m === k.EMPTY || m === k.BRICK) continue
-    if (w.terrain[(y - 1) * cols + x] === k.EMPTY) drawNorthCap(ctx, w, x, y)
+    if (w.terrain[(y - 1) * cols + x] === k.EMPTY) (pondCell(w, x, y - 1) ? drawPondIce : drawNorthCap)(ctx, w, x, y)
     if (w.terrain[(y + 1) * cols + x] === k.EMPTY) drawNorthIcicle(ctx, w, x, y)
   }
+  drawPondBanks(ctx, w)
   ctx.restore()
 }
 function drawNorthCap(ctx, w, x, y) {
@@ -24911,6 +24918,80 @@ function drawNorthIcicle(ctx, w, x, y) {
   ctx.fillStyle = NP_ICE
   ctx.fillRect(px, py, 2, 1)
   ctx.fillRect(px + (h % 2), py + 1, 1, 1 + h)
+}
+
+// Frozen ponds (Sim's placePonds). The ice replaces the snow cap on the floor
+// it covers, in the cached terrain pass: pale and glassy, a deeper blue under
+// the skin, a shine here and there, and a bank of snow heaped at each end.
+// The sweeping glint and the skaters are drawn live, in drawNorthPondLife.
+var NP_POND = "#8cc4e6", NP_POND_DEEP = "#4a7fae", NP_POND_SHINE = "#f6fcff", NP_POND_SKIN = "#c8e8f8", NP_BLADE = "#3a4250"
+function pondCell(w, x, y) {
+  return !!(w.iceAt && y >= 0 && w.iceAt[y * w.k.COLS + x])
+}
+function drawPondIce(ctx, w, x, y) {
+  var C = w.k.CELL, px = x * C, py = y * C
+  ctx.fillStyle = NP_POND_DEEP
+  ctx.fillRect(px, py, C, 5)
+  ctx.fillStyle = NP_POND
+  ctx.fillRect(px, py, C, 3)
+  ctx.fillStyle = NP_POND_SKIN
+  ctx.fillRect(px, py, C, 1)
+  ctx.fillStyle = NP_POND_SHINE
+  if ((x * 5 + y) % 4 === 0) ctx.fillRect(px + 1, py, 2, 1)
+  if ((x * 7 + y) % 6 === 2) { ctx.fillStyle = NP_POND_SKIN; ctx.fillRect(px + 1, py + 2, 2, 1) }      // a crack-line, seen through
+  if ((w.res || 1) >= 2 && (x * 3 + y) % 5 === 1) { ctx.fillStyle = NP_POND_DEEP; ctx.fillRect(px + 0.5, py + 1, 1.5, 0.5) }
+}
+function drawPondBanks(ctx, w) {
+  var ponds = w.ponds || [], C = w.k.CELL
+  ctx.fillStyle = NP_SNOW
+  for (var i = 0; i < ponds.length; i++) {
+    var p = ponds[i], py = (p.y + 1) * C
+    if (!pondCell(w, p.x0, p.y) || w.terrain[(p.y + 1) * w.k.COLS + p.x0] === w.k.EMPTY) continue
+    for (var e = 0; e < 2; e++) {
+      var bx = (e ? p.x1 : p.x0 - 1) * C
+      ctx.fillRect(bx, py - 2, C, 3)
+      ctx.fillRect(bx + (e ? 0 : 1), py - 3, 3, 1)
+    }
+  }
+}
+
+// Live on the ice: a glint that slides along each pond now and then, and for
+// every skater a pair of blades on the ice and a spray of shavings kicked up
+// behind. Still under reduced motion: the blades stay, nothing moves.
+var POND_GLINT_EVERY = 150
+function drawNorthPondLife(ctx, w) {
+  if (!w.iceAt || !w.ponds.length) return
+  var C = w.k.CELL
+  if (!w.reducedMotion) for (var i = 0; i < w.ponds.length; i++) drawPondGlint(ctx, w, w.ponds[i], i, C)
+  for (var a = 0; a < w.agents.length; a++) if (skating(w, w.agents[a])) drawSkates(ctx, w, w.agents[a], C)
+}
+function drawPondGlint(ctx, w, p, i, C) {
+  var span = (p.x1 - p.x0) * C, t = (w.ticks + i * 61) % POND_GLINT_EVERY
+  var gx = p.x0 * C + t * 1.5 - 4, py = (p.y + 1) * C
+  ctx.fillStyle = NP_POND_SHINE
+  for (var d = 0; d < 3; d++) {
+    var x = Math.round(gx + d * 2)
+    if (x >= p.x0 * C && x < p.x0 * C + span && w.terrain[(p.y + 1) * w.k.COLS + Math.floor(x / C)] !== w.k.EMPTY) ctx.fillRect(x, py + 2 - d, 1, 2)
+  }
+}
+function skating(w, ag) {
+  if (ag.gone || ag.state !== "walk" || !w.iceAt) return false
+  var cx = Math.floor(ag.x), fy = Math.floor(ag.y), k = w.k
+  return fy >= 0 && fy < k.ROWS - 1 && w.iceAt[fy * k.COLS + cx] === 1 && w.terrain[(fy + 1) * k.COLS + cx] !== k.EMPTY
+}
+function drawSkates(ctx, w, ag, C) {
+  var x = Math.round(ag.x * C), py = Math.floor(ag.y + 1) * C, d = ag.dir, fine = (w.res || 1) >= 2
+  ctx.fillStyle = NP_BLADE
+  ctx.fillRect(x - 3, py - 1, 6, 1)
+  ctx.fillRect(d > 0 ? x + 3 : x - 4, py - 2, 1, 1)                        // the toe's curl
+  if (w.reducedMotion) return
+  var kick = (ag.anim >> 1) % 6
+  ctx.fillStyle = NP_POND_SHINE
+  ctx.globalAlpha = 0.85
+  ctx.fillRect(x - d * (4 + kick), py - 1 - (kick >> 1), 1, 1)
+  if (kick < 3) ctx.fillRect(x - d * (6 + kick), py - 2 - kick, 1, 1)
+  if (fine) { ctx.fillRect(x - d * (5 + kick) - 0.5, py - 1.5 - kick, 0.5, 0.5); ctx.fillRect(x - d * (3 + kick), py - 3 - (kick >> 1), 0.5, 0.5) }
+  ctx.globalAlpha = 1
 }
 
 // The sky band over the workshop: stars, and a big winter moon for the

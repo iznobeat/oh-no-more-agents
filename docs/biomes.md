@@ -438,6 +438,13 @@ would otherwise have replaced the workshop's hazards on every one of them.
   under its own umbrella at `GIFT_FALL`. The first *walking* agent over a
   present unwraps it: the scarcest of `GIFT_ORDER` gets `GIFT_GIVES` (2).
   It never steers anyone — help found on the way, not a destination.
+- **Second mechanism: frozen ponds** (`placePonds`, own stream, called at the
+  end of `placeGifts`). Up to `POND_MAX` (3) stretches of corridor floor,
+  `POND_MIN`–`POND_LEN` cells, clear the way a present's spot is and never on
+  a floor under the door's. `w.iceAt` marks the feet cells; `walkStep` gives a
+  walker on it `ICE_GLIDE` (1.6×) either way, until the floor under it is dug
+  out. Drawn as blue ice in place of the snow cap with a bank at each end; live,
+  a glint slides along it and skaters get blades, a held stride and a spray.
 - **Mission:** ROUND UP THE REINDEER (`kind: "reindeer"`, the camel's rules;
   every other one has the red nose). A stall rather than a cage.
 - **Hazards:** Wrapper Function (ceiling press with a spinning roll of
