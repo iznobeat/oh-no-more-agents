@@ -157,7 +157,18 @@ var SKILL_LABELS = {
 // putting a new one anywhere but the end would re-skin every level above it.
 // Palette.js derives the same index with the same rule and must be kept in
 // step — see the note over poolTint there.
-var BIOMES = ["Cavern", "Ruins", "Frost", "Foundry", "Jungle", "Ice Cave", "Spaceship", "Factory", "Skyscraper", "Trench", "Desert", "Data Center", "Library", "Mail Room", "Building Site", "Clock Tower", "Rooftops", "Subway", "Harbour", "The Cloud"]
+//
+// The North Pole is the exception, and is kept out of the cycle on purpose:
+// the first twenty go round in order as they always have, and every
+// twenty-first level is the North Pole instead (biomeIndex). Appending it to
+// the cycle would have re-skinned and re-laid every level above 20; this way
+// only 21, 42, 63 and so on change, and everything else is the level it was.
+var BIOMES = ["Cavern", "Ruins", "Frost", "Foundry", "Jungle", "Ice Cave", "Spaceship", "Factory", "Skyscraper", "Trench", "Desert", "Data Center", "Library", "Mail Room", "Building Site", "Clock Tower", "Rooftops", "Subway", "Harbour", "The Cloud", "North Pole"]
+
+var BIOME_CYCLE = 20, NORTH_POLE_EVERY = 21
+function biomeIndex(level) {
+  return level % NORTH_POLE_EVERY === 0 ? BIOME_CYCLE : (level - 1) % BIOME_CYCLE
+}
 
 // A small job on the route gives each biome a premise beyond merely reaching
 // the door. These are deliberately one mechanism with different casts: an
@@ -198,6 +209,8 @@ var MISSION_SPECS = {
   "Subway":        { id: "commuters", verb: "GET THE COMMUTERS ON THE TRAIN", kind: "civilian", count: 3 },
   "Harbour":       { id: "passengers", verb: "SEE THE PASSENGERS ASHORE", kind: "civilian", count: 3 },
   "The Cloud":     { id: "sysadmins",  verb: "BRING THE SYSADMINS ON-PREM", kind: "civilian", count: 2 },
+  // Somebody left the stable door open on the busiest night of the year.
+  "North Pole":    { id: "reindeer",   verb: "ROUND UP THE REINDEER", kind: "reindeer", count: 2 },
   // Up in the works since the last time it was wound. Nobody noticed.
   "Clock Tower": { id: "keepers", verb: "FREE THE CLOCKMAKERS",  kind: "civilian", count: 2 }
 }
@@ -950,11 +963,11 @@ function newWorld(level, attempt, colonySeed) {
   var w = {
     level: level,
     attempt: attempt,
-    biome: BIOMES[(level - 1) % BIOMES.length],
+    biome: BIOMES[biomeIndex(level)],
     // Set here rather than asked for repeatedly: the flag is read on every
     // agent on every tick, and one biome comparison per world beats sixty
     // thousand string compares a second. See the Water block above.
-    submerged: BIOMES[(level - 1) % BIOMES.length] === "Trench",
+    submerged: BIOMES[biomeIndex(level)] === "Trench",
     wind: 0,          // the Desert's gust, -1..1 along x; set every tick by windAt
     updraft: null,    // the Data Center's rising columns, per x; see skinDataCenter
     shelves: null,    // the Library's book cells, per cell; see skinLibrary
@@ -968,6 +981,8 @@ function newWorld(level, attempt, colonySeed) {
     pads: [],
     cranes: [],       // the Building Site's gantry cranes; see placeCranes
     ziplines: [],     // the Rooftops' washing-line cables; see placeZiplines
+    gifts: null,      // the North Pole's presents; see placeGifts
+    sleighRuns: [],   // and the sleigh's passes overhead, each with a drop
     trains: [],       // the Subway's shuttle on the last corridor; see placeTrains
     gates: [],        // the Clock Tower's clockwork gates; see placeGates         // the Spaceship's transporter pairs; see placePads
     sinkholes: [],    // the Cavern's thin floors; see placeSinkholes
@@ -1453,8 +1468,11 @@ function enemyHp(w, kind) {
   if (kind === "bouncer") return w.bossPost ? HEAD_BOUNCER_HP : BOUNCER_HP
   return w.bossPost ? BOSS_HP : 1
 }
+// Nor at the North Pole: every twenty-first level is one, and every one of
+// those is a seventh, so the boss would have held every workshop and the
+// workshop's own hazards (which alternate with a post) would never be seen.
 function bossLevel(w, level) {
-  return level >= BOSS_EVERY && level % BOSS_EVERY === 0 && !submerged(w)
+  return level >= BOSS_EVERY && level % BOSS_EVERY === 0 && !submerged(w) && w.biome !== "North Pole"
 }
 
 // Who is in the colony and what it carries: its size and pace out of the
@@ -1611,6 +1629,7 @@ var BIOME_MECHANISMS = {
   "Subway": placeTrains,
   "Harbour": placeFerries,
   "The Cloud": cloudLining,
+  "North Pole": placeGifts,
   "Clock Tower": placeGates
 }
 
@@ -2931,7 +2950,8 @@ var BIOME_SKINS = {
   "Rooftops": skinRooftops,
   "Subway": skinSubway,
   "Harbour": skinHarbour,
-  "The Cloud": skinCloud
+  "The Cloud": skinCloud,
+  "North Pole": skinNorthPole
 }
 
 function skinSpaceship(w, rng) {
@@ -3398,6 +3418,138 @@ function stepCloud(w) {
   }
 }
 
+// North Pole
+// ---------------------------------------------------------------------------
+//
+// Santa's workshop, the twenty-first biome. Snow packed hard, all of it
+// DIRT, so a dig or a bash goes through like anywhere soft. The fresh fall on
+// every exposed top is laid as ORE once the shape is final (placeGifts), the
+// Cloud's lining again. Shape is left exactly as generated.
+function skinNorthPole(w, rng) {
+  for (var y = SKY; y < ROWS - 2; y++)
+    for (var x = 3; x < COLS - 3; x++)
+      if (at(w, x, y) !== STEEL && solid(w, x, y)) setCell(w, x, y, DIRT)
+}
+
+// Secret Santa: the North Pole's mechanism. Presents sit on the corridor
+// floors, and every so often the sleigh goes over and another comes down a
+// chimney under a little umbrella of its own. The first agent to walk over
+// one unwraps it, and the colony's scarcest tool gets two more. It only ever
+// helps, it never steers: an agent does not go looking for a present, it
+// just finds one on the way. Placed from a stream of its own, and the drops
+// from the colony's, so a level stays itself while a retry gets other gifts.
+var GIFT_CHANCE = 0.8       // per corridor, one waiting at the start
+var GIFT_GIVES = 2          // tools in each present
+var GIFT_ORDER = ["builder", "basher", "climber", "floater", "digger", "miner"]
+var SLEIGH_FIRST = 420, SLEIGH_EVERY = 840, SLEIGH_RUNS = 3
+var SLEIGH_LEAD = 90        // ticks the sleigh is in sight before its drop
+var GIFT_FALL = FLOAT_SPEED * 0.6
+function placeGifts(w, corridors) {
+  cloudLining(w)
+  var grng = makeRng(w.level * 7919 + 4241)
+  w.gifts = []
+  w.sleighRuns = []
+  w.giftsOpened = 0
+  for (var ci = 0; ci < corridors.length; ci++) {
+    if (grng() >= GIFT_CHANCE) continue
+    var x = giftSpot(w, corridors[ci], grng)
+    if (x >= 0) addGift(w, x, corridors[ci].floorY - 1, true, grng)
+  }
+  var crng = makeRng((w.colonySeed % 100003) * 31 + w.level)
+  for (var r = 0; r < SLEIGH_RUNS; r++) {
+    var c = corridors[Math.floor(crng() * corridors.length)]
+    var gx = giftSpot(w, c, crng)
+    if (gx < 0) continue
+    w.sleighRuns.push({ t: SLEIGH_FIRST + r * SLEIGH_EVERY, x: gx + 0.5, y: c.floorY - CORR_H, floorY: c.floorY - 1, dir: crng() < 0.5 ? 1 : -1, colour: Math.floor(crng() * 4), dropped: false })
+  }
+}
+
+function addGift(w, x, y, landed, rng) {
+  w.gifts.push({ id: w.gifts.length, x: x + 0.5, y: y, landed: landed, opened: -1, skill: null, by: -1,
+    colour: Math.floor(rng() * 4), size: rng() < 0.5 ? 0 : 1 })
+}
+
+// A flat stretch of floor with headroom, clear of the hatch, the door, the
+// mission and every hazard's zone, so a present is never on top of a tell.
+function giftSpot(w, c, rng) {
+  for (var tries = 0; tries < 12; tries++) {
+    var x = irand(rng, c.x0 + 4, c.x1 - 4), y = c.floorY - 1
+    if (giftClear(w, x, y)) return x
+  }
+  return -1
+}
+function giftClear(w, x, y) {
+  if (!solid(w, x, y + 1) || solid(w, x, y) || solid(w, x, y - 1)) return false
+  if (w.hatch && Math.abs(w.hatch.x - x) < 6 && Math.abs(w.hatch.y + CORR_H - y) < CORR_H) return false
+  var e = w.exit
+  if (e && x > e.x - 5 && x < e.x + e.w + 5 && Math.abs(e.y + e.h - 1 - y) < CORR_H) return false
+  for (var h = 0; h < w.hazards.length; h++) {
+    var hz = w.hazards[h]
+    if (x >= hz.zx0 - 3 && x <= hz.zx1 + 3 && y >= hz.zy0 - 2 && y <= hz.zy1 + 2) return false
+  }
+  var m = w.mission
+  if (m) for (var t = 0; t < m.targets.length; t++)
+    if (Math.abs(m.targets[t].x - x) < 5 && Math.abs(m.targets[t].y - y) < CORR_H) return false
+  for (var g = 0; g < (w.gifts || []).length; g++) if (Math.abs(w.gifts[g].x - x) < 6 && Math.abs(w.gifts[g].y - y) < 2) return false
+  return true
+}
+
+function stepGifts(w) {
+  if (!w.gifts) return
+  for (var r = 0; r < w.sleighRuns.length; r++) {
+    var run = w.sleighRuns[r]
+    if (run.dropped || w.ticks < run.t) continue
+    run.dropped = true
+    w.gifts.push({ id: w.gifts.length, x: run.x, y: run.y, landed: false, opened: -1, skill: null, by: -1, colour: run.colour, size: 0, run: r })
+  }
+  for (var i = 0; i < w.gifts.length; i++) {
+    var g = w.gifts[i]
+    if (g.opened >= 0 || g.lost) continue
+    if (!giftSettle(w, g)) continue
+    var ag = giftFinder(w, g)
+    if (ag) openGift(w, g, ag)
+  }
+}
+
+// Down under its umbrella, and down again if the floor goes from under it.
+// True once it is sitting on something.
+function giftSettle(w, g) {
+  var cx = Math.floor(g.x)
+  if (g.landed && solid(w, cx, Math.floor(g.y) + 1)) return true
+  g.landed = false
+  g.y += GIFT_FALL
+  if (g.y >= ROWS - 2) { g.lost = true; return false }
+  if (solid(w, cx, Math.floor(g.y) + 1)) { g.y = Math.floor(g.y); g.landed = true; g.landedAt = w.ticks }
+  return g.landed
+}
+
+function giftFinder(w, g) {
+  for (var a = 0; a < w.agents.length; a++) {
+    var ag = w.agents[a]
+    if (ag.gone || ag.state !== "walk") continue
+    if (Math.abs(ag.x - g.x) < 0.7 && Math.floor(ag.y) === Math.floor(g.y)) return ag
+  }
+  return null
+}
+
+// The scarcest of the tools a stuck colony runs out of first.
+function giftSkill(w) {
+  var best = GIFT_ORDER[0]
+  for (var i = 1; i < GIFT_ORDER.length; i++)
+    if ((w.skills[GIFT_ORDER[i]] || 0) < (w.skills[best] || 0)) best = GIFT_ORDER[i]
+  return best
+}
+
+function openGift(w, g, ag) {
+  var skill = giftSkill(w)
+  w.skills[skill] = (w.skills[skill] || 0) + GIFT_GIVES
+  g.opened = w.ticks
+  g.skill = skill
+  g.by = ag.id
+  w.giftsOpened++
+  w.lastEvent = "secret santa " + skill
+}
+
 // Sandstone laid down by wind: long gentle bands that rise and fall across the
 // board like the dunes that made them, rather than the Trench's flat sediment.
 // DIRT is the sand, ORE the harder bands between (lighter: Palette pulls ORE
@@ -3527,7 +3679,9 @@ var DECOR_RATES = {
   "Desert":    { floor: 0.11, ceil: 0.02, gap: 5, kinds: ["spire", "clump", "clump", "tuft"] },
   // Nothing grows in an office. What is on the floor was put there, so the
   // general scatter is turned right down and the fittings below do the work.
-  "Skyscraper": { floor: 0.06, ceil: 0.04, gap: 8, kinds: ["spire", "clump"] }
+  "Skyscraper": { floor: 0.06, ceil: 0.04, gap: 8, kinds: ["spire", "clump"] },
+  // Firs, presents and candy canes on the floors, icicles off the ceiling.
+  "North Pole": { floor: 0.12, ceil: 0.14, gap: 5, kinds: ["spire", "spire", "clump", "tuft"] }
 }
 
 // The fittings a built biome puts in each corridor before the scatter, one
@@ -4546,7 +4700,13 @@ var HAZARDS = [
   // umbrella is no help — umbrellas are not lightning rods, and nothing in
   // the hazard rules lets one parry a cycle. Weather, so it comes on top of
   // the level's ordinary hazard rather than instead of it.
-  { id: "lightning", name: "Flash Storage", mech: "cycle", mount: "ceiling", reach: 0, charge: 46, fire: 6, rest: 170, w: 3, h: 7, only: ["The Cloud"], weather: true }
+  { id: "lightning", name: "Flash Storage", mech: "cycle", mount: "ceiling", reach: 0, charge: 46, fire: 6, rest: 170, w: 3, h: 7, only: ["The Cloud"], weather: true },
+  // The North Pole's two. A gift-wrapping press on the workshop ceiling: the
+  // roll of paper turns faster as it winds up and the press comes down with
+  // the ribbon. And a nutcracker on sentry duty, who wakes when somebody walks
+  // into reach and snaps its jaw. Rows over the existing mechanisms, as ever.
+  { id: "wrapper",  name: "Wrapper Function", mech: "cycle", mount: "ceiling", reach: 0, charge: 30, fire: 22, rest: 56, w: 5, h: 7, only: ["North Pole"] },
+  { id: "nutcracker", name: "Password Cracker", mech: "watch", mount: "floor", reach: 9, charge: 22, fire: 16, rest: 58, w: 4, h: 5, only: ["North Pole"] }
 ]
 
 // Open flame and steam have no business in an ice cave, and the industrial
@@ -6646,6 +6806,11 @@ var EVENTS = [
   { id: "regiondown", name: "Region Outage", biome: "The Cloud", mech: "blackout", mult: 0, ticks: 300 },
   { id: "condense", name: "Eventual Consistency", biome: "The Cloud", mech: "growth", span: 12, high: 2 },
   { id: "evaporate", name: "Scale to Zero", biome: "The Cloud", mech: "collapse", at: "floor", span: 6, deep: 2 },
+
+  // --- North Pole ---
+  { id: "codefreeze", name: "Code Freeze",  biome: "North Pole", mech: "blackout", mult: 0, ticks: 300 },
+  { id: "snowdrift", name: "Config Drift",  biome: "North Pole", mech: "growth", span: 14, high: 2 },
+  { id: "thinice",  name: "Ice Breaker",    biome: "North Pole", mech: "collapse", at: "floor", span: 6, deep: 2 },
 
   // --- Clock Tower ---
   { id: "deadlock", name: "Deadlock",         biome: "Clock Tower", mech: "blackout", mult: 0, ticks: 280 },
@@ -11643,7 +11808,7 @@ function stepFreedMission(w, m) {
     if (!t.freed || t.home) continue
     t.anim++
     if (stepEscorted(w, t, m.targets)) continue
-    var nx = t.x + t.dir * (m.kind === "animal" || m.kind === "camel" ? 0.09 : 0.065)
+    var nx = t.x + t.dir * (m.kind === "animal" || m.kind === "camel" || m.kind === "reindeer" ? 0.09 : 0.065)
     if (nx < t.roamMin || nx > t.roamMax) { t.dir = -t.dir; continue }
     var cx = Math.floor(nx)
     var oldFloor = Math.floor(t.y)
@@ -11778,6 +11943,7 @@ function finishWorldStep(w, active, blockers, moving) {
   stepAisles(w)
   stepLibrarians(w)
   stepCloud(w)
+  stepGifts(w)
   stepAgi(w)
   stepRadio(w)
   stepMission(w)

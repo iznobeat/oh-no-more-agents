@@ -11776,3 +11776,63 @@ somebody in front of it, while reeling, or for the Head Bouncer, whose crown
 would not follow the head. The res-2 cheek and chin follow the head.
 
 **Test:** guard-patrol (kinds, rarity, exclusions). Gate 1647/1647; CRAP green.
+
+## 448 — 2026-11-14 · The North Pole: a Christmas level of its own
+
+Jon: "start a iteration where we improve this game, should add christmas
+themes, both own level and in other levels, keep deploying when suitable,
+improve animations, graphics, its ok to invent new game features/mechanics".
+
+**Where it goes.** Appended to the cycle, a twenty-first biome re-skins and
+re-lays every level above 20 (176 failing tests on the first try, every old
+share link above 20 a different level). Instead the twenty go round as they
+always have and **every twenty-first level is the North Pole**
+(`biomeIndex`, mirrored in Palette's two switches, used by web.js for the
+tour, the title card and the current stop). Only 21, 42, 63… changed. 21 is a
+multiple of 7, so every one of them was a boss level, and a boss post
+replaces the level's hazards: `bossLevel` skips the North Pole, or its
+hazards would never have been seen.
+
+**Changed (Sim):**
+- `skinNorthPole`: all DIRT (snow); `placeGifts` lays ORE on every top first
+  (`cloudLining`).
+- **Secret Santa** (`placeGifts`, `stepGifts`): presents on the corridor
+  floors (level stream, clear of hatch, door, mission and hazard zones), and
+  three sleigh runs (colony stream) that each drop another down a chimney,
+  floating down under its own umbrella. The first walking agent over one
+  unwraps it: the scarcest of builder/basher/climber/floater/digger/miner
+  gets two. It never steers anyone.
+- Mission: ROUND UP THE REINDEER (`kind: "reindeer"`, the camel's rules).
+- Hazards: Wrapper Function (ceiling press, a roll of paper that spins up)
+  and Password Cracker (a nutcracker sentry). Events: Code Freeze, Config
+  Drift, Ice Breaker. Decor rates: firs, presents, candy canes, icicles.
+
+**Changed (Draw, Palette, page):** snow caps with drifts and icicles under
+every ledge at every resolution (`drawNorthPoleSurfaces`); a moon and stars
+in the sky band; a far village of lit houses and firs (`backNorthPole`, with
+a fine pass); a log-and-gable workshop door with a wreath and candy-cane
+posts; presents (shut, falling under a striped umbrella, opened: the lid
+flies, gold sparks, the new tool's icon rises at page resolution, torn paper
+on the floor); the sleigh and team (Rudolph's nose) crossing the sky before
+each drop, brick chimneys on the snow smoking over each drop point, a puff of
+soot at the ceiling as the present comes through; reindeer (every other one
+with the red nose, glowing), a stall; the gift press and the nutcracker (jaw
+drops on the wind-up, sabre out when it fires; shoulders arms and blinks at
+idle). Snowfall motes, a forecast noun, a bed (wind and bells), a tour icon
+(a tree and a present), title-card lines. Palette: SNOWFIELD white.
+
+**Measured:** 10 North Pole levels (21–210) × 16 colonies: 97.5% home (90.6%
+on 84, the hardest), about 1.5 presents opened per run.
+
+**Tests.** `test/northpole.test.js` (8): the rule (every other level keeps
+its biome up to 300, Palette agrees), snow tops and no boss, presents placed
+clear, unwrapping (scarcest tool +2, once, walkers only), a sleigh drop down
+and landed, plays to the end with presents opened, drawing at both
+resolutions (sleigh, presents shut and open, reindeer both ways, door),
+reduced motion, nothing written to the world. Tests that stepped by
+`BIOMES.length` now address levels by biome (`test/levels.js`: `levelWith`
+follows `biomeIndex`, new `levelsOf`). Cavern (1, 41, 61) and Ruins (2, 22,
+62) component digests were re-captured from main's own code at the new
+levels — identical to this branch's, so no drawing of theirs changed. The
+share-art test compares decoded pixels, not PNG bytes: it had been failing on
+main since Node's zlib started compressing the same image differently.

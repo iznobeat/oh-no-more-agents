@@ -21,7 +21,7 @@ test('Living depths stay in backdrop air, deterministic, page-only, read-only an
  }finally{Math.random=random}
 })
 test('new poses move visibly, reduced motion freezes them and replaced terrain invalidates the air mask',()=>{
- for(const level of[1, 6, 10, 21, 26, 30]){
+ for(const level of[1, 6, 10, 41, 26, 30]){
   const w=S.generate(level,0,3);w.res=2;w.ticks=1700;const first=marks(w);assert.ok(first.length>0)
   w.ticks=1737;assert.notDeepEqual(marks(w),first)
   w.reducedMotion=true;const still=marks(w);w.ticks=2400;assert.deepEqual(marks(w),still)
@@ -32,7 +32,7 @@ test('new poses move visibly, reduced motion freezes them and replaced terrain i
 })
 test('the ambient dispatcher includes this batch and rendering preserves live simulation digests',()=>{
  const random=Math.random
- try{for(const level of[1, 2, 5, 6, 7, 9, 10, 11, 21, 26, 30]){
+ try{for(const level of[1, 2, 5, 6, 7, 9, 10, 11, 41, 26, 30]){
   const a=S.generate(level,0,3),b=S.generate(level,0,3);a.res=b.res=2
   if([1, 6, 10].includes(level)){a.ticks=b.ticks=1700;assert.deepEqual(marks(a,D.drawBackdropLife),marks(a));a.ticks=b.ticks=0}
   for(let tick=0;tick<450;tick++){

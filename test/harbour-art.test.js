@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
-import { levelWith } from "./levels.js"
+import { levelWith, levelsOf } from "./levels.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
 const HAR = levelWith(S, "Harbour", w => w.trains.some(t => t.boat))
@@ -142,7 +142,7 @@ test("metro components retain native bytes and the reviewed page art across ever
     [1, "efb0d1fff4316dafc32fe04f8b7eb046ee60a57b76ae314bff1bbccfd740c9c4"], [2, "07ab26c4dd6e9d16713746e2e508f1e4fce1663d80f016189cee7680266e01bf"]
   ]) {
     const hash = createHash("sha256")
-    for (const level of [first, first + S.BIOMES.length]) {
+    for (const level of levelsOf(S, "Subway", 2)) {
       const { w, pal } = sample(res, level), tr = w.trains[0]
       for (const phase of ["wait", "run", "drop", "back"]) {
         Object.assign(tr, { phase, t: 2, riders: [1, 2, 3], v: 0.4 })

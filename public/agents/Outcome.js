@@ -305,7 +305,7 @@ var FORECAST_NOUNS = {
   "Skyscraper": "ELEVATED RISK", "Trench": "PRESSURE", "Desert": "MIRAGES", "Data Center": "OVERHEATING",
   "Library": "SHUSHING", "Mail Room": "DELAYED DELIVERY", "Building Site": "FALLING SCAFFOLD",
   "Clock Tower": "TIME DRIFT", "Rooftops": "GUSTS", "Subway": "DELAYS", "Harbour": "FOG",
-  "The Cloud": "RAIN, OBVIOUSLY"
+  "The Cloud": "RAIN, OBVIOUSLY", "North Pole": "PRESENTS"
 }
 function forecastConditions(w) {
   var out = []

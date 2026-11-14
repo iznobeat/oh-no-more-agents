@@ -2,6 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
+import { levelsOf } from "./levels.js"
 import { canvas, themeOf } from "../tools/render.js"
 
 // The Ice Cave's frozen colleagues: in walls, on Ice Cave levels only, and
@@ -20,7 +21,7 @@ test("frozen colleagues are an Ice Cave thing, and stand in solid wall", () => {
 })
 
 function iced() {
-  for (let lv = 6; lv <= 206; lv += S.BIOMES.length) {
+  for (const lv of levelsOf(S, "Ice Cave", 11)) {
     const w = S.generate(lv, 0, 5)
     if (w.frozen.length) return { w, f: w.frozen[0] }
   }

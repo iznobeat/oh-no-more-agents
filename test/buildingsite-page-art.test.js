@@ -2,6 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
+import { levelsOf } from "./levels.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
@@ -113,7 +114,7 @@ test("far workwear and scaffold panels are lower contrast than playable concrete
   }
 })
 test("neighbouring work bays differ, with at most two bright jackets on bare hooks", () => {
-  for (let level = 15; level < 400; level += S.BIOMES.length) {
+  for (const level of levelsOf(S, "Building Site", 20).filter(l => l < 400)) {
     const { w } = sample(level)
     let jackets = 0
     for (let row = 0; row < w.corridors.length; row++) {

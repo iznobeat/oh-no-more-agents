@@ -541,9 +541,9 @@
   // can still see the Harbour or The Cloud. A jump is a move like prev/next:
   // nothing is cleared and nothing is counted. It goes to that biome's next
   // level after this one, so a tour moves forward through the game.
-  function tourLevel(from, biome, count) {
+  function tourLevel(from, biome) {
     var l = from + 1
-    while ((l - 1) % count !== biome) l++
+    while (biomeIndex(l) !== biome) l++
     return l
   }
   window.AgentTour = { level: tourLevel }
@@ -560,7 +560,7 @@
       c.width = 24; c.height = 16
       c.setAttribute("aria-hidden", "true")
       b.appendChild(c)
-      b.addEventListener("click", function () { newLevel(tourLevel(level, i, BIOMES.length)); saveState(); render() })
+      b.addEventListener("click", function () { newLevel(tourLevel(level, i)); saveState(); render() })
       el.tour.appendChild(b)
     })
     paintTour()
@@ -774,7 +774,7 @@
     if (!c || c.hidden || !world) return
     var ctx = c.getContext("2d")
     clearLayer(ctx, world)
-    drawLevelTitleCard(ctx, world, palette, (level - 1) % BIOMES.length, titleLayout)
+    drawLevelTitleCard(ctx, world, palette, biomeIndex(level), titleLayout)
   }
 
   function showLevelTitle() {
@@ -1015,7 +1015,7 @@
     })
 
     if (el.tour) Array.prototype.forEach.call(el.tour.children, function (b, i) {
-      var here = (world.level - 1) % BIOMES.length === i
+      var here = biomeIndex(world.level) === i
       b.classList.toggle("on", here)
       if (here) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current")
     })

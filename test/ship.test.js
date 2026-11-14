@@ -80,7 +80,7 @@ test("the shipped Sim plays out exactly like the source", () => {
 
 test("the shipped Draw paints the same bytes in every biome", () => {
   const S = source("Sim.js"), seen = new Set(), levels = []
-  for (let level = 1; level <= 60 && levels.length < 20; level++) {
+  for (let level = 1; level <= 60 && levels.length < S.BIOMES.length; level++) {
     const biome = S.generate(level, 0, 1).biome
     if (!seen.has(biome)) { seen.add(biome); levels.push(level) }
   }

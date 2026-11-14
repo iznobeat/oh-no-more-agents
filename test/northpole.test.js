@@ -1,0 +1,167 @@
+import test from "node:test"
+import assert from "node:assert/strict"
+import { createHash } from "node:crypto"
+import { loadCore } from "../tools/load-core.js"
+import { canvas, frame, themeOf } from "../tools/render.js"
+
+// The North Pole: every twenty-first level, outside the cycle of twenty.
+// Snow, a workshop door, reindeer to round up, a gift press and a nutcracker,
+// and Secret Santa: presents on the floors and down the chimneys.
+const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
+const digest = buf => createHash("sha256").update(buf).digest("hex")
+const theme = themeOf("tokyo-night").theme
+
+test("every twenty-first level is the North Pole, and every other level keeps its biome", () => {
+  assert.equal(S.BIOMES[20], "North Pole")
+  for (const level of [21, 42, 63, 210]) assert.equal(S.generate(level, 0, 1).biome, "North Pole")
+  // The twenty go round exactly as before on every other level.
+  for (let level = 1; level <= 300; level++) {
+    if (level % 21 === 0) continue
+    assert.equal(S.BIOMES[S.biomeIndex(level)], S.BIOMES[(level - 1) % 20], "level " + level)
+  }
+  assert.equal(S.generate(41, 0, 1).biome, "Cavern")
+  assert.equal(P.build(theme, 41).dirt, P.build(theme, 1).dirt, "Palette agrees: 41 is a Cavern")
+  assert.notEqual(P.build(theme, 21).dirt, P.build(theme, 1).dirt, "and 21 has a tint of its own")
+  assert.equal(P.build(theme, 42).dirt, P.build(theme, 21).dirt)
+})
+
+test("a fresh fall of snow on every top, and no boss holds the workshop", () => {
+  for (const level of [21, 42, 63]) {
+    const w = S.generate(level, 0, 3), k = w.k
+    for (let y = k.SKY; y < k.ROWS - 2; y++) for (let x = 3; x < k.COLS - 3; x++) {
+      const c = w.terrain[y * k.COLS + x]
+      if (c === k.EMPTY || c === k.STEEL || c === k.BRICK) continue
+      const top = w.terrain[(y - 1) * k.COLS + x] === k.EMPTY
+      if (top) assert.equal(c, k.ORE, `cell ${x},${y}`)
+    }
+    assert.equal(S.bossLevel(w, level), false)
+    if (w.mission) assert.equal(w.mission.kind, "reindeer")
+  }
+  let hazards = 0, reindeer = 0
+  for (let k = 1; k <= 30; k++) {
+    const w = S.generate(k * 21, 0, 3)
+    hazards += w.hazards.length
+    if (w.mission) reindeer++
+  }
+  assert.ok(hazards > 5, "the workshop's own hazards get a look in: " + hazards)
+  assert.ok(reindeer > 3, "and the reindeer get out now and then: " + reindeer)
+})
+
+test("presents sit clear of the hatch, the door, the mission and every hazard", () => {
+  for (let k = 1; k <= 12; k++) {
+    const w = S.generate(k * 21, 0, k)
+    assert.ok(Array.isArray(w.gifts) && w.sleighRuns.length > 0)
+    for (const g of w.gifts) {
+      assert.ok(g.landed && g.opened === -1)
+      const x = Math.floor(g.x)
+      assert.ok(w.terrain[(g.y + 1) * w.k.COLS + x] !== w.k.EMPTY, "on the floor")
+      for (const h of w.hazards) assert.ok(x < h.zx0 - 3 || x > h.zx1 + 3 || g.y < h.zy0 - 2 || g.y > h.zy1 + 2)
+      const e = w.exit
+      assert.ok(x <= e.x - 5 || x >= e.x + e.w + 5 || Math.abs(e.y + e.h - 1 - g.y) >= 6)
+    }
+    for (const r of w.sleighRuns) assert.equal(r.dropped, false)
+  }
+  // Other biomes have none of it.
+  const plain = S.generate(1, 0, 1)
+  assert.equal(plain.gifts, null); assert.equal(plain.sleighRuns.length, 0)
+})
+
+test("a walker unwraps a present: the scarcest tool gets two more, once", () => {
+  const w = S.generate(21, 0, 5)
+  const g = w.gifts[0] || (w.gifts.push({ id: 0, x: 30.5, y: 20, landed: true, opened: -1, colour: 0, size: 0 }), w.gifts[0])
+  for (const s of Object.keys(w.skills)) w.skills[s] = 5
+  w.skills.basher = 1
+  const ag = Object.assign(S.spawn(w), { x: g.x, y: g.y, state: "walk", dir: 1 })
+  w.agents = [ag]
+  // The floor under it must hold for the present to stay put.
+  w.terrain[(Math.floor(g.y) + 1) * w.k.COLS + Math.floor(g.x)] = w.k.DIRT
+  S.stepGifts(w)
+  assert.equal(g.opened, w.ticks); assert.equal(g.skill, "basher"); assert.equal(g.by, ag.id)
+  assert.equal(w.skills.basher, 1 + S.GIFT_GIVES); assert.equal(w.giftsOpened, 1)
+  S.stepGifts(w)
+  assert.equal(w.skills.basher, 1 + S.GIFT_GIVES, "a present only opens once")
+  // A falling agent, or a dead one, finds nothing.
+  const w2 = S.generate(21, 0, 5), g2 = w2.gifts[0]
+  if (g2) {
+    w2.agents = [Object.assign(S.spawn(w2), { x: g2.x, y: g2.y, state: "fall" })]
+    S.stepGifts(w2)
+    assert.equal(g2.opened, -1)
+  }
+})
+
+test("the sleigh's drop comes down the chimney under an umbrella and lands", () => {
+  const w = S.generate(42, 0, 7), run = w.sleighRuns[0], before = w.gifts.length
+  w.agents = []
+  w.ticks = run.t
+  S.stepGifts(w)
+  assert.equal(run.dropped, true); assert.equal(w.gifts.length, before + 1)
+  const g = w.gifts[w.gifts.length - 1]
+  assert.equal(g.landed, false); assert.ok(g.y >= run.y && g.y < run.y + 1, "starts at the ceiling")
+  for (let i = 0; i < 200 && !g.landed; i++) S.stepGifts(w)
+  assert.equal(g.landed, true)
+  assert.ok(w.terrain[(g.y + 1) * w.k.COLS + Math.floor(g.x)] !== w.k.EMPTY)
+  S.stepGifts(w)
+  assert.equal(w.gifts.length, before + 1, "one drop per run")
+})
+
+test("plays to the end, with presents opened along the way", () => {
+  let opened = 0, home = 0, out = 0
+  for (const level of [21, 63, 105]) for (const seed of [1, 2]) {
+    const w = S.generate(level, 0, seed)
+    for (let i = 0; i < 20000 && !w.done; i++) S.step(w)
+    assert.ok(w.done, "level " + level + " ends")
+    opened += w.giftsOpened; home += w.saved; out += w.toRelease
+  }
+  assert.ok(opened > 0, "somebody finds a present")
+  assert.ok(home / out > 0.6, "most of the colony gets home: " + home + "/" + out)
+})
+
+test("drawn at both resolutions: snow, door, presents, sleigh, reindeer, hazards", () => {
+  for (const res of [1, 2]) {
+    const r = frame(S, D, P, { level: 21, seed: 3, ticks: 400, res, theme: "tokyo-night" })
+    assert.equal(r.world.biome, "North Pole")
+  }
+  const w = S.generate(21, 0, 3), pal = P.build(theme, 21)
+  const run = w.sleighRuns[0]
+  const draw = (res, ticks, fn) => {
+    w.res = res; w.ticks = ticks
+    const img = canvas(400 * res, 248 * res, "#000000")
+    img.ctx.setTransform(res, 0, 0, res, 0, 0)
+    fn(img.ctx)
+    return digest(img.buf)
+  }
+  for (const res of [1, 2]) {
+    const empty = draw(res, run.t - 400, () => {})
+    assert.notEqual(draw(res, run.t - 20, ctx => D.drawNorthPoleSleigh(ctx, w, pal)), draw(res, run.t - 400, ctx => D.drawNorthPoleSleigh(ctx, w, pal)), "the sleigh is in the sky before its drop")
+    assert.notEqual(draw(res, 10, ctx => D.drawNorthPoleGifts(ctx, w, pal)), empty, "presents on the floor")
+    const g = w.gifts[0]
+    if (g) {
+      const shut = draw(res, 50, ctx => D.drawNorthPoleGifts(ctx, w, pal))
+      Object.assign(g, { opened: 40, skill: "builder" })
+      assert.notEqual(draw(res, 50, ctx => D.drawNorthPoleGifts(ctx, w, pal)), shut, "an opened present looks opened")
+      Object.assign(g, { opened: -1, skill: null })
+    }
+    for (const variant of [0, 1]) for (const dir of [1, -1])
+      assert.notEqual(draw(res, 0, ctx => D.drawReindeer(ctx, { freed: true, anim: 8, variant }, 50, 60, dir, pal)), empty)
+    assert.notEqual(draw(res, 0, ctx => D.drawExitNorthPole(ctx, pal, 100, 100, 24, 20)), empty)
+  }
+  // Reduced motion: the sleigh and chimneys hold still.
+  w.reducedMotion = true
+  assert.equal(draw(2, run.t - 30, ctx => D.drawNorthChimney(ctx, w, run, -30)), draw(2, run.t - 60, ctx => D.drawNorthChimney(ctx, w, run, -60)))
+})
+
+test("drawing the workshop writes nothing to the world", () => {
+  const w = S.generate(42, 0, 3), pal = P.build(theme, 42)
+  for (let i = 0; i < 500; i++) S.step(w)
+  const before = JSON.stringify(w)
+  for (const res of [1, 2]) {
+    w.res = res
+    const img = canvas(400 * res, 248 * res)
+    img.ctx.setTransform(res, 0, 0, res, 0, 0)
+    D.drawTerrain(img.ctx, w, pal); D.drawActors(img.ctx, w, pal, {})
+  }
+  delete w.res
+  const after = JSON.parse(JSON.stringify(w)); delete after.res
+  const was = JSON.parse(before); delete was.res
+  assert.deepEqual(Object.keys(after).sort(), Object.keys(was).sort())
+})

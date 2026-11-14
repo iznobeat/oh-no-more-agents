@@ -5,7 +5,7 @@ import { loadCore } from "../tools/load-core.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
-const levels = [1, 21, 41]
+const levels = [1, 41, 61]
 function sample(level = 1, name = "tokyo-night") {
   const w = S.generate(level, 0, level * 7919 + 13)
   w.res = 2; w.ticks = 77
@@ -42,7 +42,7 @@ const layers = [D.drawCavernBackdrop, D.drawCavernMaterials, D.drawCavernLife, (
 }]
 
 test("Cavern additions draw nothing at panel resolution or in other biomes", () => {
-  for (const level of [1, 21, 41, 4, 19]) for (const res of [undefined, 1, 2]) {
+  for (const level of [1, 41, 61, 4, 19]) for (const res of [undefined, 1, 2]) {
     const { w, pal } = sample(level); w.res = res
     if (w.biome === "Cavern" && res === 2) continue
     for (const draw of layers) {
@@ -180,7 +180,7 @@ test("Cavern page keeps every original decor drawing command", () => {
     }
     D.drawDecor(img.ctx, w, pal); hash.update(JSON.stringify(calls))
   }
-  assert.equal(hash.digest("hex"), "f087268867e3ca95ee696733fa7f8628bd120b4fd3ce4a1b8cb7808b5f25e5ef")
+  assert.equal(hash.digest("hex"), "2991e1ff96183a2b3f6616201f48f256be52ffe1ca0d3cee43c26ab79c4dd17d")
 })
 
 test("Cavern panel backdrop, earth, decor, motes, exit and booth keep their bytes", () => {
@@ -195,5 +195,5 @@ test("Cavern panel backdrop, earth, decor, motes, exit and booth keep their byte
       D.drawExitBack(img.ctx, w, pal); D.drawEnemyHatch(img.ctx, w, pal, {})
       hash.update(img.buf)
     }
-  assert.equal(hash.digest("hex"), "caba324490e3cd0de9e625e8339f977a42ce20f386972aaf1ebb10e331344d2e")
+  assert.equal(hash.digest("hex"), "8f46e95451de9bc0f989b369afd93f21974aba7737c287157cd866268f02bf5e")
 })

@@ -4,7 +4,7 @@ import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
-import { levelWith } from "./levels.js"
+import { levelWith, levelsOf } from "./levels.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
 function sample(level = 18, res = 1, name = "tokyo-night") {
@@ -26,7 +26,7 @@ function picture(w, draw) {
 // Component properties, never whole-frame pins. Both directions and all
 // phases are exercised on generated geometry, including a two-car line.
 test("metro trains draw every phase at both resolutions without changing the world or context", () => {
-  for (const level of [0, 1, 2, 3].map(k => S.BIOMES.indexOf("Subway") + 1 + k * S.BIOMES.length)) for (const res of [undefined, 1, 2]) for (const name of Object.keys(THEMES)) {
+  for (const level of levelsOf(S, "Subway", 4)) for (const res of [undefined, 1, 2]) for (const name of Object.keys(THEMES)) {
     const { w, tr, pal } = sample(level, res, name)
     for (const phase of ["wait", "run", "drop", "back"]) {
       Object.assign(tr, { phase, t: 2, riders: phase === "back" ? [] : [1, 2, 3], v: phase === "run" ? 0.45 : 0.1 })

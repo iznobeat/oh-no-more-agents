@@ -293,7 +293,8 @@
     "Rooftops":     [.220, .45,  40, .006, .750, .009, 1600],
     "Subway":       [.060, .30,  55, .034, .250, .010,  150],
     "Harbour":      [.025, .40,  44, .012, .250, .015,  380],
-    "The Cloud":    [.160, .38,  36, .020, .125, .025,   90]
+    "The Cloud":    [.160, .38,  36, .020, .125, .025,   90],
+    "North Pole":   [.040, .30,  70, .008, .500, .020, 2400] // wind, and bells
   }
   var bedCache = [], bed = null, fadingBed = null, sceneBiome = "", sceneActive = false
 

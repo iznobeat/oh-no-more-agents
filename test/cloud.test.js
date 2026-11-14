@@ -10,7 +10,7 @@ const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js"
 const CLOUD = [20, 40, 60, 80, 100]
 
 test("The Cloud is the twentieth biome, on the end: levels 1-19 keep theirs", () => {
-  assert.equal(S.BIOMES.length, 20)
+  assert.equal(S.BIOMES.length, 21, "twenty in the cycle, and the North Pole")
   assert.equal(S.BIOMES[19], "The Cloud")
   for (const level of CLOUD) assert.equal(S.generate(level, 0, 1).biome, "The Cloud")
   assert.deepEqual([1, 9, 19].map(l => S.generate(l, 0, 1).biome), ["Cavern", "Skyscraper", "Harbour"])
@@ -80,7 +80,7 @@ test("drawn at both resolutions without error, with a Cloud tint of its own", ()
   }
   const theme = themeOf("tokyo-night").theme
   assert.notEqual(P.build(theme, 20).dirt, P.build(theme, 1).dirt)
-  assert.equal(P.build(theme, 21).dirt, P.build(theme, 1).dirt, "level 21 is a Cavern again")
+  assert.equal(P.build(theme, 41).dirt, P.build(theme, 1).dirt, "level 41 is a Cavern again (21 is the North Pole)")
 })
 
 test("a strike that takes somebody says so, the first one with why the umbrella didn't help; the column glows before it", () => {

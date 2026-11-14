@@ -4,12 +4,12 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
-import {captureAudio,liveAudio} from '../tools/biome-audio.js'
+import {captureAudio,liveAudio,AUDIO_BIOMES} from '../tools/biome-audio.js'
 const hash=b=>createHash('sha256').update(b).digest('hex')
 test('real WebAudio renders quiet seamless distinct beds, leaves headroom for cues and exports finite WAV previews',{timeout:45000},async()=>{
  const out=fs.mkdtempSync(path.join(os.tmpdir(),'biome-audio-'))
  try{
-  const r=await captureAudio(out);assert.deepEqual(r.errors,[]);assert.equal(r.records.length,26)
+  const r=await captureAudio(out);assert.deepEqual(r.errors,[]);assert.equal(r.records.length,AUDIO_BIOMES.length+6)
   const shapes=new Set()
   for(const a of r.records){
    assert.ok(Number.isFinite(a.rms)&&Number.isFinite(a.peak)&&Number.isFinite(a.buildMs));assert.equal(a.samples,108000)
@@ -20,7 +20,7 @@ test('real WebAudio renders quiet seamless distinct beds, leaves headroom for cu
     shapes.add(hash(wav))
    }else{assert.ok(a.peak<.08,a.name+' cues never clip');assert.ok(a.peak>.04,a.name+' cues stay foreground')}
   }
-  assert.equal(shapes.size,20)
+  assert.equal(shapes.size,AUDIO_BIOMES.length)
  }finally{fs.rmSync(out,{recursive:true,force:true})}
 })
 test('live page keeps sound opt-in, respects pause/visibility/mute/report, and preserves the bed across every speed',{timeout:45000},async()=>{

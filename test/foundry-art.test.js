@@ -135,7 +135,7 @@ test("molten seams pulse only inside surviving earth and never mark steel or air
 })
 
 test("Foundry heat is drawn before agents, umbrellas, guards and the exit", () => {
-  const { w, pal } = sample(84)   // a Foundry level with a guard on screen
+  const { w, pal } = sample(224)   // a Foundry boss level with a guard on screen (84 is the North Pole)
   for (var i = 0; i < 160; i++) S.step(w)
   const ag = S.spawn(w)
   Object.assign(ag, { x: 70, y: 16, state: "fall", floater: true, fall: 9 })

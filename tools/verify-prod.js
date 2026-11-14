@@ -197,7 +197,7 @@ async function cloudLevel(b, base) {
     await b.cmd("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: mobile ? 2 : 1, mobile })
     await b.open(base + "?level=20&seed=3")
     const s = await b.ev(`window.AgentWorld && AgentWorld() && ({ biome: AgentWorld().biome, lift: !!AgentWorld().updraftLift, stops: document.querySelectorAll("#tour .tour-stop").length })`)
-    if (!s || s.biome !== "The Cloud" || !s.lift || s.stops !== 20) out.push(`level 20 at ${w}px: ${JSON.stringify(s)}`)
+    if (!s || s.biome !== "The Cloud" || !s.lift || s.stops !== 21) out.push(`level 20 at ${w}px: ${JSON.stringify(s)}`)
   }
   await b.cmd("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   return out

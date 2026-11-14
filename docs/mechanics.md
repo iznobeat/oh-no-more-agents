@@ -25,10 +25,15 @@ Moved out of AGENTS.md: how a level is put together, umbrellas, fighting back, a
   how two files that cannot call each other stay in step. A crossing is only
   survivable because of `edgeAhead`: a bottomless drop with ground on the far
   side gets bricks, and the blocker is kept for the drop with no far side.
-- **Biomes are picked by level number, so a new one goes on the end of `BIOMES`**
-  — inserting re-skins every level above it. `Palette.js` derives the same index
-  with its own copy of the rule (`(level - 1) % 20` in `poolTint` and `biomeTint`)
-  and must change in the same commit. `rock` is mixed from the theme foreground and is **not** tinted, so a
+- **Biomes are picked by level number (`biomeIndex`)** — inserting one re-skins
+  every level above it. The twenty go round in a cycle; the North Pole sits
+  outside it, on every twenty-first level, so adding it changed only 21, 42,
+  63… and nothing else. A twenty-second biome could take the same route (its
+  own period, coprime with the boss's 7, or excluded from `bossLevel` as the
+  North Pole is). Tests address levels by biome (`test/levels.js`:
+  `levelWith`, `levelsOf`), never by `level + BIOMES.length`. `Palette.js`
+  derives the same index with its own copy of the rule (`poolTint`,
+  `biomeTint`) and must change in the same commit. `rock` is mixed from the theme foreground and is **not** tinted, so a
   skin built mostly of `ROCK` comes out the same grey everywhere.
 - **Events change a level's premise while it is played** (see the block above
   `stepEvents`) — a table over five mechanisms; a new one is a row, not a

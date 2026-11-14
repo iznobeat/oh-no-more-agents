@@ -2,6 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
+import { levelsOf } from "./levels.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
@@ -65,7 +66,7 @@ test("cranes draw every phase at both resolutions without writing world state", 
 
 test("the girder and end stops stay in air under every generated roof", () => {
   let cranes = 0
-  for (let lv = level; lv <= 300; lv += S.BIOMES.length) {
+  for (const lv of levelsOf(S, "Building Site", 15).filter(l => l <= 300)) {
     const w = S.generate(lv, 0, 99), pal = P.build(themeOf("tokyo-night").theme, lv)
     for (const crane of w.cranes) for (const res of [1, 2]) {
       cranes++; w.res = res

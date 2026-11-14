@@ -7,10 +7,10 @@ import { loadCore } from "../tools/load-core.js"
 
 const S = loadCore("Sim.js"), D = loadCore("Draw.js")
 
-test("every BOSS_EVERY-th level (not the Trench) has the boss post, alone", () => {
+test("every BOSS_EVERY-th level (not the Trench, not the North Pole) has the boss post, alone", () => {
   for (let lv = 1; lv <= 96; lv++) {
     const w = S.generate(lv, 0, 5)
-    if (lv % S.BOSS_EVERY === 0 && !w.submerged) {
+    if (lv % S.BOSS_EVERY === 0 && !w.submerged && w.biome !== "North Pole") {
       assert.ok(w.bossPost, `level ${lv}`)
       const head = (lv / S.BOSS_EVERY) % 2 === 0
       assert.deepEqual(w.enemyRoster, [head ? "bouncer" : "gun"])

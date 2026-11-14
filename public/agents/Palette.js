@@ -88,6 +88,7 @@ var SAND = { r: 0.95, g: 0.76, b: 0.48 }
 var TERMINAL = { r: 0.20, g: 0.82, b: 0.66 }
 var BRINE = { r: 0.36, g: 0.50, b: 0.52 }
 var TILE = { r: 0.62, g: 0.74, b: 0.58 }
+var SNOWFIELD = { r: 0.90, g: 0.94, b: 1.00 }
 var SLATE = { r: 0.42, g: 0.40, b: 0.50 }
 var PARCHMENT = { r: 0.72, g: 0.52, b: 0.32 }
 var MANILA = { r: 0.86, g: 0.56, b: 0.42 }
@@ -106,7 +107,7 @@ var VOID = { r: 0, g: 0, b: 0 }
 // number by the same rule, which is how every other per-biome difference in
 // this game stays in step across two files that cannot call each other.
 function poolTint(level) {
-  switch ((level - 1) % 20) {
+  switch (level % 21 === 0 ? 20 : (level - 1) % 20) {
     case 1: return WATER      // Ruins: a flooded cistern
     case 3: return LAVA       // Foundry: what the place is for
     case 4: return WATER      // Jungle: the swamp, and what lives in it
@@ -125,12 +126,13 @@ function poolTint(level) {
     // 17, the Subway, is dry: a disused shaft under the platforms.
     case 18: return WATER     // Harbour: the dock itself
     // 19, The Cloud, is dry: the hole is just more sky.
+    // 20, the North Pole, is dry: a crevasse in the ice.
     default: return WATER     // dry biomes; unused, but never undefined
   }
 }
 
 function biomeTint(theme, level) {
-  switch ((level - 1) % 20) {
+  switch (level % 21 === 0 ? 20 : (level - 1) % 20) {
     case 0: return theme.accent                              // Cavern
     case 1: return theme.urgent                              // Ruins
     case 2: return lighter(theme.accent, 1.7)                // Frost
@@ -176,6 +178,9 @@ function biomeTint(theme, level) {
     // Dusky cloud: pale lilac lit from the theme's own accent, so the banks
     // read as vapour at evening and the biome is not one flat grey.
     case 19: return toward(lighter(theme.accent, 1.3), CLOUD, 0.72)     // The Cloud
+    // Fresh snow under a winter night: whiter than the Frost's blue ice and
+    // the Cloud's lilac, so the workshop's reds and golds are what stand out.
+    case 20: return toward(lighter(theme.foreground, 1.1), SNOWFIELD, 0.86)  // North Pole
     default: return toward(theme.muted, BRINE, 0.72)              // Harbour
   }
 }

@@ -32,7 +32,7 @@ test('ambience stays off by default, needs no audio support, and never invents a
  r.scope.window.AudioContext=null;r.sfx.setOn(true);assert.equal(r.contexts.length,0)
  const u=rig();enable(u,'not a biome');assert.equal(u.nodes.length,1,'master only');assert.equal(u.buffers.length,1,'shared event noise only')
 })
-test('all twenty beds are finite, distinct, quiet, deterministic, seam-safe and independent of simulation RNG',()=>{
+test('every biome bed is finite, distinct, quiet, deterministic, seam-safe and independent of simulation RNG',()=>{
  const digests=new Set()
  for(const biome of S.BIOMES){
   const r=rig();r.sfx.setOn(true)
@@ -45,7 +45,7 @@ test('all twenty beds are finite, distinct, quiet, deterministic, seam-safe and 
   assert.ok(Math.abs(a[1])<.01&&Math.abs(a.at(-2))<.01,'no discontinuous loop edge')
   const b=rig();enable(b,biome);assert.equal(hash(a),hash(b.buffers[1].getChannelData(0)));digests.add(hash(a))
  }
- assert.equal(digests.size,20)
+ assert.equal(digests.size,S.BIOMES.length)
 })
 test('a running bed is one source and gain, reuses two cached buffers, and does not follow sim ticks or speed',()=>{
  const r=rig(),w=enable(r,'Rooftops'),n=r.nodes.length
@@ -76,7 +76,7 @@ test('every biome has identical simulation state with and without sound observat
  const r=rig();r.sfx.setOn(true)
  const random=Math.random,seeded=n=>()=>((n=(Math.imul(n,1664525)+1013904223)>>>0)/4294967296)
  const digest=w=>createHash('sha256').update(JSON.stringify(w)).digest('hex')
- try{for(let level=1;level<=20;level++){
+ try{for(let level=1;level<=S.BIOMES.length;level++){
   const a=S.generate(level,0,3),b=S.generate(level,0,3)
   r.sfx.scene(a,true)
   for(let t=0;t<400;t++){

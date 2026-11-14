@@ -418,3 +418,31 @@ under the quay (`cutPit`: `surfaceY = floorY + 1`). Its mechanism is a
 `w.trains` entry with `boat` and `pit` set, quay to quay — so boarding,
 crossing and putting ashore are the train's rules exactly. Measured +0.4
 (95.75% vs 95.32% home, 200 Harbour plays), no hangs.
+
+## The North Pole
+
+Santa's workshop, and the one biome outside the cycle: every twenty-first
+level (`biomeIndex`; Palette mirrors it), so no other level changed when it
+arrived. Exempt from `bossLevel` — 21 is a multiple of 7, and the boss's post
+would otherwise have replaced the workshop's hazards on every one of them.
+
+- **Skin** (`skinNorthPole`): all DIRT (packed snow); the mechanism lays ORE on
+  every exposed top once the shape is final (the Cloud's `cloudLining`).
+  Drawing puts a thick white cap with drifts on every top and icicles under
+  the ledges (`drawNorthPoleSurfaces`, every resolution), a moon and stars in
+  the sky band, and a village of lit houses and firs on the far snowfield.
+- **Mechanism: Secret Santa** (`placeGifts`, `stepGifts`). Presents sit on
+  corridor floors (level stream), clear of the hatch, door, mission and every
+  hazard zone (`giftClear`). Three sleigh runs (colony stream) each drop
+  another down a chimney at `SLEIGH_FIRST + n·SLEIGH_EVERY`; it floats down
+  under its own umbrella at `GIFT_FALL`. The first *walking* agent over a
+  present unwraps it: the scarcest of `GIFT_ORDER` gets `GIFT_GIVES` (2).
+  It never steers anyone — help found on the way, not a destination.
+- **Mission:** ROUND UP THE REINDEER (`kind: "reindeer"`, the camel's rules;
+  every other one has the red nose). A stall rather than a cage.
+- **Hazards:** Wrapper Function (ceiling press with a spinning roll of
+  paper) and Password Cracker (a nutcracker sentry, jaw drops on the
+  wind-up, sabre out when it fires).
+- **Events:** Code Freeze (blackout ×0), Config Drift (growth), Ice Breaker
+  (floor collapse).
+- Dry pit: a crevasse.

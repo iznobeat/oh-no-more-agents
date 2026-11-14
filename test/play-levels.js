@@ -19,7 +19,7 @@ const P = loadCore("Palette.js")
 export function playPass(pass) {
   const from = (pass - 1) * S.BIOMES.length + 1
   for (let level = from; level < from + S.BIOMES.length; level++) {
-    test(`level ${level} (${S.BIOMES[(level - 1) % S.BIOMES.length]}) plays to the end and draws`, () => {
+    test(`level ${level} (${S.BIOMES[S.biomeIndex(level)]}) plays to the end and draws`, () => {
       const w = S.generate(level, 0, level * 7919 + 13)
       let t = 0
       while (!w.done && t < 6000) { S.step(w); t++ }

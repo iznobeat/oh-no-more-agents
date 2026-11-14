@@ -22,7 +22,7 @@ export async function captureUi(out,root=path.join(ROOT,'public')) {
    await b.cmd('Emulation.setTouchEmulationEnabled',{enabled:mobile})
    await b.cmd('Page.navigate',{url:`http://127.0.0.1:${server.address().port}/?level=20&seed=3`})
    let ready=false
-   for(let i=0;i<60;i++){if(await ev('document.querySelectorAll("#tour canvas").length===20 && typeof AgentWorld==="function" && !!AgentWorld()')){ready=true;break}await sleep(50)}
+   for(let i=0;i<60;i++){if(await ev('typeof BIOMES!=="undefined" && document.querySelectorAll("#tour canvas").length===BIOMES.length && typeof AgentWorld==="function" && !!AgentWorld()')){ready=true;break}await sleep(50)}
    if(!ready)throw Error('UI did not become ready in 3 seconds')
    await ev('if(!AgentWorld().paused) document.getElementById("c-pause").click()')
    await ev('Promise.race([document.fonts.ready.then(()=>true),new Promise(r=>setTimeout(()=>r(false),1000))])')

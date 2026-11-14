@@ -28,6 +28,14 @@ export function ambience(ctx, w, pal) {
   if (w.biome === "Trench") D.drawWaterLife(ctx, w, pal)
 }
 
+// The next level after `level` in the same biome: the cycle is twenty long,
+// but every twenty-first level is the North Pole (Sim's biomeIndex).
+export function nextOfBiome(level) {
+  let next = level + 1
+  while (S.biomeIndex(next) !== S.biomeIndex(level)) next++
+  return next
+}
+
 export function biomeTests(from, to) {
 for (let level = from; level <= to; level++) {
   const biome = S.generate(level, 0, 99).biome
@@ -56,7 +64,7 @@ for (let level = from; level <= to; level++) {
 
   test(`${biome} fine wall uses dark half-pixels within the existing silhouette`, () => {
     // A second layout exercises more seeded dimensions and broken arches.
-    for (const lv of [level, level + S.BIOMES.length]) {
+    for (const lv of [level, nextOfBiome(level)]) {
       const { w, pal } = sample(lv)
       const mask = image(w, "#000000", 2), coarse = image(w, "#000000", 2)
       const fill = mask.ctx.fillRect.bind(mask.ctx)
