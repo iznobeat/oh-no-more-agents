@@ -11905,3 +11905,15 @@ colony). Every other date keeps the hash rule, so no past daily changes.
 **Played:** all 25 Advent colonies of 2026 to the end: 98.2% home, every
 one with presents opened (1–5). **Test:** daily.test (levels, biome, 25
 distinct, every year, ordinary days either side).
+
+## 453 — 2026-11-14 · Snowball fights
+
+**Changed (Draw only):** in the Frost and at the North Pole, now and then a
+walker lobs a snowball at the nearest colleague ahead on its floor (3–14
+cells): it arcs over and bursts in a ring of white on the target's head
+(`drawSnowballs`, after the colony; a pure function of the tick and the
+thrower's id, about one throw every couple of seconds in a crowd, nothing
+kept). Page resolution only; not under reduced motion or after the level. Snow also settles on
+hats and umbrellas at the North Pole now (`WEATHER_SNOW`), as in the Frost.
+**Test:** northpole (target choice, flight, burst, quiet between throws,
+reduced motion, other biomes, no writes).

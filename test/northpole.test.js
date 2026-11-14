@@ -165,3 +165,30 @@ test("drawing the workshop writes nothing to the world", () => {
   const was = JSON.parse(before); delete was.res
   assert.deepEqual(Object.keys(after).sort(), Object.keys(was).sort())
 })
+
+test("snowball fights: a walker lobs one at the colleague ahead; never under reduced motion or off the snow", () => {
+  const w = S.generate(21, 0, 3), pal = P.build(theme, 21)
+  const a = Object.assign(S.spawn(w), { id: 1, x: 20.5, y: 16, dir: 1, state: "walk" })
+  const b = Object.assign(S.spawn(w), { id: 2, x: 27.5, y: 16, dir: 1, state: "walk" })
+  w.agents = [a, b]
+  assert.equal(D.snowballTarget(w, a), b); assert.equal(D.snowballTarget(w, b), null)
+  const shot = (ticks, edit = () => {}) => {
+    w.ticks = ticks; edit()
+    const img = canvas(800, 496, "#000000"), before = JSON.stringify(w.agents)
+    img.ctx.setTransform(2, 0, 0, 2, 0, 0)
+    D.drawSnowballs(img.ctx, w)
+    assert.equal(JSON.stringify(w.agents), before)
+    return digest(img.buf)
+  }
+  const blank = digest(canvas(800, 496, "#000000").buf)
+  w.res = 2
+  const start = 211 - 53    // phase 0 for thrower 1: (ticks + id * 53) % 211
+  assert.notEqual(shot(start + 10), blank, "in flight")
+  assert.notEqual(shot(start + 24), blank, "bursting")
+  assert.equal(shot(start + 60), blank, "between throws")
+  assert.equal(shot(start + 10, () => { w.reducedMotion = true }), blank)
+  w.reducedMotion = false
+  assert.equal(shot(start + 10, () => { w.biome = "Cavern" }), blank)
+  w.biome = "North Pole"
+  assert.equal(shot(start + 10, () => { w.res = 1 }), blank, "the panel keeps its pixels")
+})

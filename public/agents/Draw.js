@@ -3042,6 +3042,7 @@ function drawActors(ctx, w, pal, opts) {
   drawActorFixtures(ctx, w, pal)
   drawActorColony(ctx, w, pal, opts)
   drawWeatherTouch(ctx, w, pal)
+  drawSnowballs(ctx, w)
   drawArrivals(ctx, w, pal)
   drawLostAndFound(ctx, w, pal)
   drawLandingPuffs(ctx, w, pal)
@@ -3308,11 +3309,60 @@ function drawDuskExitLight(ctx, w, pal, d) {
 // longer an agent has been out walking in it (ag.anim counts its steps).
 // Everything keys off ticks and ids: no random draws, nothing stored.
 var WEATHER_RAIN = { "Rooftops": true, "The Cloud": true }
-var WEATHER_SNOW = { "Frost": true }
+var WEATHER_SNOW = { "Frost": true, "North Pole": true }
 var RAIN_SPLASH = [[[0, 0, 0.5, 0.5]], [[-1, -0.5, 0.5, 0.5], [1, -0.5, 0.5, 0.5]],
   [[-1.5, -1, 0.5, 0.5], [1.5, -1, 0.5, 0.5]], [[-2, -0.5, 0.5, 0.5], [2, -0.5, 0.5, 0.5]]]
 var RAIN_CANOPY = [-4.5, -1.5, 1.5, 4.5]  // where drops hit the canopy, from its centre
 var RAIN_COLOUR = "#d4e0f6", SNOW_CAP = "#eef4fa", SNOW_EDGE = "#c4d2de"
+// Snowball fights, where there is snow to make them of. Now and then a
+// walker lobs one at the colleague ahead of it on the same floor; it arcs
+// over and bursts on the target's head. A pure function of the tick and the
+// thrower's id, chosen afresh each frame: nothing is kept and nothing in the
+// simulation knows. Page resolution only, like the other weather touches,
+// and not under reduced motion.
+var SNOWBALL_BIOMES = { "Frost": true, "North Pole": true }
+var SNOWBALL_CYCLE = 211, SNOWBALL_FLIGHT = 22, SNOWBALL_BURST = 8
+var SNOWBALL_WHITE = "#f4f8ff", SNOWBALL_SHADE = "#b9c8dc"
+function drawSnowballs(ctx, w) {
+  if (w.res !== 2 || !SNOWBALL_BIOMES[w.biome] || w.reducedMotion || w.done) return
+  for (var i = 0; i < w.agents.length; i++) {
+    var a = w.agents[i], phase = (w.ticks + a.id * 53) % SNOWBALL_CYCLE
+    if (phase >= SNOWBALL_FLIGHT + SNOWBALL_BURST || a.state !== "walk" || a.gone) continue
+    var target = snowballTarget(w, a)
+    if (target) drawSnowball(ctx, w, a, target, phase)
+  }
+}
+// The nearest walker ahead on the same floor, three to fourteen cells off.
+function snowballTarget(w, a) {
+  var best = null, bestD = 15
+  for (var j = 0; j < w.agents.length; j++) {
+    var b = w.agents[j], d = (b.x - a.x) * (a.dir || 1)
+    if (b === a || b.gone || b.state !== "walk" || Math.abs(b.y - a.y) > 0.5) continue
+    if (d >= 3 && d < bestD) { best = b; bestD = d }
+  }
+  return best
+}
+function drawSnowball(ctx, w, a, b, phase) {
+  var C = w.k.CELL, x0 = a.x * C + (a.dir || 1) * 3, y0 = (a.y + 1) * C - 10
+  var x1 = b.x * C, y1 = (b.y + 1) * C - 14
+  if (phase < SNOWBALL_FLIGHT) {
+    var p = phase / SNOWBALL_FLIGHT, x = Math.round(x0 + (x1 - x0) * p)
+    var y = Math.round(y0 + (y1 - y0) * p - Math.sin(p * Math.PI) * (6 + Math.abs(x1 - x0) * 0.12))
+    ctx.fillStyle = SNOWBALL_SHADE; ctx.fillRect(x - 1, y, 2, 2)
+    ctx.fillStyle = SNOWBALL_WHITE; ctx.fillRect(x - 1, y, 1, 1)
+    if ((w.res || 1) >= 2) ctx.fillRect(x - 0.5, y + 0.5, 1, 1)
+    return
+  }
+  var age = phase - SNOWBALL_FLIGHT, r = 1 + age * 0.6
+  ctx.globalAlpha = 1 - age / SNOWBALL_BURST
+  ctx.fillStyle = SNOWBALL_WHITE
+  for (var k = 0; k < 6; k++) {
+    var ang = k * Math.PI / 3 + 0.5
+    ctx.fillRect(Math.round(x1 + Math.cos(ang) * r), Math.round(y1 + Math.sin(ang) * r * 0.8), 1, 1)
+  }
+  ctx.globalAlpha = 1
+}
+
 function drawWeatherTouch(ctx, w, pal) {
   if (w.res !== 2 || (!WEATHER_RAIN[w.biome] && !WEATHER_SNOW[w.biome])) return
   var t = w.reducedMotion ? 0 : w.ticks
