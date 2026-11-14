@@ -17,7 +17,8 @@ export function renderer(source) {
 }
 export function season(source, search = "?season=none") {
   const box = { window: { location: { search } }, Date, Math, Object, String }
-  vm.runInNewContext(source, box)
+  const file = path.join(ROOT, "public/agents/season.js")
+  vm.runInNewContext(source, box, {filename: source === fs.readFileSync(file, "utf8") ? file : path.join(ROOT, ".metrics/season-before.js")})
   return box.window.AgentSeason
 }
 function clearStrip(w, c, x) {

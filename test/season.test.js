@@ -11,7 +11,7 @@ const source = fs.readFileSync(new URL("../public/agents/season.js", import.meta
 function loadSeason(search = "", date = new Date(2026, 5, 1)) {
   class FixedDate extends Date { constructor() { super(date.getTime()) } }
   const sandbox = { window: { location: { search } }, Date: FixedDate, Object, Math, String }
-  vm.runInNewContext(source, sandbox)
+  vm.runInNewContext(source, sandbox, {filename: new URL("../public/agents/season.js", import.meta.url).pathname})
   return sandbox.window.AgentSeason
 }
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
@@ -39,10 +39,10 @@ test("the dressing is display-only: a dressed colony plays out exactly like a pl
   assert.ok(dressed.season)
 })
 
-test("Christmas runs Dec 1 to 26; ?season=christmas previews it", () => {
+test("Christmas runs from the first Sunday of Advent to Dec 26; ?season=christmas previews it", () => {
   const { pick } = loadSeason()
-  assert.equal(pick("", new Date(2026, 10, 30)), null)
-  assert.equal(pick("", new Date(2026, 11, 1)), "christmas")
+  assert.equal(pick("", new Date(2026, 10, 28)), null)
+  assert.equal(pick("", new Date(2026, 10, 29)), "christmas")
   assert.equal(pick("", new Date(2026, 11, 26)), "christmas")
   assert.equal(pick("", new Date(2026, 11, 27)), null)
   assert.equal(pick("?season=christmas", new Date(2026, 5, 1)), "christmas")
@@ -85,4 +85,24 @@ test("Christmas hats and candy-striped umbrellas are drawn; without a season, ne
   const dressed = fills(w)
   assert.ok(dressed.has("#d42a3c") && !plain.has("#d42a3c"), "santa red: hats and stripes")
   assert.ok(dressed.has("#f4f4ec"), "a white canopy under the stripes")
+})
+
+
+test("Advent starts on each possible Sunday Nov 27–Dec 3, while ordinary and wrapping seasons still work", () => {
+  const api = loadSeason(), starts = new Set()
+  for (let year = 2020; year < 2040; year++) {
+    const d = new Date(year, 10, 27)
+    while (d.getDay() !== 0) d.setDate(d.getDate() + 1)
+    starts.add((d.getMonth()+1)*100+d.getDate())
+    assert.equal(api.pick("", d), "christmas")
+    const before = new Date(d); before.setDate(d.getDate()-1)
+    assert.equal(api.pick("", before), null)
+  }
+  assert.equal(starts.size, 7)
+  api.SEASONS.summer = {from:[6,1],to:[6,30]}
+  api.SEASONS.winter = {from:[12,28],to:[1,10]}
+  assert.equal(api.pick("", new Date(2026,5,12)), "summer")
+  assert.equal(api.pick("?season=summer", new Date(2026,0,1)), "summer")
+  assert.equal(api.pick("", new Date(2026,0,10)), "winter")
+  assert.equal(api.pick("", new Date(2026,11,28)), "winter")
 })
