@@ -11886,3 +11886,12 @@ opt-out is currently checked using the biome name on an existing world.
 or a season that is not on today, gets the same three-minute browser watch.
 `npm run smoke -- --level 20 --season christmas` passed, levels 20–26 (the
 North Pole at 21, every Christmas prop on), no page errors, flat curves.
+
+## 451 — 2026-11-14 · Deploy: the North Pole and Advent dressing
+
+**Deployed** build 313e8118 (Worker version 95fd17e9), replacing f0b3ac28. It
+covers 447–450 (the bouncer's gags, the North Pole, Codex's Advent lights,
+wreaths and snowmen, the soak options).
+**Before:** gate 1676/1676; `npm run smoke` passed (levels 1–7) and
+`npm run smoke -- --level 20 --season christmas` passed (20–26).
+**After:** `npm run verify -- --previous f0b3ac28` passed first time.
