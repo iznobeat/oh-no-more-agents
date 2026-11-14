@@ -245,6 +245,7 @@ function drawTerrain(ctx, w, pal) {
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
+  drawNorthSnowMass(ctx, w, pal)
   drawNorthPoleSurfaces(ctx, w)
   if (desertPage(w)) drawDesertSurfaces(ctx, w)
   if (ruinsPage(w)) drawRuinsMasonry(ctx, w, pal)
@@ -3037,6 +3038,7 @@ function drawActors(ctx, w, pal, opts) {
   drawUmbrellaOffice(ctx, w, pal)
   drawExitGlow(ctx, w, pal)
   drawExitWelcome(ctx, w, pal)
+  drawNorthWorkshopArrival(ctx, w)
   drawExitGate(ctx, w, pal)
   drawMission(ctx, w, pal)
 
@@ -4562,6 +4564,7 @@ function drawLevelResults(ctx, w, pal) {
   }
   var y = reportTop(w, rows).y + Math.max(0, 10 - w.doneTicks) * 2
   drawTransitionPlate(ctx, w, pal, cx - 136, y, 62 + extra)
+  drawChristmasReport(ctx,w,cx-136,y,272,62+extra)
   ctx.fillStyle = pal.decorLit
   drawTransitionText(ctx, reportHeading(w), cx, y + 8, 1)
   ctx.fillStyle = pal.label
@@ -4641,6 +4644,7 @@ function drawPageReportRow(ctx, w, pal, row, cx, y, layout) {
 function drawPageLevelResults(ctx, w, pal) {
   var cx = Math.round(w.k.COLS * w.k.CELL / 2), l = pageReportLayout(w, pal), y = l.y
   drawTransitionPlate(ctx, w, pal, cx - l.width / 2, y, l.height, l.width)
+  drawChristmasReport(ctx,w,cx-l.width/2,y,l.width,l.height)
   ctx.fillStyle = pal.label
   drawTransitionText(ctx, reportHeading(w), cx, y + (l.vignetteHeight ? 5 : 9), 1.5)
   ctx.fillStyle = pal.label
@@ -24098,6 +24102,7 @@ function drawHomeVignette(ctx, w, pal, cx, y) {
   for (var h = 0; h < counts.houses; h++) {
     var hx = x+h*30
     drawHomeHouse(ctx,hx,y)
+    drawChristmasHome(ctx,w,hx,y)
     drawHomeWindows(ctx,w,counts,h,per,hx,y,alpha)
   }
   drawHomeStand(ctx,w,pal,x+counts.houses*30,y-3,Math.min(16,counts.lit))
@@ -25157,4 +25162,139 @@ function drawReindeerFine(ctx, x, y, dir) {
   ctx.fillRect(x+dir*4-(dir<0?1:0), y-7, 0.5, 0.5)
   ctx.fillStyle = "#d9bf94"
   ctx.fillRect(x+dir*5, y-15.5, 0.5, 2.5)
+}
+
+// Packed snow: static world-space strata, clipped cell by cell to surviving
+// DIRT. Broad strokes read at native size; original grain and edges show through.
+function drawNorthSnowMass(ctx, w, pal) {
+  if (w.biome !== "North Pole") return
+  ctx.save()
+  var k = w.k, depths = northSnowDepths(w)
+  for (var y = k.SKY; y < k.ROWS; y++) for (var x = 0; x < k.COLS; x++) {
+    if (w.terrain[y*k.COLS+x] === k.DIRT) drawNorthSnowCell(ctx,w,pal,x,y,depths)
+  }
+  ctx.restore()
+}
+function drawNorthSnowCell(ctx,w,pal,x,y,depths) {
+  var C=w.k.CELL, px=x*C, py=y*C, h=(x*17+y*31+w.level*7)%97
+  var wave=Math.floor(2*Math.sin(x/9)+Math.sin(x/21)), layer=(y*C+wave+48)%19
+  ctx.fillStyle=pal.dirtEdge
+  ctx.globalAlpha=layer<8 ? 0.65 : 0.3
+  ctx.fillRect(px,py,C,C)
+  // The existing icicle blue cools the packed snow, strongest at hanging rims.
+  var below=w.terrain[(y+1)*w.k.COLS+x], above=w.terrain[(y-1)*w.k.COLS+x]
+  ctx.fillStyle=NP_ICE;ctx.globalAlpha=below ? 0.12 : 0.35
+  ctx.fillRect(px,py+2,C,2)
+  var at=y*w.k.COLS+x, top=depths.top[at], bottom=depths.bottom[at]
+  ctx.globalAlpha=0.28*top/(top+bottom+1)
+  ctx.fillRect(px,py,C,C)
+  ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.28
+  if (layer>14) ctx.fillRect(px,py+2,C,1)
+  if (!above) return // fresh carved edges retain the cap and clean snow face
+  drawNorthSnowInclusion(ctx,w,pal,px,py,h)
+}
+function drawNorthSnowInclusion(ctx,w,pal,x,y,h) {
+  if (h===1) {
+    ctx.globalAlpha=0.55;ctx.fillStyle=pal.oreEdge;ctx.fillRect(x,y+2,3,1)
+    ctx.fillStyle=pal.dirtEdge;ctx.fillRect(x+1,y+1,2,1)
+  }
+  if (h===19) {
+    ctx.globalAlpha=0.4;ctx.fillStyle=pal.dirtShade;ctx.fillRect(x+1,y+2,2,1)
+  }
+  if ((w.res||1)>=2 && h===37) {
+    ctx.globalAlpha=0.8;ctx.fillStyle=pal.dirtEdge
+    ctx.fillRect(x+1,y+1,0.5,1.5);ctx.fillRect(x+0.5,y+1.5,1.5,0.5)
+  }
+}
+function christmasReport(w) {
+  return w.biome === "North Pole" || !!(w.season && w.season.name === "christmas")
+}
+function drawChristmasHome(ctx,w,x,y) {
+  if (!christmasReport(w)) return
+  ctx.fillStyle=NP_SNOW
+  for (var r=0;r<6;r++) {
+    ctx.fillRect(x+11-r*2,y+r,3,1);ctx.fillRect(x+10+r*2,y+r,3,1)
+  }
+  ctx.fillStyle=NP_DRIFT;ctx.fillRect(x,y+6,26,1)
+  ctx.fillStyle="#246f43"
+  ctx.fillRect(x+19,y+12,2,1);ctx.fillRect(x+18,y+13,1,2)
+  ctx.fillRect(x+21,y+13,1,2);ctx.fillRect(x+19,y+15,2,1)
+  ctx.fillStyle="#d42a3c";ctx.fillRect(x+19,y+15,1,2);ctx.fillRect(x+20,y+16,2,1)
+}
+// Report-only hooks, never the shared intro/standup plate. Flakes stay in the
+// side margins, leaving every existing report glyph and badge unobscured.
+function drawChristmasReport(ctx,w,x,y,width,height) {
+  if (!christmasReport(w)) return
+  ctx.save()
+  var t=w.reducedMotion ? 0 : w.ticks, colours=["#d95864","#f5cf78","#71b897","#8ac9e4"]
+  ctx.fillStyle="#50876a";ctx.fillRect(x+7,y-1,width-14,1)
+  for(var i=0;i<Math.floor((width-16)/8);i++) {
+    var bx=x+9+i*8, chase=(i-Math.floor(t/18)+400)%4===0
+    ctx.fillStyle=chase ? NP_SNOW : colours[i%4]
+    ctx.fillRect(bx,y,2,3)
+    ctx.fillStyle=NP_WARM;ctx.globalAlpha=0.22;ctx.fillRect(bx-1,y-1,4,5);ctx.globalAlpha=1
+  }
+  ctx.fillStyle=NP_SNOW;ctx.globalAlpha=0.7
+  for(var f=0;f<8;f++) {
+    var fy=y+8+(f*17+Math.floor(t/4))%(height-16), side=f%2
+    ctx.fillRect(x+(side ? width-10 : 7)+Math.floor(Math.sin(t/40+f)),fy,1,1)
+  }
+  ctx.restore()
+}
+function northWorkshopArrival(w) {
+  if (w.biome!=="North Pole" || !w.saved || !w.exit) return null
+  if (w.mission && !w.mission.done) return null
+  var found=null
+  for(var i=0;i<w.agents.length;i++) {
+    var a=w.agents[i],e=w.exit
+    if (a.gone || a.state!=="saved" || !(a.fade>=0 && a.fade<15)) continue
+    if (!(a.x>e.x && a.x<e.x+e.w && a.y>e.y && a.y<e.y+e.h+1)) continue
+    if (!found || EXIT_WELCOME_LIGHT[a.fade]>EXIT_WELCOME_LIGHT[found.fade]) found=a
+  }
+  return found
+}
+function drawNorthWorkshopArrival(ctx,w) {
+  var a=northWorkshopArrival(w)
+  if (!a) return
+  var C=w.k.CELL,e=w.exit,x=e.x*C,y=e.y*C,ww=e.w*C,hh=e.h*C
+  ctx.save()
+  ctx.fillStyle=NP_WARM;ctx.globalAlpha=w.reducedMotion ? 0.18 : EXIT_WELCOME_LIGHT[a.fade]*0.65
+  ctx.fillRect(x+2,y+2,ww-4,hh-3)
+  ctx.fillRect(x+1,y+hh-2,ww-2,2)
+  if (!w.reducedMotion) drawNorthArrivalSnow(ctx,w,x,y+hh,ww,a.fade)
+  ctx.restore()
+}
+function drawNorthArrivalSnow(ctx,w,x,y,ww,age) {
+  var lift=Math.floor(age/3), spread=Math.floor(age/4)
+  ctx.globalAlpha=(15-age)/15;ctx.fillStyle=NP_SNOW
+  for(var side=-1;side<=1;side+=2) for(var i=0;i<3;i++) {
+    var xx=Math.round(x+ww/2)+side*(3+spread+i*2)
+    welcomeAirMark(ctx,w,xx,y-2-lift-i,3,1)
+  }
+  if ((w.res||1)<2) return
+  ctx.fillStyle=NP_WARM
+  var sx=x+ww/2, sy=y-7-Math.floor(age/2)*0.5
+  ctx.fillRect(sx-1,sy,2.5,0.5);ctx.fillRect(sx,sy-1,0.5,2.5)
+}
+
+// Distance to the two snow faces is layout data, invalidated on excavation.
+var NORTH_SNOW_DEPTHS = new WeakMap()
+function northSnowDepths(w) {
+  var old=NORTH_SNOW_DEPTHS.get(w)
+  if (old && old.version===w.terrainVersion && old.terrain===w.terrain) return old
+  var k=w.k, n=k.COLS*k.ROWS, scene={version:w.terrainVersion,terrain:w.terrain,top:new Uint16Array(n),bottom:new Uint16Array(n)}
+  for(var x=0;x<k.COLS;x++) {
+    var depth=0
+    for(var y=k.SKY;y<k.ROWS;y++) {
+      var at=y*k.COLS+x
+      depth=w.terrain[at] ? depth+1 : 0;scene.top[at]=depth
+    }
+    depth=0
+    for(var row=k.ROWS-1;row>=k.SKY;row--) {
+      var index=row*k.COLS+x
+      depth=w.terrain[index] ? depth+1 : 0;scene.bottom[index]=depth
+    }
+  }
+  NORTH_SNOW_DEPTHS.set(w,scene)
+  return scene
 }
