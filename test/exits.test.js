@@ -4,6 +4,7 @@ import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
+const digest = pixels => createHash("sha256").update(pixels).digest("hex")
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
 
 test("exit frames at res 1 and unspecified res match the pre-detail pixels", () => {
@@ -49,7 +50,7 @@ for (let level = 1; level <= S.BIOMES.length; level++) {
       D.drawExitBack(coarse.ctx, w, pal)
       w.res = 2
       D.drawExitBack(fine.ctx, w, pal)
-      assert.notDeepEqual(fine.buf, coarse.buf, "res 2 must add visible detail")
+      assert.notEqual(digest(fine.buf), digest(coarse.buf), "res 2 must add visible detail")
 
       const marks = canvas(800, 496, "#000000")
       marks.ctx.setTransform(2, 0, 0, 2, 0, 0)
@@ -82,5 +83,5 @@ test("unknown biome retains the Cavern fine-frame fallback", () => {
   D.drawExitBack(known.ctx, w, pal)
   w.biome = "unknown"
   D.drawExitBack(unknown.ctx, w, pal)
-  assert.deepEqual(unknown.buf, known.buf)
+  assert.equal(digest(unknown.buf), digest(known.buf))
 })

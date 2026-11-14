@@ -207,6 +207,7 @@ function drawTerrain(ctx, w, pal) {
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
   drawBackdrop(ctx, w, pal)
+  drawNorthVillagePage(ctx, w)
   drawDataHall(ctx, w)
   drawReadingHall(ctx, w)
   drawPostalHall(ctx, w)
@@ -3008,6 +3009,7 @@ function drawActors(ctx, w, pal, opts) {
   drawSkyStackLife(ctx, w)
   drawAnimatedLight(ctx, w, pal)
   drawBackdropLife(ctx, w)
+  drawNorthLife(ctx, w)
   if (junglePage(w)) drawJungleLife(ctx, w)
   if (iceCavePage(w)) drawGlacierLife(ctx, w)
   drawAssemblyLife(ctx, w)
@@ -5428,7 +5430,10 @@ function drawMissionSubjectBase(ctx, kind, t, x, y, pal, fine) {
 
 var MISSION_SUBJECT_DRAW = {
   camel: function (ctx, kind, t, x, y, dir, v, pal) { drawCamel(ctx, t, x, y, dir, pal) },
-  reindeer: function (ctx, kind, t, x, y, dir, v, pal) { drawReindeer(ctx, t, x, y, dir, pal) },
+  reindeer: function (ctx, kind, t, x, y, dir, v, pal, fine) {
+    drawReindeer(ctx, t, x, y, dir, pal)
+    if (fine) drawReindeerFine(ctx, x, y, dir)
+  },
   treasure: drawMissionTreasure, animal: drawMissionAnimal, alien: drawMissionAlien
 }
 
@@ -11452,6 +11457,7 @@ function drawEnemy(ctx, w, pal, en, opts) {
     drawHeadBouncerCrown(ctx, en, ox, oy)
   if ((w.res || 1) >= 2) drawCastEnemyKit(ctx, w, en, ox, oy, en.dir)
   drawPageEnemyFidget(ctx, w, en, ox, oy)
+  drawChristmasEnemy(ctx, w, en, ox, oy)
   drawEnemyQuip(ctx, w, pal, en, ox, oy)
   if (opts && opts.labels) drawEnemyLabel(ctx, w, en, ox, oy)
   ctx.globalAlpha = 1
@@ -11561,6 +11567,7 @@ function drawModeratorCrown(ctx, w, ox, oy, dir, tilt) {
   blit(ctx, ox, oy, dir, 0, -2 - tilt, 1, 2)
   blit(ctx, ox, oy, dir, 3, -4, 1, 4)
   blit(ctx, ox, oy, dir, 6, -2 + tilt, 1, 2)
+  if (christmasRedTeam(w)) drawChristmasHolly(ctx, w, ox, oy, dir, tilt)
   ctx.fillStyle = "#ff5268"
   blit(ctx, ox, oy, dir, 3, -1, 1, 1)
   if ((w.res || 1) >= 2) {
@@ -11770,6 +11777,7 @@ function drawBouncer(ctx, w, pal, en, ox, oy, dir, m) {
     if (en.boss) drawCastCrown(ctx, bx, by)
   }
   if (hurt >= 0 && hurt < 6) drawBouncerFlash(ctx, bx, by, dir, hurt)
+  if (christmasRedTeam(w)) drawSantaHat(ctx, w, en, bx + (gag ? gag.hx : 0), by + (gag ? gag.hy : 0) - 1, dir, 0)
   drawBouncerPips(ctx, en, ox, oy)
 }
 
@@ -24410,6 +24418,15 @@ function drawExitNorthPoleFine(ctx, pal, x, y, ww, hh) {
   ctx.fillRect(x - 2.5, y - 1.5, ww + 5, 0.5)                          // the lintel's top edge
   ctx.fillStyle = pal.label
   ctx.fillRect(x - 7.5, y + 2, 0.5, 0.5); ctx.fillRect(x + ww + 6.5, y + 2, 0.5, 0.5)
+  ctx.fillStyle = pal.helmet
+  for (var log = 0; log < hh; log += 3) {
+    ctx.fillRect(x-3, y+log, 1.5, 0.5)
+    ctx.fillRect(x+ww+1, y+log, 1.5, 0.5)
+  }
+  ctx.fillStyle = pal.helmetLit
+  ctx.fillRect(x-2.5, y+1, 0.5, hh-1)
+  ctx.fillStyle = pal.hair
+  ctx.fillRect(x+ww+2.5, y+1, 0.5, hh-1)
 }
 
 // The floors: a little fir (spire), a stack of presents (clump), a candy
@@ -24555,7 +24572,9 @@ function drawReindeer(ctx, t, x, y, dir, pal) {
   }
 }
 function drawEscortReindeer(ctx, pal, kind, t, x, y, pose, fine) {
-  drawReindeer(ctx, { freed: pose.moving, anim: (pose.phase || 0) * 4, variant: t.variant }, x, y + (pose.air ? -1 : 0), pose.dir, pal)
+  var yy = y + (pose.air ? -1 : 0)
+  drawReindeer(ctx, { freed: pose.moving, anim: (pose.phase || 0) * 4, variant: t.variant }, x, yy, pose.dir, pal)
+  if (fine) drawReindeerFine(ctx, x, yy, pose.dir)
 }
 // A stall, not a cage: two posts, a snowy roof, a rail across and some hay.
 function drawReindeerStall(ctx, x, y) {
@@ -24670,7 +24689,12 @@ function drawSleigh(ctx, w, x, y, dir) {
   ctx.fillRect(x + dir - 1, y - 5, 3, 1); ctx.fillRect(x + dir * 2 - (dir < 0 ? 1 : 0), y - 3, 1, 2)
   ctx.fillStyle = NP_GOLD
   ctx.fillRect(x + dir * 7 - (dir < 0 ? 22 : 0), y - 1, 23, 1)                        // the traces
-  for (var d = 0; d < 4; d++) drawSleighDeer(ctx, x + dir * (10 + d * 6), y - 1, dir, t + d * 2, d === 3)
+  for (var d = 0; d < 4; d++) {
+    var dx = x + dir * (10 + d * 6)
+    drawSleighDeer(ctx, dx, y - 1, dir, t + d * 2, d === 3)
+    if (w.res === 2) drawSleighDeerFine(ctx, dx, y - 1, dir, t + d * 2)
+  }
+  if (w.res === 2) drawSleighFine(ctx, x, y, dir)
 }
 function drawSleighDeer(ctx, x, y, dir, t, lead) {
   var gallop = Math.floor(t / 3) % 2
@@ -24757,6 +24781,7 @@ function drawNorthIcicle(ctx, w, x, y) {
 function drawNorthSky(ctx, w, pal) {
   if (w.biome !== "North Pole") return
   var C = w.k.CELL, wide = w.k.COLS * C, top = w.k.SKY * C, seed = (w.level * 2654435761) % 100000
+  if (w.res === 2) drawNorthAurora(ctx, w)
   for (var i = 0; i < 46; i++) {
     seed = (seed * 1103515245 + 12345) % 2147483648
     ctx.fillStyle = i % 6 === 0 ? NP_WARM : pal.dust
@@ -24771,4 +24796,228 @@ function drawNorthSky(ctx, w, pal) {
   ctx.fillRect(mx - 5, my - 3, 11, 7); ctx.fillRect(mx - 3, my - 5, 7, 11); ctx.fillRect(mx - 4, my - 4, 9, 9)
   ctx.fillStyle = "#e6d9b4"
   ctx.fillRect(mx - 2, my - 2, 2, 2); ctx.fillRect(mx + 2, my + 1, 2, 1); ctx.fillRect(mx - 1, my + 2, 1, 1)
+}
+
+// Red-team Christmas kit follows the same head origins as the ordinary art.
+// A separate flag lets North Pole keep its year-round civilian costumes.
+function christmasRedTeam(w) {
+  return !!(w.season && (w.season.redHats === "santa" || w.season.hats === "santa"))
+}
+function drawChristmasEnemy(ctx, w, en, x, y) {
+  if (!christmasRedTeam(w) || en.boss || en.kind === "bouncer") return
+  if (en.kind === "drone") return drawChristmasAntlers(ctx, w, x + 2, y + 6, en.dir)
+  if (en.kind === "xeno") return drawChristmasAntlers(ctx, w, x + en.dir * 7, y + 7 + xenoHead(w, en).dy, en.dir)
+  if (en.kind === "sniper") {
+    var posted = ["camp", "aim", "reload"].indexOf(en.state) >= 0
+    drawSantaHat(ctx, w, en, x + (posted ? (en.dir > 0 ? 6 : -2) : 0), y, en.dir, posted ? 10 : 3)
+  } else drawSantaHat(ctx, w, en, x, y, en.dir, en.kind === "operator" || w.submerged ? 2 : 0)
+}
+function drawChristmasAntlers(ctx, w, x, y, dir) {
+  var pixel = w.res === 2 ? blitFine : blit
+  ctx.save()
+  ctx.fillStyle = "#805336"
+  pixel(ctx, x, y, dir, 1, -1, 6, 1)
+  ctx.fillStyle = "#e6c695"
+  for (var i = 0; i < 2; i++) {
+    var ax = i * 5 + 1
+    pixel(ctx, x, y, dir, ax, -5, 1, 4)
+    pixel(ctx, x, y, dir, ax - 1, -6, 1, 2)
+    pixel(ctx, x, y, dir, ax + 1, -4, 1, 1)
+  }
+  if (w.res === 2) {
+    ctx.fillStyle = "#fff0ca"
+    pixel(ctx, x, y, dir, 1, -5, 0.5, 3); pixel(ctx, x, y, dir, 6, -5, 0.5, 3)
+  }
+  ctx.restore()
+}
+function drawChristmasHolly(ctx, w, x, y, dir, tilt) {
+  var pixel = w.res === 2 ? blitFine : blit
+  ctx.save()
+  ctx.fillStyle = "#246f43"
+  pixel(ctx, x, y, dir, 4, -3 + tilt, 4, 2)
+  pixel(ctx, x, y, dir, 6, -5 + tilt, 2, 3)
+  ctx.fillStyle = "#75c67b"
+  pixel(ctx, x, y, dir, 4, -3 + tilt, 3, 1)
+  ctx.fillStyle = "#ed4254"
+  pixel(ctx, x, y, dir, 6, -2 + tilt, 2, 2)
+  if (w.res === 2) { ctx.fillStyle = "#ffd6b4"; pixel(ctx, x, y, dir, 6, -2 + tilt, 0.5, 0.5) }
+  ctx.restore()
+}
+
+// One layout per world, held outside it so all drawing stays read-only. Replay
+// only the original village's seeded choices; no global RNG or moving props.
+var NORTH_PAGE_CACHE = new WeakMap()
+function northPageLayout(w) {
+  var cached = NORTH_PAGE_CACHE.get(w)
+  if (cached) return cached
+  var scene = { houses: [], caps: [] }, r = backRng(w), wide = w.k.COLS * w.k.CELL
+  for (var star = 0; star < 160; star++) r()
+  for (var row = 0; row < w.corridors.length; row++) northVillageRow(w, scene, r, row, wide)
+  northSparkleLayout(w, scene)
+  NORTH_PAGE_CACHE.set(w, scene)
+  return scene
+}
+function northVillageRow(w, scene, r, row, wide) {
+  // Hills use one RNG draw for each four-pixel strip, before the houses.
+  for (var hx = 0; hx < wide; hx += 4) r()
+  var base = w.corridors[row].floorY * w.k.CELL - 2
+  for (var x = 6 + Math.floor(r() * 30); x < wide - 18; x += 34 + Math.floor(r() * 40)) {
+    if (r() < 0.5) {
+      var width = 11 + Math.floor(r() * 6), height = 6 + Math.floor(r() * 3)
+      scene.houses.push({ x: x, y: base - height, width: width, height: height, seed: x + row * 73 })
+    } else r() // fir height
+  }
+}
+function northSparkleLayout(w, scene) {
+  var k = w.k
+  for (var y = k.SKY; y < k.ROWS - 1; y++) for (var x = 1; x < k.COLS - 1; x++) {
+    var m = w.terrain[y*k.COLS+x]
+    if (m === k.EMPTY || m === k.BRICK || w.terrain[(y-1)*k.COLS+x] || (x*3+y)%11 !== 0) continue
+    var drift = (x+y*5+w.level*3)%13, high = drift<4 ? 2 : drift<6 ? 1 : 0
+    scene.caps.push({ x: x*k.CELL+1, y: y*k.CELL-high, col: x, row: y, seed: x*17+y*23 })
+  }
+}
+function drawNorthVillagePage(ctx, w) {
+  if (w.biome !== "North Pole" || w.res !== 2) return
+  ctx.save()
+  var houses = northPageLayout(w).houses
+  for (var i = 0; i < houses.length; i++) drawNorthHouseFine(ctx, houses[i])
+  ctx.restore()
+}
+function drawNorthHouseFine(ctx, b) {
+  var x = b.x, y = b.y, width = b.width
+  ctx.fillStyle = "#63616c"
+  ctx.fillRect(x, y, width, 0.5)
+  ctx.fillRect(x, y, 0.5, b.height)
+  ctx.fillStyle = "#a9b5c5"
+  for (var slope = 0; slope < Math.ceil((width+2)/2); slope++) {
+    ctx.fillRect(x-1+slope, y-2-slope, 1, 0.5)
+    ctx.fillRect(x+width-slope, y-2-slope, 1, 0.5)
+  }
+  ctx.fillStyle = "#67616a"
+  ctx.fillRect(x+width-4, y-6, 2, 0.5)
+  ctx.fillStyle = "#b3a080"
+  ctx.fillRect(x+width/2-1, y+b.height-4, 2, 4)
+  ctx.fillStyle = "#383843"
+  ctx.fillRect(x+width/2-0.5, y+b.height-3.5, 1, 3.5)
+}
+function drawNorthLife(ctx, w) {
+  if (w.biome !== "North Pole" || w.res !== 2) return
+  ctx.save()
+  var scene = northPageLayout(w), reserved = abyssReserved(w), t = w.reducedMotion ? 0 : w.ticks
+  for (var i = 0; i < scene.houses.length; i++) {
+    var b = scene.houses[i]
+    drawNorthWindows(ctx, w, b, t, reserved)
+    if (i%3 === 0) drawNorthSmoke(ctx, w, b, t, reserved)
+  }
+  for (var j = 0; j < scene.caps.length; j++) drawNorthSparkle(ctx, w, scene.caps[j], t)
+  drawNorthDoorLight(ctx, w)
+  ctx.restore()
+}
+function northAirRect(ctx, w, x, y, width, height, reserved) {
+  if (abyssClear(w, x, y, width, height, reserved)) moteFineRect(ctx, w, x, y, width, height)
+}
+function drawNorthWindows(ctx, w, b, t, reserved) {
+  for (var i = 0; i < 2; i++) {
+    var x = b.x + (i ? b.width-4 : 2), y = b.y+2
+    var lit = (Math.floor((t+b.seed*11+i*137)/180)%9) !== 0
+    ctx.globalAlpha = lit ? 0.18 : 0
+    ctx.fillStyle = NP_WARM
+    northAirRect(ctx, w, x-0.5, y-0.5, 3, 3, reserved)
+    ctx.globalAlpha = 1
+    ctx.fillStyle = lit ? "#ffd88c" : "#45424c"
+    northAirRect(ctx, w, x, y, 2, 2, reserved)
+    ctx.fillStyle = lit ? "#fff2c4" : "#63616c"
+    northAirRect(ctx, w, x, y, 1.5, 0.5, reserved)
+    ctx.fillStyle = "#62504a"
+    northAirRect(ctx, w, x+1, y, 0.5, 2, reserved)
+  }
+}
+function drawNorthSmoke(ctx, w, b, t, reserved) {
+  ctx.fillStyle = "#b7b9c5"
+  for (var i = 0; i < 3; i++) {
+    var age = (Math.floor(t/4)+i*9+b.seed)%28
+    var x = b.x+b.width-3+Math.round(Math.sin((age+b.seed)/8)*3)/2, y = b.y-7-age/2
+    ctx.globalAlpha = 0.38*(1-age/28)
+    northAirRect(ctx, w, x, y, 2+i*0.5, 1, reserved)
+    northAirRect(ctx, w, x+0.5, y-0.5, 1+i*0.5, 0.5, reserved)
+  }
+  ctx.globalAlpha = 1
+}
+function drawNorthSparkle(ctx, w, b, t) {
+  var m = w.terrain[b.row*w.k.COLS+b.col]
+  if (m === w.k.EMPTY || m === w.k.BRICK || w.terrain[(b.row-1)*w.k.COLS+b.col]) return
+  var phase = (t+b.seed)%96
+  if (phase >= 14) return
+  ctx.globalAlpha = 1
+  ctx.fillStyle = "#ffffff"
+  ctx.fillRect(b.x, b.y, 1, 0.5)
+  if (phase >= 4 && phase < 10) {
+    ctx.fillRect(b.x+0.5, b.y-1, 0.5, 2.5)
+    ctx.fillRect(b.x-0.5, b.y, 2.5, 0.5)
+  }
+}
+function drawNorthDoorLight(ctx, w) {
+  var e = w.exit, c = w.k.CELL, x = e.x*c, y = (e.y+e.h)*c, width = e.w*c
+  ctx.fillStyle = NP_WARM
+  for (var row = 0; row < 5; row++) {
+    ctx.globalAlpha = 0.38-row*0.065
+    ctx.fillRect(x-2-row*2, y+row*0.5, width+4+row*4, 0.5)
+  }
+  ctx.globalAlpha = 1
+  ctx.fillStyle = "#ffdb98"
+  ctx.fillRect(x-0.5, e.y*c+2, 0.5, e.h*c-2)
+  ctx.fillStyle = "#6b3926"
+  ctx.fillRect(x+width, e.y*c+2, 0.5, e.h*c-2)
+  ctx.fillStyle = "#fff1cb"
+  ctx.fillRect(x, y-0.5, width, 0.5)
+}
+function drawNorthAurora(ctx, w) {
+  var wide = w.k.COLS*w.k.CELL
+  ctx.save()
+  for (var x = 0; x < wide; x += 2) {
+    var y = 5+Math.round(Math.sin(x/47+w.level)*4+Math.sin(x/91)*2)/2
+    for (var row = 0; row < 5; row++) {
+      ctx.fillStyle = row < 2 ? "#498e79" : "#73c99a"
+      ctx.globalAlpha = 0.04+row*0.025
+      ctx.fillRect(x, y+row*1.5, 2, 1.5)
+    }
+  }
+  ctx.restore()
+}
+function drawSleighFine(ctx, x, y, dir) {
+  ctx.fillStyle = "#ff8b82"
+  ctx.fillRect(x-4.5, y, 9, 0.5)
+  ctx.fillStyle = "#7a1626"
+  ctx.fillRect(x-4, y+3, 8, 0.5)
+  ctx.fillStyle = "#ffe7a0"
+  ctx.fillRect(x-5.5, y+4, 11, 0.5)
+  ctx.fillRect(x+dir*6, y+1.5, 0.5, 2)
+  ctx.fillStyle = "#e2af72"
+  ctx.fillRect(x-dir*4-0.5, y-3.5, 1, 2.5)
+  ctx.fillStyle = "#f0c8a0"
+  ctx.fillRect(x+dir, y-4, 1, 1)
+}
+function drawSleighDeerFine(ctx, x, y, dir, t) {
+  var gallop = Math.floor(t/3)%2, top = y-1-gallop
+  ctx.fillStyle = "#d4a273"
+  ctx.fillRect(x-1.5, top, 3.5, 0.5)
+  ctx.fillStyle = "#f3d9af"
+  ctx.fillRect(x+dir*2, top-3, 0.5, 1.5)
+  ctx.fillRect(x+dir*3-0.5, top-3, 1.5, 0.5)
+  ctx.fillStyle = "#16161c"
+  ctx.fillRect(x+dir*3-(dir<0?1:0), top-1.5, 0.5, 0.5)
+  ctx.fillStyle = "#f2c14e"
+  ctx.fillRect(x+dir, top+1, 0.5, 1)
+}
+function drawReindeerFine(ctx, x, y, dir) {
+  ctx.fillStyle = "#c49665"
+  ctx.fillRect(x-4.5, y-8, 8.5, 0.5)
+  ctx.fillStyle = "#f2dab7"
+  ctx.fillRect(x+dir*5-(dir<0?2:0), y-11.5, 1.5, 0.5)
+  ctx.fillRect(x-dir*5, y-8, 0.5, 1)
+  ctx.fillStyle = "#fff0c5"
+  ctx.fillRect(x+dir*4-(dir<0?1:0), y-7, 0.5, 0.5)
+  ctx.fillStyle = "#d9bf94"
+  ctx.fillRect(x+dir*5, y-15.5, 0.5, 2.5)
 }
