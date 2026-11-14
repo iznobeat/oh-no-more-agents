@@ -11992,3 +11992,13 @@ reduced motion. At every resolution: `christmas-round2`'s native North Pole pin
 was re-captured for them.
 **Test:** northpole (placement, cache, it works, it waves, reduced motion,
 no world writes, other biomes untouched).
+
+## 456 — 2026-11-14 · Deploy: advent calendar, snowballs, festive foes, elves
+
+**Deployed** build e8b3d449 (Worker version 576a04b3), replacing 313e8118. It
+covers 452–455. Only 35 minutes after the last one, under the hourly cadence:
+my clock check was off; the next waits a full hour.
+**Before:** gate 1686/1686; `npm run smoke -- --level 19 --season christmas`
+passed (19–25); a headless look at level 21 with the season on (title card,
+play) showed no page errors.
+**After:** `npm run verify -- --previous 313e8118` passed first time.
