@@ -53,7 +53,7 @@
     if (!name || !w || w.season) return
     var s = SEASONS[name]
     w.season = { name: name, homePrefix: s.homePrefix, homeSuffix: s.homeSuffix,
-      candy: s.candy, candyEvery: s.candyEvery, hats: w.biome === "North Pole" ? null : s.hats, note: null }
+      candy: s.candy, candyEvery: s.candyEvery, hats: w.biome === "North Pole" ? null : s.hats, redHats: s.hats, note: null }
     w.seasonProps = makeProps(w)
     w.seasonSeen = {}
     w.seasonHome = w.saved
@@ -217,9 +217,9 @@
     var out = [], c = w.k.CELL
     if (w.biome === "North Pole") return out
     placeWreath(w, out)
-    for (var y = w.k.SKY + 4; y < w.k.ROWS - 4; y++)
-      for (var x = 4; x < w.k.COLS - 11; x += 9)
-        if (cell(w, x, y - 1)) addProp(w, out, "lights", x*c, y*c, 28, 6)
+    for (var y = w.k.SKY + 1; y < w.k.ROWS - 4; y++)
+      for (var x = 2; x <= w.k.COLS - 9; x++)
+        if (cell(w, x, y - 1) && addProp(w, out, "lights", x*c, y*c, 28, 8)) x += 7
     placeSnowman(w, out)
     return out
   }
@@ -268,15 +268,21 @@
   var BULBS = ["#fa5269", "#ffd66c", "#63dfaa", "#70bfff"]
   function fairyLights(ctx, w, p, t) {
     var x = p.x, y = p.y, unit = (w.res || 1) >= 2 ? 0.5 : 1
-    ctx.fillStyle = "#32654d"
+    ctx.fillStyle = "#50876a"
     ctx.fillRect(x, y, 3, 1); ctx.fillRect(x+3, y+1, 5, 1)
     ctx.fillRect(x+8, y+2, 12, 1); ctx.fillRect(x+20, y+1, 5, 1); ctx.fillRect(x+25, y, 3, 1)
-    for (var i = 0; i < 5; i++) {
-      var bx = x+1+i*6, by = y+(i===0 || i===4 ? 1 : 3)
-      var lit = (Math.floor(t/9)+i+Math.floor(x/4))%5 === 0
-      ctx.fillStyle = BULBS[(i+Math.floor(x/4))%4]; ctx.fillRect(bx, by, 2, 2)
-      ctx.fillStyle = lit ? "#fff9db" : "#f4d5b0"; ctx.fillRect(bx, by, unit, unit)
-      if (lit) {ctx.fillRect(bx-1, by, 1, 1);ctx.fillRect(bx+2, by+1, 1, 1)}
+    ctx.fillStyle = "#a3b989"
+    ctx.fillRect(x+8, y+2, 12, unit)
+    for (var i = 0; i < 7; i++) {
+      var bx = x+1+i*4, by = y+(i===0 || i===6 ? 2 : 4)
+      var lit = (Math.floor(t/7)+Math.floor(x/4))%7 === i
+      ctx.fillStyle = BULBS[(i+Math.floor(x/4))%4]
+      ctx.globalAlpha = lit ? 0.55 : 0.2
+      ctx.fillRect(bx-unit, by-unit, 2+unit*2, 3+unit*2)
+      ctx.globalAlpha = 1
+      ctx.fillRect(bx, by, 2, 3)
+      ctx.fillStyle = lit ? "#fff9db" : "#f4d5b0"
+      ctx.fillRect(bx, by, lit ? 2 : unit, lit ? 2 : 1)
     }
   }
   function wreath(ctx, w, p, t) {

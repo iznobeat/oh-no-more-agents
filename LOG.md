@@ -11917,3 +11917,64 @@ kept). Page resolution only; not under reduced motion or after the level. Snow a
 hats and umbrellas at the North Pole now (`WEATHER_SNOW`), as in the Frost.
 **Test:** northpole (target choice, flight, burst, quiet between throws,
 reduced motion, other biomes, no writes).
+
+## 454 — 2026-11-14 · Christmas reads across the room; the red team joins in (Codex, merged)
+
+**Changed (art only):** scan every safe ledge underside instead of nine-column
+slots, including the top corridor. The same twenty pinned layouts now have
+169 swags instead of 76, with at least one in every ordinary biome. Each has a
+lighter continuous wire, seven 2×3 art-pixel bulbs, a half-pixel page halo and
+a broad white chase advancing every seven ticks. Full animation footprints
+still obey round one's terrain/support, original scenery, hazard, portal,
+agent/umbrella, enemy and mission exclusions. Layout remains cached by dress;
+painting neither relocates props nor changes Sim.
+
+Guards, bouncers, walking/prone snipers and operators wear Santa caps; drones
+and xenos get antlers. Caps have half-pixel fur highlights on the page. The
+Moderator keeps its crown with holly attached to the crown's existing origin,
+including its gait and recoil. Bouncer hats follow the head's nod/neck gag,
+stride and recoil; xeno antlers follow XENO_HEAD and sniffing. A redHats season
+flag also dresses the red team at the North Pole without double-dressing its
+civilian kit. Without a season the red-team pixels at both resolutions retain
+the pre-round digest.
+
+**North Pole, year-round page art:** preserve the original village silhouettes
+and add roof/door/chimney edges, warm mullioned windows that occasionally switch,
+and three small smoke puffs on selected chimneys. Replay the original local RNG
+into a world-keyed WeakMap once; no renderer writes into the world. Live window
+and smoke paint is clipped to current air and protected scenery. A faint green
+sky ribbon sits behind the moon; cap glints follow the surviving original snow;
+the workshop has shaded log ends/jambs and warm light on the threshold snow.
+Sleigh, flying team and both standing/escorted mission reindeer get half-pixel
+highlights, antler forks, eyes and bells. Reduced motion holds new animation
+still. Native North Pole frames (21 and 42) retain their exact pre-round pixel
+digest. No terrain recolour, simulation, umbrella changes or new game text.
+
+**Looked at:** rendered round-zero baseline and three art passes with
+`tools/christmas-art.js --base main --out /tmp/xmas-dressing/r2-<n>`.
+Inspected the native before/after full-frame sheets in r2-0 and r2-2, the page
+full-frame sheet in r2-2, individual Cavern native and North Pole page frames,
+and the new `/tmp/xmas-dressing/r2-1/red-team-sheet.png` (both facings, native
+and page, before/after). Final sheets and the last log-shading pass are in
+`/tmp/xmas-dressing/r2-3/`: full-res1-sheet.png, full-res2-sheet.png,
+red-team-sheet.png. `npm run shot level 21` and `level 42`, at page and native
+resolution, were also rendered into each round's pole2/ and pole1/ directories.
+The light strings now visibly change the full frame; village windows and the
+warm threshold read without enlarging the board. The team review tool retains
+three poses (including the raised guard stride), rather than testing hats from
+one frozen head position. All art comparisons pin their fixture/world seed;
+no production page or counter was used.
+
+**Validation:** baseline 1,676 passing; final 1,683 passing, seven new tests.
+Focused tests cover density/wire/bulbs/halo/chase, all enemy kit at both scales
+and facings, head movement, North Pole season integration, frozen/read-only
+village animation, air/scenery masks, half-pixel alignment and review output.
+Legacy digests cover the unseasoned team and native North Pole. Exit-frame
+comparisons now use pixel digests too, avoiding raw-buffer assertion diffs. The
+exit fine pass retains its existing palette contract. Existing prop
+safety and gameplay digest tests also run. Checks/coverage use the shared lock
+and a 3 GB systemd memory scope; changed-source CRAP is below 30, including the
+season IIFE audit. Stamps refreshed. No merge, push, deploy or sibling writes.
+
+**Next:** inspect the season on a running December page over several levels;
+keep the safe-envelope exclusions even where they leave a corridor undecorated.
