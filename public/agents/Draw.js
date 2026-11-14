@@ -2372,6 +2372,7 @@ function drawMachines(ctx, w, pal) {
   if (w.updraft) drawUpdrafts(ctx, w, pal)
   drawAmbience(ctx, w, pal)
   if (w.biome === "Factory") drawFactoryMachines(ctx, w, pal)
+  drawNorthElves(ctx, w)
   if (w.gifts) drawNorthPoleGifts(ctx, w, pal)
   if (w.sleighRuns && w.sleighRuns.length) drawNorthPoleSleigh(ctx, w, pal)
 }
@@ -3316,6 +3317,92 @@ var RAIN_SPLASH = [[[0, 0, 0.5, 0.5]], [[-1, -0.5, 0.5, 0.5], [1, -0.5, 0.5, 0.5
   [[-1.5, -1, 0.5, 0.5], [1.5, -1, 0.5, 0.5]], [[-2, -0.5, 0.5, 0.5], [2, -0.5, 0.5, 0.5]]]
 var RAIN_CANOPY = [-4.5, -1.5, 1.5, 4.5]  // where drops hit the canopy, from its centre
 var RAIN_COLOUR = "#d4e0f6", SNOW_CAP = "#eef4fa", SNOW_EDGE = "#c4d2de"
+// The workshop's elves: one or two per North Pole level at a bench on a
+// corridor floor, half an agent tall, hammering at a toy. Every so often one
+// holds the finished toy up to look at it; when an agent walks past it looks
+// up and waves. Spots come from the layout (cached per terrain version in a
+// WeakMap, so the world is never written); the rest is the tick.
+var ELF_CACHE = new WeakMap(), ELF_CYCLE = 150, ELF_SHOW = 26
+var ELF_GREEN = "#2e8a4a", ELF_HAT = "#c8283c", ELF_SKIN = "#f0c8a0", ELF_WOOD = "#7a4a2a", ELF_TOYS = ["#3a5fb0", "#c8283c", "#e0b23c"]
+function elfSpots(w) {
+  var c = ELF_CACHE.get(w)
+  if (c && c.v === w.terrainVersion) return c.spots
+  var spots = [], k = w.k
+  for (var i = 0; i < w.corridors.length && spots.length < 2; i++) {
+    var cor = w.corridors[(i * 2 + w.level) % w.corridors.length], y = cor.floorY - 1
+    for (var n = 0; n < 9 && spots.length < 2; n++) {
+      var x = cor.x0 + 6 + ((n * 37 + w.level * 13 + i * 7) % Math.max(1, cor.x1 - cor.x0 - 12))
+      if (elfSpotClear(w, x, y)) { spots.push({ x: x, y: y, dir: (x + n) % 2 ? 1 : -1, seed: x * 7 + y }); break }
+    }
+  }
+  ELF_CACHE.set(w, { v: w.terrainVersion, spots: spots })
+  return spots
+}
+function elfSpotClear(w, x, y) {
+  var k = w.k, at = function (xx, yy) { return w.terrain[yy * k.COLS + xx] }
+  for (var dx = -2; dx <= 2; dx++) if (at(x + dx, y + 1) === k.EMPTY || at(x + dx, y) !== k.EMPTY || at(x + dx, y - 1) !== k.EMPTY) return false
+  if (w.hatch && Math.abs(w.hatch.x - x) < 8) return false
+  var e = w.exit
+  if (e && x > e.x - 8 && x < e.x + e.w + 8) return false
+  for (var h = 0; h < w.hazards.length; h++) if (x >= w.hazards[h].zx0 - 5 && x <= w.hazards[h].zx1 + 5) return false
+  for (var g = 0; g < (w.gifts || []).length; g++) if (Math.abs(w.gifts[g].x - x) < 5) return false
+  var m = w.mission
+  if (m) for (var t = 0; t < m.targets.length; t++) if (Math.abs(m.targets[t].x - x) < 7) return false
+  return true
+}
+function drawNorthElves(ctx, w) {
+  if (w.biome !== "North Pole") return
+  var spots = elfSpots(w), t = w.reducedMotion ? 0 : w.ticks
+  for (var i = 0; i < spots.length; i++) drawElf(ctx, w, spots[i], t)
+}
+function elfWaving(w, s) {
+  for (var i = 0; i < w.agents.length; i++) {
+    var ag = w.agents[i]
+    if (!ag.gone && ag.state === "walk" && Math.abs(ag.x - (s.x + 0.5)) < 2.5 && Math.abs(ag.y - s.y) < 1) return true
+  }
+  return false
+}
+function drawElf(ctx, w, s, t) {
+  var C = w.k.CELL, x = s.x * C + 2, base = (s.y + 1) * C, dir = s.dir
+  var phase = (t + s.seed * 11) % ELF_CYCLE, showing = phase < ELF_SHOW, wave = !w.reducedMotion && elfWaving(w, s)
+  var bench = x + dir * 5
+  ctx.fillStyle = ELF_WOOD
+  ctx.fillRect(bench - 4, base - 4, 8, 1); ctx.fillRect(bench - 3, base - 3, 1, 3); ctx.fillRect(bench + 2, base - 3, 1, 3)
+  ctx.fillStyle = ELF_TOYS[s.seed % 3]
+  if (!showing) ctx.fillRect(bench - 1, base - 6, 3, 2)                             // the toy on the bench
+  ctx.fillStyle = ELF_GREEN
+  ctx.fillRect(x - 1, base - 5, 3, 4)                                                // tunic
+  ctx.fillStyle = "#16161c"
+  ctx.fillRect(x - 1, base - 1, 1, 1); ctx.fillRect(x + 1, base - 1, 1, 1)           // boots
+  ctx.fillStyle = ELF_SKIN
+  ctx.fillRect(x - 1, base - 8, 3, 3)                                                // face
+  ctx.fillRect(x - dir * 2, base - 7, 1, 1)                                          // the pointed ear
+  ctx.fillStyle = ELF_HAT
+  ctx.fillRect(x - 1, base - 9, 3, 1); ctx.fillRect(x - dir, base - 10, 2, 1); ctx.fillRect(x - dir * 2, base - 11, 1, 1)
+  ctx.fillStyle = "#f2c14e"
+  ctx.fillRect(x - dir * 3, base - 11, 1, 1)                                         // the bell
+  ctx.fillStyle = "#16161c"
+  ctx.fillRect(x + (dir > 0 ? 1 : -1), base - 7, 1, 1)                              // eye
+  ctx.fillStyle = ELF_SKIN
+  if (wave) {
+    var up = Math.floor(t / 5) % 2
+    ctx.fillRect(x - dir * 2, base - 10 - up, 1, 3)                                   // waving
+  } else if (showing) {
+    ctx.fillRect(x + dir * 2, base - 9, 1, 3)                                         // holding the toy up
+    ctx.fillStyle = ELF_TOYS[s.seed % 3]
+    ctx.fillRect(x + dir * 2 - 1, base - 12, 3, 2)
+  } else {
+    var hit = Math.floor(t / 6) % 2
+    ctx.fillRect(x + dir * 2, base - 6 - hit * 2, 1, 1)                               // the hammer arm
+    ctx.fillStyle = "#9aa2b4"
+    ctx.fillRect(x + dir * 3 - (dir < 0 ? 1 : 0), base - 7 - hit * 2, 2, 1)           // hammer head
+    if (!hit && !w.reducedMotion && Math.floor(t / 6) % 4 === 0) {
+      ctx.fillStyle = "#ffe49a"
+      ctx.fillRect(bench + dir * -1, base - 8, 1, 1)                                  // tink
+    }
+  }
+}
+
 // Snowball fights, where there is snow to make them of. Now and then a
 // walker lobs one at the colleague ahead of it on the same floor; it arcs
 // over and bursts on the target's head. A pure function of the tick and the

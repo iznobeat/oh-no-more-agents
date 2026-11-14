@@ -192,3 +192,34 @@ test("snowball fights: a walker lobs one at the colleague ahead; never under red
   w.biome = "North Pole"
   assert.equal(shot(start + 10, () => { w.res = 1 }), blank, "the panel keeps its pixels")
 })
+
+test("workshop elves: at benches clear of everything, hammering, waving at passers-by, never written to the world", () => {
+  let total = 0
+  for (const level of [21, 42, 63, 84, 105]) {
+    const w = S.generate(level, 0, 3), spots = D.elfSpots(w)
+    assert.ok(spots.length <= 2); total += spots.length
+    assert.equal(D.elfSpots(w), spots, "cached")
+    for (const s of spots) for (const h of w.hazards) assert.ok(s.x < h.zx0 - 5 || s.x > h.zx1 + 5)
+  }
+  assert.ok(total >= 6, "most levels have elves: " + total)
+  const w = S.generate(21, 0, 3), s = D.elfSpots(w)[0]
+  w.agents = []
+  const shot = ticks => {
+    w.ticks = ticks
+    const img = canvas(400, 248, "#000000"), before = JSON.stringify(w)
+    D.drawNorthElves(img.ctx, w)
+    assert.equal(JSON.stringify(w), before, "drawing wrote to the world")
+    return digest(img.buf)
+  }
+  const frames = new Set([0, 6, 12, 40, 80, 120].map(shot))
+  assert.ok(frames.size > 2, "it works at its bench")
+  w.agents = [Object.assign(S.spawn(w), { x: s.x + 1, y: s.y, state: "walk", dir: 1 })]
+  const waving = shot(7)
+  w.agents = []
+  assert.notEqual(waving, shot(7), "and looks up to wave")
+  w.reducedMotion = true
+  assert.equal(shot(10), shot(90), "still under reduced motion")
+  w.reducedMotion = false
+  w.biome = "Cavern"
+  assert.equal(shot(5), digest(canvas(400, 248, "#000000").buf))
+})

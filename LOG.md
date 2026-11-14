@@ -11978,3 +11978,17 @@ season IIFE audit. Stamps refreshed. No merge, push, deploy or sibling writes.
 
 **Next:** inspect the season on a running December page over several levels;
 keep the safe-envelope exclusions even where they leave a corridor undecorated.
+
+## 455 — 2026-11-14 · The workshop's elves
+
+**Changed (Draw only):** one or two elves per North Pole level, half an
+agent tall (green tunic, red hat with a bell, a pointed ear), at a bench on a
+corridor floor clear of the hatch, door, hazards, presents and mission. They
+hammer at a toy (a tink of light on the blow), now and then hold the finished
+toy up to look at it, and look up and wave when an agent walks past
+(`drawNorthElves`, `elfSpots`: placements from the layout, cached in a
+WeakMap per terrain version, so the world is never written). Still under
+reduced motion. At every resolution: `christmas-round2`'s native North Pole pin
+was re-captured for them.
+**Test:** northpole (placement, cache, it works, it waves, reduced motion,
+no world writes, other biomes untouched).
