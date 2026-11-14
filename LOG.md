@@ -11895,3 +11895,13 @@ wreaths and snowmen, the soak options).
 **Before:** gate 1676/1676; `npm run smoke` passed (levels 1–7) and
 `npm run smoke -- --level 20 --season christmas` passed (20–26).
 **After:** `npm run verify -- --previous f0b3ac28` passed first time.
+
+## 452 — 2026-11-14 · An advent calendar of colonies
+
+From December 1st to 25th the colony of the day is at the North Pole: day d
+is level 21·d, a different workshop every day (`share.js` `dailyLevel`;
+date only, so it is the same for everyone and every year, with that year's
+colony). Every other date keeps the hash rule, so no past daily changes.
+**Played:** all 25 Advent colonies of 2026 to the end: 98.2% home, every
+one with presents opened (1–5). **Test:** daily.test (levels, biome, 25
+distinct, every year, ordinary days either side).

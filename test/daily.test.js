@@ -26,6 +26,21 @@ test("the same date gives the same level and colony, and plays out identically; 
   assert.ok(days.size > 20, "a month visits many levels")
 })
 
+test("an advent calendar: December 1st to 25th, a different North Pole every day", () => {
+  const levels = []
+  for (let d = 1; d <= 25; d++) {
+    const date = `2026-12-${String(d).padStart(2, "0")}`, day = A.daily(date)
+    assert.equal(day.level, 21 * d, date)
+    assert.equal(S.generate(day.level, 0, day.seed).biome, "North Pole", date)
+    levels.push(day.level)
+  }
+  assert.equal(new Set(levels).size, 25)
+  assert.equal(A.daily("2027-12-01").level, 21, "every year")
+  assert.notEqual(A.daily("2026-12-01").seed, A.daily("2027-12-01").seed, "with a fresh colony")
+  for (const date of ["2026-11-30", "2026-12-26", "2026-12-31", "2026-01-12"])
+    assert.ok(A.daily(date).level <= 200, date + " is an ordinary day")
+})
+
 test("only a real date in exactly YYYY-MM-DD is accepted; today is the UTC date", () => {
   assert.equal(A.parse("?daily=2026-10-15").level, A.daily("2026-10-15").level)
   assert.equal(A.parse("?daily=2026-10-15").daily, "2026-10-15")
