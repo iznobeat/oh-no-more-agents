@@ -8,6 +8,7 @@
 //
 //   npm run soak -- --minutes 20           (runs through the test lock)
 //   npm run soak -- --minutes 2 --json
+//   npm run smoke -- --level 19 --season christmas   start at a level, in a season
 //
 // Fails on page errors or console errors, on growth that does not level off
 // (the late samples well above the early ones in heap, nodes, listeners,
@@ -21,7 +22,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 export function parseArgs(argv) {
   const at = name => { const i = argv.indexOf(name); return i >= 0 ? Number(argv[i + 1]) : undefined }
-  return { minutes: at("--minutes") || 20, every: at("--every") || 30, json: argv.includes("--json") }
+  const word = name => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined }
+  return { minutes: at("--minutes") || 20, every: at("--every") || 30, json: argv.includes("--json"),
+    level: at("--level") || 1, season: word("--season") }
 }
 
 // Before the page's own scripts: count live audio nodes (created and not yet
@@ -97,13 +100,13 @@ function listen(b, errors) {
 }
 
 // The page at its fastest speed, the counter refused, the probe in place.
-async function openPage(b, base) {
+async function openPage(b, base, level = 1) {
   await b.cmd("Fetch.enable", { patterns: [{ urlPattern: "*/api/*" }] })
   await b.cmd("Performance.enable")
   await b.cmd("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await b.cmd("Page.addScriptToEvaluateOnNewDocument", { source: PROBE })
   await b.cmd("Page.navigate", { url: base }); await sleep(1000)
-  await b.cmd("Runtime.evaluate", { expression: `localStorage.setItem("oh-no-more-agents", JSON.stringify({ version: 1, level: 1, speedIndex: 2 }))` })
+  await b.cmd("Runtime.evaluate", { expression: `localStorage.setItem("oh-no-more-agents", JSON.stringify({ version: 1, level: ${Number(level) || 1}, speedIndex: 2 }))` })
   await b.cmd("Page.navigate", { url: base }); await sleep(1500)
 }
 
@@ -117,11 +120,12 @@ export function line(s) {
   return `soak ${String(s.t).padStart(5)} s  level ${s.level}  heap ${s.heapMB} MB  nodes ${s.nodes}  listeners ${s.listeners}  canvases ${s.canvases}  storage ${s.storage}  audio ${s.audio} (${s.made} made)  frame ${s.frameMs}/${s.frameP95} ms`
 }
 
-export async function soak({ minutes, every, log = console.error }) {
+export async function soak({ minutes, every, level, season, log = console.error }) {
   const server = await serve(), b = await browser(), errors = [], samples = []
   listen(b, errors)
   try {
-    await openPage(b, `http://127.0.0.1:${server.address().port}/`)
+    const query = season ? "?season=" + encodeURIComponent(season) : ""
+    await openPage(b, `http://127.0.0.1:${server.address().port}/${query}`, level)
     await soundOn(b)
     const end = Date.now() + minutes * 60000
     while (Date.now() < end) {

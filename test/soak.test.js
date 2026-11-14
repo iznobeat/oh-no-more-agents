@@ -6,8 +6,9 @@ import { parseArgs, judge } from "../tools/soak.js"
 const flat = (n, over = {}) => Array.from({ length: n }, (_, i) => ({ t: i * 30, heapMB: 6, nodes: 520, listeners: 70, canvases: 22, storage: 400, audio: 3, frameMs: 16.7, ...(typeof over === "function" ? over(i) : over) }))
 
 test("arguments: twenty minutes at 30 s by default", () => {
-  assert.deepEqual(parseArgs([]), { minutes: 20, every: 30, json: false })
-  assert.deepEqual(parseArgs(["--minutes", "5", "--every", "10", "--json"]), { minutes: 5, every: 10, json: true })
+  assert.deepEqual(parseArgs([]), { minutes: 20, every: 30, json: false, level: 1, season: undefined })
+  assert.deepEqual(parseArgs(["--minutes", "5", "--every", "10", "--json"]), { minutes: 5, every: 10, json: true, level: 1, season: undefined })
+  assert.deepEqual(parseArgs(["--level", "20", "--season", "christmas"]), { minutes: 20, every: 30, json: false, level: 20, season: "christmas" })
 })
 
 test("a flat curve passes; a climb at start-up that levels off passes", () => {
