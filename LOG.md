@@ -12036,3 +12036,53 @@ and a present opened is a rip of paper and a two-note ta-da (`unwrap`, off
 `w.giftsOpened`). Both in `northPoleCues`, so `observe` gains one call, not
 two branches.
 **Test:** sfx (nothing early, eight bells at the lead, paper then ta-da).
+## C3 — 2026-11-15 · Snow strata, Christmas homecoming, a workshop welcome
+
+**Changed (Draw only):** North Pole packed snow now carries broad, quiet wind
+layers at native and page resolution. Blue ice shading deepens towards the lower
+face of each mass and its overhangs; sparse buried ice lenses/pebbles and page
+half-pixel glints break the layers. Paint stays inside surviving DIRT cells in
+the cached terrain pass; the original grain, caps, icicles and carved boundaries
+remain. Face distances live in a world-keyed WeakMap, invalidated on terrain
+version/source changes. No clock, RNG or world writes in the terrain art.
+
+North Pole and named Christmas report cards have coloured bulbs across the top,
+a slow chase and eight flakes in the side margins, clear of every original
+report glyph/badge. Page houses keep their red roof centres beneath snowy slope
+edges, with little green wreaths/red bows on their doors and the existing warm
+windows. Ordinary reports and terrain retain their pixels. The workshop door
+briefly flares warm on the existing saved-agent fade (15 ticks, half a second),
+with a little snow puff off the step and a rising page star. Reduced motion
+freezes report art and limits the new arrival to a still glow. All new art is
+isolated in new functions with five call-site hooks. No Sim, season, umbrella,
+skating/frozen-floor code, sibling, production or game text changes.
+
+**Looked at:** baseline and three passes in `/tmp/xmas-dressing/r3-0` through
+`r3-3`. Ran `shoot.js level 21` and `level 42`, seed 3, ticks 350 and 900,
+resolutions 1 and 2, scale 1. Inspected the original grey native level 42 and
+page report at 21, then the new native/page full frames and side-by-side sheets.
+Pass one had too many ice flecks; thinned them, added depth shading, moved bulbs
+above the report heading, retained the red roof centres and moved the puff onto
+the step. `christmas-art.js --base main` retains all 21 biomes in each pass;
+inspected `r3-3/full-res1-sheet.png`. Added `christmas-round3-art.js` to retain
+full frames at both ticks for 21/42, ordinary-season report cards and arrival
+phases 0/4/10/15 plus reduced motion, before on the left. Final inspected sheets:
+`/tmp/xmas-dressing/r3-3/pole-res1-sheet.png`, `pole-res2-sheet.png`,
+`report-res1-sheet.png`, `report-res2-sheet.png`, `arrival-res1-sheet.png`,
+`arrival-res2-sheet.png` (all in the same directory).
+
+**Validation:** baseline check 1,686/1,686. Eight new tests cover both resolutions,
+all themes, static/palette/grid/read-only terrain, cache invalidation on carving,
+paint clipped to surviving cells, season gating, chase/drift/reduced motion,
+arrival timing/eligibility, review outputs, and baseline digests of all twenty
+ordinary biomes at both scales/ticks (including reports). Deliberately re-pinned
+`christmas-round2`'s combined North Pole native digest for the new terrain:
+`bc98612b…` → `281bf4e2…`. Focused Christmas regression passed 24/24 before the
+review-output test was added. Final full check and coverage: 1,694/1,694.
+`npm run crap -- --changed --threshold 30` passed: whole changed-source
+maximum 29 (existing drawTerrain), new helpers at most 17, review tool 8;
+season audit also green. Heavy runs used the shared lock and 3 GB systemd
+scopes. Stamps refreshed. No merge, push or deploy.
+
+**Next:** review these additions alongside the owner's frozen corridor ponds
+when merged; keep the snow mass pass separate from the floor-surface hook.

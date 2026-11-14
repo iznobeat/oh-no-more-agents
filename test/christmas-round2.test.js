@@ -68,10 +68,10 @@ test("caps ride the guard march and the bouncer's nod and neck motion; crowns re
  for(const res of[1,2]){w.res=res;assert.ok(record(ctx=>D.drawChristmasAntlers(ctx,w,50,50,-1),res).calls.length>5)}
 })
 
-test("North Pole native frames keep the exact pre-round pixels (re-pinned for the elves, LOG 455, and the ponds, LOG 457)",()=>{
+test("North Pole native frames pin the reviewed snow texture (re-pinned for the elves, LOG 455, the ponds, 457, and the snow, C3)",()=>{
  const random=Math.random,h=createHash("sha256");Math.random=()=>0.5
  try{for(const level of[21,42])h.update(frame(S,D,P,{level,seed:3,ticks:240,res:1,theme:"tokyo-night"}).img.buf)}finally{Math.random=random}
- assert.equal(h.digest("hex"),"c084eb13de2c70453b77221be8be12b759bf943f6ae57e3e8956dbf5290ca44a")
+ assert.equal(h.digest("hex"),"d8172de0d5945e8af071239d7ccfaec89c345a7e07bd31a120fe918bbce59988")
 })
 
 test("village windows switch occasionally, smoke moves, glints sparkle and reduced motion holds every new pixel",()=>{
