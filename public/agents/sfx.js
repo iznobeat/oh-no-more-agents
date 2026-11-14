@@ -174,6 +174,13 @@
     // An outage: the hum winding down, and back up when it is resolved.
     powerdown: function () { tone("sawtooth", 220, 55, 0.6, 0.18); noise(0.3, 0.2, "lowpass", 300) },
     powerup: function () { tone("sawtooth", 55, 220, 0.4, 0.15); tone("sine", 880, 880, 0.08, 0.2, 0.4) },
+    // The North Pole: sleigh bells as it comes over, and paper torn off a
+    // present with a little ta-da for whatever was inside.
+    bells: function () {
+      for (var i = 0; i < 8; i++) tone("triangle", i % 2 ? 2637 : 3136, i % 2 ? 2600 : 3100, 0.05, 0.14, i * 0.07 + (i % 3) * 0.01)
+      noise(0.5, 0.08, "highpass", 6000)
+    },
+    unwrap: function () { noise(0.09, 0.45, "highpass", 3200); tone("triangle", 1047, 1047, 0.07, 0.3, 0.08); tone("triangle", 1568, 1568, 0.12, 0.3, 0.15) },
     fanfare: function (good) {
       var notes = good ? [523, 659, 784, 1047] : [392, 330, 262, 196]
       for (var i = 0; i < notes.length; i++) tone("square", notes[i], notes[i], 0.11, 0.35, i * 0.1)
@@ -224,8 +231,15 @@
       dreams: w.hallucinations || 0, wakes: count(w, "wokeAt"), served: count(w, "servedAt"),
       limited: w.rateLimited || 0, agi: w.agiId >= 0, agiHome: !!w.agiHome, agiLost: !!w.agiLost,
       duck: !!w.duck, ducked: w.ducked || 0, peps: w.peps || 0, conflicts: w.conflicts || 0,
-      released: w.released || 0, lit: lit(w)
+      released: w.released || 0, lit: lit(w), gifts: w.giftsOpened || 0
     }
+  }
+
+  // The sleigh is heard a second before it is overhead.
+  var BELLS_LEAD = 60
+  function northPoleCues(w, now, was) {
+    if (now.gifts > was.gifts) play("unwrap")
+    for (var r = 0; w.sleighRuns && r < w.sleighRuns.length; r++) if (w.ticks === w.sleighRuns[r].t - BELLS_LEAD) play("bells")
   }
 
   // After every step. A new world (next level, restart) resets the memory
@@ -254,6 +268,7 @@
     if (now.ducked > was.ducked) play("quack")
     if (now.peps > was.peps) play("pep")
     if (now.conflicts > was.conflicts) play("conflict")
+    northPoleCues(w, now, was)
     if (w.outage && w.ticks === w.outage.at) play("powerdown")
     if (w.outage && w.ticks === w.outage.at + w.outage.len) play("powerup")
     // The voices. Let's go as the hatch lets the first one out; oh no a

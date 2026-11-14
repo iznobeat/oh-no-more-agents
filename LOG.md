@@ -12027,3 +12027,12 @@ there without ponds too).
 ice colours at both resolutions, blades, glint, reduced motion, no world
 writes). The native North Pole pin in christmas-round2 re-captured for the
 ice.
+
+## 458 — 2026-11-15 · Sleigh bells, and paper torn off a present
+
+**Changed (sfx):** at the North Pole the sleigh is heard a second before it is
+overhead (`bells`: eight high triangle notes jingling, a shimmer of noise),
+and a present opened is a rip of paper and a two-note ta-da (`unwrap`, off
+`w.giftsOpened`). Both in `northPoleCues`, so `observe` gains one call, not
+two branches.
+**Test:** sfx (nothing early, eight bells at the lead, paper then ta-da).

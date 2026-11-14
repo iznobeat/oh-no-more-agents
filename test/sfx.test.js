@@ -169,3 +169,16 @@ test("one voice at a time, and nothing at all with sfx off", () => {
   v.agents.push({ state: "bomb", fuse: 40 }); sfx.observe(v)
   assert.equal(played.length, after, "still saying let's go: oh no is dropped")
 })
+
+test("the North Pole: sleigh bells a second before it is overhead, and a present torn open", () => {
+  const { sfx, played } = load()
+  sfx.setOn(true)
+  const w = { ...world(), ticks: 358, sleighRuns: [{ t: 420 }], giftsOpened: 0 }
+  sfx.observe(w); w.ticks++; sfx.observe(w)
+  assert.equal(played.length, 0, "nothing yet")
+  w.ticks++; sfx.observe(w)
+  assert.equal(played.filter(p => p === "osc").length, 8, "eight bells")
+  played.length = 0
+  w.ticks++; w.giftsOpened = 1; sfx.observe(w)
+  assert.deepEqual(played, ["noise", "osc", "osc"], "the paper, then ta-da")
+})
