@@ -1,3 +1,5 @@
+import {antiqueSourceBefore} from '../tools/antique-art.js'
+import antiquePins from './fixtures/antique-scenes.json' with {type:'json'}
 import {alpineScenes} from '../tools/alpine-scenes.js'
 import {alpineSuccessor,alpineSourceBefore} from '../tools/alpine-reference.js'
 import os from 'node:os'
@@ -10,9 +12,9 @@ import {execFileSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {load,canvas,frame,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8')
+const source=antiqueSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8'))
 const old=renderer(execFileSync('git',['show','19156074ad1f2e8fea754864fa8db6888f0a300c:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
-const D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const layers=['drawAlpineSky','drawAlpineFirs','drawAlpineLife']
 function world(level=3,res=1){return Object.assign(S.generate(level,0,3),{res,ticks:350})}
@@ -137,7 +139,7 @@ test('C16 reviewed firs are grounded, complete footprints avoid old decor and ha
 test('C16 every advanced historical scene is independently reproducible and prior pins remain explicit',()=>{
  const pins=JSON.parse(fs.readFileSync('test/fixtures/alpine-scenes.json','utf8'))
  assert.deepEqual(alpineScenes('19156074ad1f2e8fea754864fa8db6888f0a300c'),pins)
- for(const [before,pin]of Object.entries(pins))assert.equal(alpineSuccessor(before),pin.after)
+ for(const [before,pin]of Object.entries(pins))assert.equal(alpineSuccessor(before),antiquePins[pin.after]?.after || pin.after)
  assert.equal(alpineSuccessor('unaffected'),'unaffected')
  assert.equal(alpineSourceBefore(source),source.replace(/^  drawAlpine(?:Sky|Snow|Firs|Life)\(ctx, w, pal\)\n/gm,''))
 })

@@ -13666,3 +13666,133 @@ explicit gate exit files accompany check/crap.
 **Next:** owner review of the revised full sheets, especially Frost 23's
 crowded narrow sky band. No merge, push, deployment, production requests,
 port 8787 changes, sibling writes or Omarchy writes.
+
+## C17 — 2026-11-15 · Ruins becomes a ruined sanctuary at native scale
+
+**Chose:** Ruins, excluding C15 Foundry and C16 Frost, after rendering all
+21 biomes out of season at ticks 350, res 1/2, and inspecting complete frames
+side by side. Its native board had flat burgundy shelves, thin pillars and
+large empty dark corridors. The page's temple did not carry through to the
+panel. Library, Jungle and Foundry gave the colony an unmistakable place at
+both scales; Ruins depended on its page-only detail. Baseline:
+5692b063d1d5eb32f72db12045dd549679c87779.
+
+**Changed (Draw only):** a stepped distant sanctuary and broken colonnades,
+recessed sun reliefs on selected bays, grounded handled urns and small laurels,
+and butterflies moving quietly around the planted sites. All additions use
+existing Palette.js tints; no palette colours changed. Native DIRT's formerly
+flat faces receive a single block-course treatment in the cached pass, avoiding
+surface caps and patterned ORE/ROCK. The page's existing fine grain, masonry,
+moss and roots remain completely untouched: no second texture over them.
+Original shapes, colours, decor, warm temple, torches and boulder remain.
+
+The four hooks are the complete scope: Hall, Stone and Garden are cached with
+terrain; Life runs in drawMachines before the colony and hazards. Layout sites
+use a world-keyed WeakMap invalidated by terrain identity and version, with
+complete clear-air footprints and floor support, at most two per corridor and
+seven total, excluding original decor, pits, exits and hazard tells. Live wings
+also check current air; reduced motion holds their pose and path. No per-frame
+board scan, world write, RNG, simulation, actor, umbrella, sfx or season change.
+All twenty other biomes retain byte-identical complete frames at both scales.
+
+**Review:** original audit and individual complete frames are retained in
+/tmp/xmas-dressing/biome3-audit/res{1,2}/, plus seven-board page parts inspected
+at full size. Before assets are in /tmp/xmas-dressing/biome3-2/before/.
+Inspected rounds 1/2 and final. Round one was too faint on the page; round two's
+sun in every bay read as wallpaper, so reduced those reliefs to every third
+bay. Added native masonry only after confirming those faces had flat material
+runs, unlike the page. Caught level 42 being North Pole and replaced that
+review/FPS fixture with actual Ruins 62; the rejected sheet is retained.
+Final before-left/after-right full-frame sheets, levels 2/22/62, ticks 350/900:
+
+- /tmp/xmas-dressing/biome3-2/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome3-2/final/full-res2-sheet.png
+
+Also inspected final/reduced-res1-sheet.png and reduced-res2-sheet.png, normal
+left/reduced right. Clear architecture at 1x, preserved page masonry, visible
+urns/laurels, quiet wings and readable colony/boulder/torch cues.
+`node tools/antique-art.js OUT` reproduces all twelve complete pairs and exact
+pins without requiring another checkout. Its stripped-hook predecessor is
+independently compared with the baseline git renderer. Review uses the real
+raster renderer rather than a live QML panel; gradients retain render.js's
+middle-stop approximation. No known unresolved art issue.
+
+**Pins deliberately advanced:** no earlier golden fixture was overwritten.
+New antique-pins.json retains predecessor and reviewed successor for all twelve
+frames; antique-scenes.json lists the exact affected historical scene/aggregate
+transitions. Previous rounds remove the four C17 hooks for their historical
+scope assertions, and the successor resolver applies only listed transitions.
+C17's all-biome test independently verifies every removed-hook frame against
+the original baseline and every non-Ruins current frame unchanged.
+
+The first full gate found the C6 legacy "opaque" RGB buffer sampled at a
+four-byte stride, which includes background scenery. Retained its historical
+pins and added the explicit Ruins cast-sample transition, following C15; the
+new independent two-background RGB mask proves the truly opaque colony and
+umbrella pixels keep their exact complete-frame colours. No assertion is
+exempted. SHA-256 prefixes (full hashes retained in the JSON fixtures):
+- full `2/350/1`: `beb4869c` → `a320ba09`.
+- full `2/900/1`: `d08a5fe5` → `de0a4551`.
+- full `22/350/1`: `622f9caf` → `d1ef6c65`.
+- full `22/900/1`: `6471ddad` → `556f595d`.
+- full `62/350/1`: `f58f8302` → `9ef64809`.
+- full `62/900/1`: `1f65f901` → `459ccd0e`.
+- full `2/350/2`: `6eaeb75e` → `6e6177ad`.
+- full `2/900/2`: `da500ecd` → `182cc662`.
+- full `22/350/2`: `84c2311d` → `d11e0369`.
+- full `22/900/2`: `d8f4aa25` → `0b991616`.
+- full `62/350/2`: `f0340e45` → `323999eb`.
+- full `62/900/2`: `bdb11f1c` → `2d506174`.
+- `aggregates/350,900`: `5841fd61` → `044d9554`.
+- `disabled/350,900`: `3e2f467d` → `7511b42f`.
+- `aggregates/120,350`: `77d3db7f` → `5030e32f`.
+- `disabled/120,350`: `ca292331` → `b8f6c9f8`.
+- `newyear/none/2/1`: `8ddab9f8` → `94533d3b`.
+- `newyear/none/2/2`: `e2c26381` → `f30a2806`.
+- `newyear/christmas/2/1`: `c721156d` → `c1ef4a82`.
+- `newyear/christmas/2/2`: `42c1a50d` → `a11550df`.
+- `c6cast/Ruins/1`: `2b618b1c` → `61295b20`.
+- `c6cast/Ruins/2`: `713aa9bd` → `743f5e05`.
+- `c6full/Ruins/1/120`: `c6e0d84a` → `31271b51`.
+- `c6full/Ruins/1/400`: `e1b8e208` → `bc8e6d9b`.
+- `c6full/Ruins/2/120`: `14fcd1df` → `df1bba5c`.
+- `c6full/Ruins/2/400`: `8b40de23` → `b6205223`.
+- `exitNative`: `ad0c8792` → `a1ad3873`.
+- `office`: `8c4228a3` → `a4031044`.
+
+**Validation:** baseline `npm run check` **1822/1822**, exit 0, 185.23 s.
+Checked `test/antique-art.test.js` was free before adding it. Eight new tests
+cover twelve reviewed frames and a substantial full-frame pixel-change floor,
+all-biome scope and baseline source recovery, palette/grid/context and frozen
+world purity, native-only material scope and cached/static art, supported and
+reserved sites with identity/version invalidation, live/current-air and reduced
+motion, truly opaque colony/umbrella pixels, and reproducible review artifacts
+and scene transitions. Digests and bounded byte/call loops only, never raw pixel
+buffer deepEqual. The focused new file passed 8/8; the corrected historical
+Christmas file passed 8/8. First full gate: 1829 pass/1 legacy scene-pin failure;
+retained that pin with its explicit transition as described above.
+Final `npm run check`: **1830/1830**, exit 0, 182.76 s.
+`npm run crap -- --changed --threshold 30`: **exit 0**, fresh coverage
+**1830/1830**, 390.94 s. New renderer maximum **11.0** (antiqueSpots), native
+Stone **10.0**, other new painters **3–7**, all 100% covered. Changed
+`drawTerrain` **29.0**, `drawMachines` **24.0**. New review/scene functions at
+most **8.0**, changed reference helpers at most **5.0**, all 100% covered.
+Stamps refreshed: Draw d0883c3e, build 9def91c5. Shared FIFO lock and six-file
+concurrency retained. Source and stamps stayed frozen through final checks,
+coverage and performance; only this log was finished afterwards.
+
+**Performance:** matched back-to-back `npm run fps -- 2 22 62 --season none`,
+baseline assets versus frozen current source, under one shared lock after
+coverage. Before and after, all three levels: **60 median / 60 p5, 17 ms worst
+frame, 0% long tasks**. CPU **12/11/11% → 11/11/11%**; no CPU speedup claimed
+against changing desktop load, and no measured frame-rate loss. Both completed
+with exit 0. Logs/explicit exits are in /tmp/xmas-dressing/biome3-2/:
+final-check.*, crap.*, matched-before-fps.log, matched-after-fps.log and
+matched-fps.exit. Earlier separate FPS runs are retained too; the final pair
+is the comparison reported here.
+
+**Next:** owner review of the complete native/page sheets, especially the
+urn/laurel balance in narrow Ruins 62. No known unresolved test, art or frame
+rate issue. Visual assessment used the real raster renderer, not live QML.
+No merge, push, deploy, production requests, port 8787 changes, sibling writes
+or Omarchy writes.

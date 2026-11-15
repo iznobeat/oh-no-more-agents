@@ -92,10 +92,10 @@ test('opaque live faces, bodies and umbrellas keep their exact pixels in all new
     const pin=workPins.c6cast[`${name}/${res}`],oldHash=a.digest('hex')
     if(pin)assert.equal(oldHash,pin.before,name+' historical cast pin')
     // This historical four-byte sampling of the RGB buffer also includes
-    // scenery. Retain its scene pin; C15 separately masks truly opaque RGB.
+    // scenery. Retain its scene pin; C15/C17 separately mask truly opaque RGB.
     const iron=ironPins.c6cast[`${name}/${res}`],prior=pin?pin.after:oldHash
     if(iron)assert.equal(iron.before,prior)
-    assert.equal(b.digest('hex'),iron?iron.after:prior,name)
+    assert.equal(b.digest('hex'),alpineSuccessor(iron?iron.after:prior),name)
   }
 })
 test('frozen colleagues lose their hat when thawed and lift wreaths follow the real car',()=>{

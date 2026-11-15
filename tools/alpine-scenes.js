@@ -1,5 +1,6 @@
 // Reproduce every historical aggregate or Frost scene advanced by C16.
 import fs from 'node:fs'
+import {antiqueSourceBefore} from './antique-art.js'
 import {execFileSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {load,frame,canvas,themeOf} from './render.js'
@@ -60,8 +61,8 @@ function arrivalScenes(out,old,D,P){
  out[office[0]]={label:'office',after:office[1]}
 }
 export function alpineScenes(base){
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
- const S=load('Sim.js'),P=load('Palette.js'),D=load('Draw.js'),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
+ const source=antiqueSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
+ const S=load('Sim.js'),P=load('Palette.js'),D=renderer(source),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
  try{
   aggregateScenes(out,source,before,S,P)
   seasonalScenes(out,old,D,fs.readFileSync('public/agents/season.js','utf8'))
