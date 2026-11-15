@@ -246,7 +246,6 @@ function drawTerrain(ctx, w, pal) {
 
   if (w.biome === "Foundry") drawFoundryMaterials(ctx, w, pal)
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
-  drawAlpineSnow(ctx, w, pal)
   drawIronworksBrick(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
@@ -26895,52 +26894,22 @@ function drawAlpineSky(ctx,w,pal) {
   if(w.biome!=="Frost") return
   ctx.save()
   var top=w.k.SKY*w.k.CELL, wide=w.k.COLS*w.k.CELL
-  for(var n=0;n<7;n++) {
-    var peak=n*67-12+(w.level%5)*3, summit=top+4+(n*13+w.level*3)%25
-    for(var row=0;row<52;row+=2) {
+  for(var n=0;n<Math.ceil(wide/67)+1;n++) {
+    var peak=n*67-12+(w.level%5)*3, summit=top+3+(n*13+w.level*3)%17
+    // Stand clear of the old foothills; one cool, continuous silhouette band.
+    for(var row=0;row<76;row+=2) {
       var half=Math.floor(row*0.85), y=summit+row
-      ctx.fillStyle=pal.backDim
+      ctx.fillStyle=pal.back
       ctx.fillRect(peak-half,y,half*2+2,2)
-      ctx.fillStyle=pal.backLit;ctx.globalAlpha=0.65
+      ctx.fillStyle=pal.backLit
       ctx.fillRect(peak-half,y,half+1,2)
-      if(row<14) {
-        ctx.fillStyle=pal.decorDim;ctx.globalAlpha=0.65
+      if(row<12) {
+        ctx.fillStyle=pal.decorDim
         ctx.fillRect(peak-half,y,Math.max(1,half-Math.floor(row/3)),2)
       }
-      ctx.globalAlpha=1
     }
   }
-  ctx.fillStyle=pal.backLit;ctx.globalAlpha=0.35
-  ctx.fillRect(0,top-3,wide,1)
   ctx.restore()
-}
-function drawAlpineSnow(ctx,w,pal) {
-  if(w.biome!=="Frost") return
-  ctx.save()
-  var k=w.k
-  for(var y=k.SKY;y<k.ROWS;y++) for(var x=0;x<k.COLS;x++) {
-    var m=w.terrain[y*k.COLS+x]
-    if(m===k.DIRT || m===k.ROCK) drawAlpineStratum(ctx,w,pal,x,y,m)
-  }
-  ctx.restore()
-}
-function drawAlpineStratum(ctx,w,pal,x,y,m) {
-  var C=w.k.CELL, px=x*C, py=y*C
-  var bend=Math.floor(2*Math.sin(x/11)+2*Math.sin(x/27)), band=(py+bend+64)%23
-  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=m===w.k.DIRT ? 0.26 : 0.08
-  if(band<9) ctx.fillRect(px,py,C,C)
-  ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.28
-  if(band>18) ctx.fillRect(px,py+2,C,1)
-  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.48
-  if(band<4) ctx.fillRect(px,py+1,C,1)
-  // Short buried facets, rather than a replacement fill over the old stone.
-  if((x*17+y*31+w.level)%43===0) {
-    ctx.fillStyle=pal.rockShade;ctx.globalAlpha=0.4
-    ctx.fillRect(px+1,py+1,1,2);ctx.fillRect(px+2,py+2,1,1)
-  }
-  if((w.res||1)>=2 || w.terrain[(y-1)*w.k.COLS+x]!==w.k.EMPTY) return
-  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.8
-  ctx.fillRect(px,py,C,1)
 }
 var ALPINE_CACHE=new WeakMap()
 function alpineSpots(w) {
@@ -26978,20 +26947,20 @@ function drawAlpineFirs(ctx,w,pal) {
 }
 function drawAlpineFir(ctx,w,pal,b) {
   var x=b.x+6,y=b.y+2
-  ctx.fillStyle=pal.rockShade
+  ctx.fillStyle=pal.rockEdge
   ctx.fillRect(x,y,2,23)
-  for(var tier=0;tier<5;tier++) {
-    var half=2+tier, yy=y+tier*4
-    ctx.fillStyle=pal.rockShade
-    ctx.fillRect(x-half,yy+2,half*2+3,2)
-    ctx.fillRect(x-half+1,yy,half*2,2)
-    ctx.fillStyle=pal.backLit
-    ctx.fillRect(x-half,yy+1,half+1,1)
-    ctx.fillStyle=pal.decorDim;ctx.globalAlpha=0.85
+  for(var tier=0;tier<4;tier++) {
+    var half=2+tier*2, yy=y+tier*5
+    // Solid overlapping boughs, with a dark underside and sparse snow caps.
+    ctx.fillStyle=pal.decorDim
+    ctx.fillRect(x-half+1,yy,half*2,3)
+    ctx.fillRect(x-half,yy+3,half*2+3,3)
+    ctx.fillStyle=pal.backDim
+    ctx.fillRect(x-half,yy+5,half*2+3,1)
+    ctx.fillStyle=pal.decorLit
     ctx.fillRect(x-half+1,yy,half,1)
-    ctx.globalAlpha=1
   }
-  ctx.fillStyle=pal.backLit
+  ctx.fillStyle=pal.decorLit
   ctx.fillRect(x-4,y+22,12,1)
 }
 function drawAlpineLife(ctx,w,pal) {
