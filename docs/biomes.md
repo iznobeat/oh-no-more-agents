@@ -448,6 +448,10 @@ would otherwise have replaced the workshop's hazards on every one of them.
   walker on it `ICE_GLIDE` (1.6×) either way, until the floor under it is dug
   out. Drawn as blue ice in place of the snow cap with a bank at each end; live,
   a glint slides along it and skaters get blades, a held stride and a spray.
+- **Hot cocoa** (`placeCocoa`, `stepCocoa`): a stand 8–30 cells along the
+  first corridor from the hatch's landing, the way the colony walks. Each
+  walker takes one mug (`ag.cocoaAt`) and walks at the pep talk's pace for
+  `COCOA_WARM` ticks. Every agent gets one on the first twenty Pole levels.
 - **Mission:** ROUND UP THE REINDEER (`kind: "reindeer"`, the camel's rules;
   every other one has the red nose). A stall rather than a cage.
 - **Hazards:** Wrapper Function (ceiling press with a spinning roll of

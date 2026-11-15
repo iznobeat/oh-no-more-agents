@@ -336,3 +336,49 @@ test("mistletoe: hung over the lowest floors clear of everything; two under it s
   w.biome = "Cavern"
   assert.equal(shot(10, [one, two]), digest(canvas(400, 248, "#000000").buf), "only at the Pole")
 })
+
+test("hot cocoa: a stand just along from the hatch's landing; each walker takes one mug, warmed into a quicker pace", () => {
+  for (let level = 21; level <= 420; level += 21) {
+    const w = S.generate(level, 0, 3), c = w.cocoa, first = w.corridors[0]
+    assert.ok(c, "a stand at " + level)
+    assert.equal(c.y, first.floorY - 1, "on the first floor")
+    assert.ok(Math.abs(c.x - 0.5 - first.startX) >= 8 && Math.sign(c.x - 0.5 - first.startX) === first.dir, "along the way they walk")
+    assert.ok(S.giftClear(w, Math.floor(c.x), c.y))
+  }
+  assert.equal(S.generate(1, 0, 3).cocoa, null, "only at the Pole")
+  const w = S.generate(21, 0, 3), c = w.cocoa
+  const ag = Object.assign(S.spawn(w), { x: c.x, y: c.y, state: "walk", dir: 1 })
+  const faller = Object.assign(S.spawn(w), { x: c.x, y: c.y, state: "fall", dir: 1 })
+  w.agents = [ag, faller]; w.ticks = 500
+  const plain = S.walkStep(ag, w)
+  S.stepCocoa(w)
+  assert.equal(ag.cocoaAt, 500); assert.equal(faller.cocoaAt, undefined, "walkers only")
+  assert.equal(c.served, 1)
+  assert.ok(S.walkStep(ag, w) > plain * 1.15, "warmed through")
+  w.ticks = 500 + S.COCOA_WARM + 1
+  assert.equal(+(S.walkStep(ag, w) / plain).toFixed(3), 1, "and back to pace")
+  ag.x = c.x; S.stepCocoa(w)
+  assert.equal(c.served, 1, "one mug each")
+})
+
+test("hot cocoa drawn: the stand, its steam, a mug carried for a few seconds; still under reduced motion; nothing written", () => {
+  const w = S.generate(21, 0, 3), c = w.cocoa
+  const ag = Object.assign(S.spawn(w), { x: c.x + 3, y: c.y, state: "walk", dir: 1, cocoaAt: 100 })
+  const shot = (ticks, agents) => {
+    w.ticks = ticks; w.agents = agents
+    const img = canvas(400, 248, "#000000"), before = JSON.stringify(w)
+    D.drawNorthCocoa(img.ctx, w)
+    assert.equal(JSON.stringify(w), before, "drawing wrote to the world")
+    return digest(img.buf)
+  }
+  const blank = digest(canvas(400, 248, "#000000").buf)
+  assert.notEqual(shot(110, []), blank, "the stand")
+  assert.notEqual(shot(110, []), shot(117, []), "steaming")
+  assert.notEqual(shot(110, [ag]), shot(110, []), "a mug in hand")
+  assert.equal(shot(100 + D.COCOA_CARRY + 1, [ag]), shot(100 + D.COCOA_CARRY + 1, []), "for a few seconds")
+  w.reducedMotion = true
+  assert.equal(shot(110, []), shot(117, []), "still")
+  w.reducedMotion = false
+  w.cocoa = null
+  assert.equal(shot(110, [ag]), blank)
+})

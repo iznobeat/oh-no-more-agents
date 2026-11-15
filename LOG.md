@@ -12298,3 +12298,20 @@ so this is evidence of no FPS regression, not a controlled speedup claim.
 **Next:** review moving machinery across more December colonies; tight or
 hazard-adjacent spaces intentionally suppress individual decorations. No
 merge, push, deploy, sibling writes or port 8787 changes.
+
+## 466 — 2026-11-15 · Hot cocoa at the Pole
+
+**Changed (Sim):** a cocoa stand on the first corridor of every North Pole
+level, a little way along from where the hatch drops the colony, the way it
+walks (`placeCocoa`; no randomness, clear the way a present's spot is and off
+the ice). Each walker takes one mug and, warmed through, walks at the pep
+talk's pace for eight seconds (`stepCocoa`, `COCOA_WARM`). First placed with
+the presents' rule anywhere on the board: most colonies dropped off the
+first floor before they reached it (6 of 10 levels served nobody). Along
+from the landing: every agent served on all of the first twenty.
+**Changed (Draw):** the stand (striped awning, posts, a counter, a pot
+steaming, two mugs); whoever has just taken one carries it out in front for
+four seconds, steaming. Behind the colony. Still under reduced motion.
+**Measured:** 10 Pole levels × 16 colonies: 98% home (97% before).
+**Test:** northpole (placement, walkers only, one mug each, warmed then back
+to pace; stand, steam, mug, reduced motion, no world writes).

@@ -985,6 +985,7 @@ function newWorld(level, attempt, colonySeed) {
     gifts: null,      // the North Pole's presents; see placeGifts
     sleighRuns: [],   // and the sleigh's passes overhead, each with a drop
     ponds: [],        // the North Pole's frozen ponds; see placePonds
+    cocoa: null,      // and its hot cocoa stand; see placeCocoa
     iceAt: null,      // and which feet cells are on the ice, 0/1
     trains: [],       // the Subway's shuttle on the last corridor; see placeTrains
     gates: [],        // the Clock Tower's clockwork gates; see placeGates         // the Spaceship's transporter pairs; see placePads
@@ -3467,6 +3468,7 @@ function placeGifts(w, corridors) {
     w.sleighRuns.push({ t: SLEIGH_FIRST + r * SLEIGH_EVERY, x: gx + 0.5, y: c.floorY - CORR_H, floorY: c.floorY - 1, dir: crng() < 0.5 ? 1 : -1, colour: Math.floor(crng() * 4), dropped: false })
   }
   placePonds(w, corridors)
+  placeCocoa(w, corridors)
 }
 
 function addGift(w, x, y, landed, rng) {
@@ -3593,6 +3595,37 @@ function pondRun(w, c, from, len) {
     if (ok) return x0
   }
   return -1
+}
+
+// Hot cocoa: a stand on the first corridor of every North Pole level, where
+// the whole colony walks. Each agent that passes it takes a mug (once), and
+// warmed through steps out a little quicker for COCOA_WARM ticks — the pep
+// talk's pace, found on the way rather than given by a tap. It never steers
+// anyone. Clear the way a present's spot is; no randomness at all.
+var COCOA_WARM = 240
+
+function placeCocoa(w, corridors) {
+  var c = corridors[0], y = c.floorY - 1
+  w.cocoa = null
+  // A little way along from where the hatch drops them, the way they walk.
+  for (var k = 8; k <= 30 && !w.cocoa; k++) {
+    var x = c.startX + c.dir * k
+    if (giftClear(w, x, y) && !iceCell(w, x, y)) w.cocoa = { x: x + 0.5, y: y, served: 0 }
+  }
+}
+function iceCell(w, x, y) { return !!(w.iceAt && w.iceAt[y * COLS + x]) }
+
+function stepCocoa(w) {
+  var c = w.cocoa
+  if (!c) return
+  for (var i = 0; i < w.agents.length; i++) {
+    var ag = w.agents[i]
+    if (ag.gone || ag.state !== "walk" || ag.cocoaAt !== undefined) continue
+    if (Math.floor(ag.y) !== c.y || Math.abs(ag.x - c.x) > 0.6) continue
+    ag.cocoaAt = w.ticks
+    ag.pepUntil = Math.max(ag.pepUntil || 0, w.ticks + COCOA_WARM)
+    c.served++
+  }
 }
 
 // A floor under the door's own is one the colony seldom walks: it has to
@@ -12001,6 +12034,7 @@ function finishWorldStep(w, active, blockers, moving) {
   stepLibrarians(w)
   stepCloud(w)
   stepGifts(w)
+  stepCocoa(w)
   stepAgi(w)
   stepRadio(w)
   stepMission(w)

@@ -2375,6 +2375,7 @@ function drawMachines(ctx, w, pal) {
   if (w.biome === "Factory") drawFactoryMachines(ctx, w, pal)
   drawNorthElves(ctx, w)
   drawNorthMistletoe(ctx, w)
+  drawNorthCocoa(ctx, w)
   drawNorthPondLife(ctx, w)
   if (w.gifts) drawNorthPoleGifts(ctx, w, pal)
   if (w.sleighRuns && w.sleighRuns.length) drawNorthPoleSleigh(ctx, w, pal)
@@ -3355,6 +3356,53 @@ function elfSpotClear(w, x, y) {
   if (m) for (var t = 0; t < m.targets.length; t++) if (Math.abs(m.targets[t].x - x) < 7) return false
   return true
 }
+// Hot cocoa (Sim's `w.cocoa`): a stand on the first floor under a striped
+// awning, a pot steaming on the counter and a row of mugs; whoever has just
+// taken one carries it out in front of them for a few seconds, steaming.
+// Behind the colony, so they walk past it, not into it.
+var COCOA_MUG = "#f4efe4", COCOA_DRINK = "#7a4a2a", COCOA_POT = "#2a2f3a", COCOA_STEAM = "#e8eef6"
+var COCOA_CARRY = 120
+function drawNorthCocoa(ctx, w) {
+  var c = w.cocoa
+  if (!c) return
+  var C = w.k.CELL, cx = Math.round(c.x * C), py = (c.y + 1) * C, t = w.reducedMotion ? 0 : w.ticks
+  ctx.fillStyle = NP_WOOD_DARK
+  ctx.fillRect(cx - 6, py - 14, 1, 14); ctx.fillRect(cx + 5, py - 14, 1, 14)          // posts
+  ctx.fillRect(cx - 6, py - 7, 12, 1)                                                     // counter top
+  ctx.fillStyle = NP_WOOD
+  ctx.fillRect(cx - 5, py - 6, 10, 6)
+  for (var i = 0; i < 7; i++) {                                                           // awning
+    ctx.fillStyle = i % 2 ? NP_SNOW : NP_RED
+    ctx.fillRect(cx - 7 + i * 2, py - 17, 2, 3)
+    if (i % 2 === 0) ctx.fillRect(cx - 7 + i * 2, py - 14, 2, 1)
+  }
+  ctx.fillStyle = COCOA_POT
+  ctx.fillRect(cx - 4, py - 10, 4, 3)
+  ctx.fillStyle = NP_GOLD
+  ctx.fillRect(cx - 5, py - 10, 6, 1)
+  for (var m = 0; m < 2; m++) { ctx.fillStyle = COCOA_MUG; ctx.fillRect(cx + 1 + m * 2, py - 9, 1, 2); ctx.fillStyle = NP_RED; ctx.fillRect(cx + 1 + m * 2, py - 8, 1, 1) }
+  drawCocoaSteam(ctx, w, cx - 2, py - 11, t)
+  for (var a = 0; a < w.agents.length; a++) drawCocoaMug(ctx, w, w.agents[a], t)
+}
+function drawCocoaSteam(ctx, w, x, y, t) {
+  ctx.fillStyle = COCOA_STEAM
+  for (var s = 0; s < 3; s++) {
+    var age = (t + s * 7) % 21
+    ctx.globalAlpha = w.reducedMotion ? 0.5 : 0.8 - age / 30
+    ctx.fillRect(x + (s % 2) + Math.round(Math.sin((t + s * 9) * 0.2)), y - Math.floor(age / 4) - s, 1, 1)
+  }
+  ctx.globalAlpha = 1
+}
+function drawCocoaMug(ctx, w, ag, t) {
+  if (ag.gone || ag.state !== "walk" || ag.cocoaAt === undefined || w.ticks - ag.cocoaAt > COCOA_CARRY) return
+  var C = w.k.CELL, x = Math.round(ag.x * C) + (ag.dir > 0 ? 4 : -6), y = (Math.floor(ag.y) + 1) * C - 8
+  ctx.fillStyle = COCOA_MUG
+  ctx.fillRect(x, y, 2, 2)
+  ctx.fillStyle = COCOA_DRINK
+  ctx.fillRect(x, y, 2, 1)
+  if (t % 12 < 6) { ctx.fillStyle = COCOA_STEAM; ctx.globalAlpha = 0.7; ctx.fillRect(x + (t % 24 < 12 ? 0 : 1), y - 2, 1, 1); ctx.globalAlpha = 1 }
+}
+
 // Mistletoe, hung from a corridor ceiling or two at the Pole. Two agents
 // under it at once send a little heart up between them. Placed from the layout and cached like the elves; nothing
 // is written to the world, and nobody stops for it.
