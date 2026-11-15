@@ -12488,3 +12488,10 @@ ends on the first line of Auld Lang Syne (traditional) in the fanfare's
 voice, with three rockets whistling down into bangs over it. `finale` now
 reads a `FINALES` table by season name (Christmas: Jingle Bells, 468).
 **Test:** sfx (fifteen notes and three rockets, three bangs).
+
+## 471 — 2026-11-15 · Deploy: New Year season, the sleigh's lap, the tunes
+
+**Deployed** build 520e7677 (Worker version 9225e1d2), replacing 09f0e466;
+covers 468–470 and C7. **Before:** gate 1740/1740, CRAP green; `npm run
+smoke -- --level 21 --season newyear` passed (21–28). **After:** `npm run
+verify -- --previous 09f0e466` passed.
