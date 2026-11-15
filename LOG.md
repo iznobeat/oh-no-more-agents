@@ -12480,3 +12480,11 @@ held 60/60 throughout. `docs/checking.md` documents both seasons and review.
 narrow layouts. Safety masks intentionally suppress individual sparks/flecks;
 no known test or FPS issue remains. No merge, push, deploy, sibling writes or
 port 8787 changes.
+
+## 470 — 2026-11-15 · Auld Lang Syne for the New Year season
+
+**Changed (sfx):** C7's New Year season gets its own finale: a won level
+ends on the first line of Auld Lang Syne (traditional) in the fanfare's
+voice, with three rockets whistling down into bangs over it. `finale` now
+reads a `FINALES` table by season name (Christmas: Jingle Bells, 468).
+**Test:** sfx (fifteen notes and three rockets, three bangs).

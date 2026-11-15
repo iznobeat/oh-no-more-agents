@@ -198,4 +198,7 @@ test("a won level in the Christmas season ends on Jingle Bells; a lost one, or o
   assert.equal(osc(jingle) - osc(plain), 11 - 4, "eleven notes for the fanfare's four")
   assert.equal(noise(jingle) - noise(plain), 1, "and the bells")
   assert.deepEqual(end({ name: "christmas" }, 2), end(undefined, 2), "a lost level keeps its own")
+  const auld = end({ name: "newyear" }, 9)
+  assert.equal(osc(auld) - osc(plain), 15 + 3 - 4, "Auld Lang Syne's fifteen notes and three rockets")
+  assert.equal(noise(auld) - noise(plain), 3, "and their bangs")
 })

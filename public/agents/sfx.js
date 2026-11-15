@@ -188,21 +188,30 @@
       for (var i = 0; i < JINGLE.length; i++) { tone("square", JINGLE[i][0], JINGLE[i][0], JINGLE[i][1] * 0.9, 0.3, at); at += JINGLE[i][1] }
       noise(at, 0.06, "highpass", 6500)
     },
+    // ...and in the New Year season the first line of Auld Lang Syne
+    // (traditional), with a few fireworks going off over it.
+    auldLangSyne: function () {
+      var at = 0
+      for (var i = 0; i < AULD.length; i++) { tone("square", AULD[i][0], AULD[i][0], AULD[i][1] * 0.9, 0.28, at); at += AULD[i][1] }
+      for (var p = 0; p < 3; p++) { tone("sine", 900 - p * 120, 120, 0.25, 0.25, 0.4 + p * 0.9); noise(0.3, 0.35, "lowpass", 2400) }
+    },
     fanfare: function (good) {
       var notes = good ? [523, 659, 784, 1047] : [392, 330, 262, 196]
       for (var i = 0; i < notes.length; i++) tone("square", notes[i], notes[i], 0.11, 0.35, i * 0.1)
     }
   }
 
+  var AULD = [[392, .2], [523, .3], [523, .1], [523, .2], [659, .2], [587, .3], [523, .1], [587, .2], [659, .1], [587, .1], [523, .3], [523, .1], [659, .2], [784, .2], [880, .5]]
+  var FINALES = { christmas: "jingleBells", newyear: "auldLangSyne" }
   var JINGLE = [[659, .11], [659, .11], [659, .22], [659, .11], [659, .11], [659, .22], [659, .11], [784, .11], [523, .16], [587, .06], [659, .3]]
 
   function play(name, arg) { if (ready(name)) SOUNDS[name](arg) }
 
-  // The end of a level: a fanfare up or down, or in the Christmas season a
-  // won level gets its jingle instead.
+  // The end of a level: a fanfare up or down, or in a season with a tune of
+  // its own a won level gets that instead.
   function finale(w) {
-    var good = w.saved * 2 >= w.toRelease
-    play(good && w.season && w.season.name === "christmas" ? "jingleBells" : "fanfare", good)
+    var good = w.saved * 2 >= w.toRelease, tune = good && w.season && FINALES[w.season.name]
+    play(tune || "fanfare", good)
   }
 
   // Events the world names outright, rather than ones read off a difference.
