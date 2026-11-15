@@ -6,6 +6,7 @@ import {round4Sheets} from "../tools/christmas-round4-art.js"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const D=load("Draw.js"),S=load("Sim.js"),P=load("Palette.js")
 const hash=b=>createHash("sha256").update(b).digest("hex")
 function world(res=2,level=21) {return Object.assign(S.generate(level,0,3),{res,ticks:120})}
@@ -17,6 +18,8 @@ function ink(w,fn) {
  fn(ctx);return {digest:hash(img.buf),calls}
 }
 function scarf(w,ag,drop=0,idle=false) {return ink(w,c=>D.drawNorthScarf(c,w,ag,100,100,ag.dir,drop,idle))}
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test("North Pole scarves are bold, striped, id-coloured, mirrored and knitted at page resolution",()=>{
  for(const res of[1,2]) {
   const w=world(res),ag=actor(w),colours=new Set()
@@ -78,11 +81,15 @@ test("gift hatch keeps original mouth, footprint and opening timing at both reso
  }
 })
 test("ordinary biomes retain complete baseline pixels at both scales",()=>{
- const h=createHash("sha256"),random=Math.random;Math.random=()=>0.5
- try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350])h.update(frame(S,D,P,{level,seed:3,ticks,theme:"tokyo-night",res,page:res===2}).img.buf)}finally{Math.random=random}
+ const historical=createHash("sha256"),h=createHash("sha256"),random=Math.random;Math.random=()=>0.5
+ try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350]){
+  h.update(frame(S,D,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)
+  historical.update(frame(S,foeBefore,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)
+ }}finally{Math.random=random}
  // C11: reviewed live boots, short drops and native greetings. With those
  // paths disabled the complete C10 aggregate remains e6652116… exactly.
- assert.equal(h.digest("hex"),"6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b")
+ assert.equal(historical.digest("hex"),"6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b")
+ assert.equal(h.digest("hex"),foePins.aggregates["120,350"].after)
 })
 test("round four review retains full boards, both-facing poses and hatch phases at both scales",()=>{
  const out=fs.mkdtempSync(path.join(os.tmpdir(),"christmas-r4-"))

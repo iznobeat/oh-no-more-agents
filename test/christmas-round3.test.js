@@ -6,6 +6,7 @@ import path from "node:path"
 import {round3Sheets} from "../tools/christmas-round3-art.js"
 import {createHash} from "node:crypto"
 import {load,canvas,frame,themeOf,THEMES} from "../tools/render.js"
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const D=load("Draw.js"),S=load("Sim.js"),P=load("Palette.js")
 const hash=b=>createHash("sha256").update(b).digest("hex")
 function world(level=21,res=2) {return Object.assign(S.generate(level,0,3),{res,ticks:350})}
@@ -21,6 +22,8 @@ function arrival(res=2) {
  w.saved=1;w.agents=[{x:e.x+1,y:e.y+1,state:"saved",fade:0}];if(w.mission)w.mission.done=true
  return w
 }
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test("packed snow is static, palette coloured, readable at both scales and read only in every theme",()=>{
  for(const res of[1,2])for(const theme of Object.keys(THEMES)) {
   const w=world(42,res),p=pal(w,theme),before=JSON.stringify(w)
@@ -94,17 +97,19 @@ test("workshop reduced motion is only a still glow, with no flakes or rising sta
  }
 })
 test("ordinary out of season frames remain byte identical, including report cards",()=>{
- const h=createHash("sha256"),random=Math.random;Math.random=()=>0.5
+ const historical=createHash("sha256"),h=createHash("sha256"),random=Math.random;Math.random=()=>0.5
  try {
   for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[350,900]) {
    h.update(frame(S,D,P,{level,seed:3,ticks,theme:"tokyo-night",res,page:res===2}).img.buf)
+   historical.update(frame(S,foeBefore,P,{level,seed:3,ticks,theme:"tokyo-night",res,page:res===2}).img.buf)
    const w=world(level,res),p=pal(w)
    assert.equal(ink(w,c=>{D.drawNorthSnowMass(c,w,p);D.drawNorthWorkshopArrival(c,w);D.drawChristmasReport(c,w,24,70,352,100)}).calls.length,0)
   }
  }finally{Math.random=random}
  // C11: live boot arcs and native greetings; disabling those poses restores
  // the exact C10 aggregate (0644914d…), audited in colony-last.test.js.
- assert.equal(h.digest("hex"),"7bbf5ffc46ddc2c003f06fd2edb13f70096c3b94bd85d4dd74affb778fc723bd")
+ assert.equal(historical.digest("hex"),"7bbf5ffc46ddc2c003f06fd2edb13f70096c3b94bd85d4dd74affb778fc723bd")
+ assert.equal(h.digest("hex"),foePins.aggregates["350,900"].after)
 })
 
 test("review retains before/after full frames, report cards and timed arrival strips at both resolutions",()=>{

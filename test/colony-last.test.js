@@ -6,20 +6,25 @@ import {createHash} from 'node:crypto'
 import {load,canvas,themeOf,THEMES,frame as worldFrame} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {fixture,frame,remainingBoards,CASES} from '../tools/skill-strips.js'
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const pins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8'))
 const D=load('Draw.js'),P=load('Palette.js'),old=renderer(execFileSync('git',['show',pins.base+':public/agents/Draw.js'],{maxBuffer:4e6}).toString())
 const hash=b=>createHash('sha256').update(b).digest('hex'),names=['walk','shortfall','saved']
+const foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test('disabling only the three reviewed poses restores the exact complete C10 aggregates',()=>{
  const disabled=renderer(fs.readFileSync('public/agents/Draw.js','utf8')+'\ncolonyWalking=function(){return false};colonyShortFall=function(){return false};colonyNativeHome=function(){return false};')
+ const disabledBefore=foeRoundThreeBefore(fs.readFileSync('public/agents/Draw.js','utf8')+'\ncolonyWalking=function(){return false};colonyShortFall=function(){return false};colonyNativeHome=function(){return false};')
  const S=load('Sim.js'),random=Math.random
  try {for(const [ticks,expected]of [
   [[350,900],'0644914d47455bcdc10e2a3adf86ffdb6480a101219505b4ab1ce98600881457'],
   [[120,350],'e665211633368a4fcdbbffbda8590fa73f9d0c1f411f34870bc3b9a097b04964']
- ])for(const draw of [old,disabled]) {
+ ])for(const draw of [old,disabledBefore,disabled]) {
   Math.random=()=>0.5;const sum=createHash('sha256')
   for(let level=1;level<=20;level++)for(const res of [1,2])for(const tick of ticks)
    sum.update(worldFrame(S,draw,P,{level,seed:3,ticks:tick,theme:'tokyo-night',res,page:res===2}).img.buf)
-  assert.equal(sum.digest('hex'),expected)
+  assert.equal(foePins.disabled[ticks.join(',')].before,expected)
+  assert.equal(sum.digest('hex'),draw===disabled?foePins.disabled[ticks.join(',')].after:expected)
  }}finally{Math.random=random}
 })
 for(const name of names)test(name+': consecutive native/page frames retain deliberate exact historical and reviewed pins',()=>{

@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto'
 import {load,canvas} from '../tools/render.js'
 import {season,renderer} from '../tools/gag-art.js'
 import {christmasWorld,christmasFrame} from '../tools/christmas-art.js'
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const source=fs.readFileSync('public/agents/season.js','utf8'),api=season(source,'?season=newyear')
 const D=load('Draw.js'),S=load('Sim.js'),base='dd5138c91fe8ca616141abe025ce4799f9598652'
 const oldD=renderer(execFileSync('git',['show',`${base}:public/agents/Draw.js`],{maxBuffer:4e6}).toString())
@@ -20,6 +21,8 @@ function calls(w) {
   api.paint(ctx,w);return out
 }
 function world(){return christmasWorld(5,api)}
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test('New Year wraps Dec 31–Jan 1 only, with strict previews and Christmas separation',()=>{
   for(let year=2024;year<2032;year++) {
     for(const [m,d,expect]of [[11,26,'christmas'],[11,27,null],[11,30,null],[11,31,'newyear'],[0,1,'newyear'],[0,2,null]])assert.equal(api.pick('',new Date(year,m,d)),expect)
@@ -35,7 +38,10 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
       const wa=christmasWorld(level,a),wb=christmasWorld(level,b)
       const pin=workPins.newyear[`${mode}/${level}/${res}`],before=hash(christmasFrame(oldD,a,wa,res).buf)
       if(pin)assert.equal(before,pin.before,'historical '+`${mode} ${level} ${res}`)
-      assert.equal(hash(christmasFrame(D,b,wb,res).buf),pin?pin.after:before,`${mode} ${level} ${res}`)
+      const historical=hash(christmasFrame(foeBefore,b,christmasWorld(level,b),res).buf),review=foePins.newyear[`${mode}/${level}/${res}`]
+      assert.equal(historical,pin?pin.after:before,'before C14 '+`${mode} ${level} ${res}`)
+      if(review)assert.equal(historical,review.before)
+      assert.equal(hash(christmasFrame(D,b,wb,res).buf),review?review.after:historical,`${mode} ${level} ${res}`)
       if(level===1 || level===21){
         wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30
         const report=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).reports[`${mode}/${level}/${res}`]

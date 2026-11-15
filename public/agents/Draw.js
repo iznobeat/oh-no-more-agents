@@ -8116,17 +8116,39 @@ function drawHzRockfall(ctx, w, pal, h, geo) {
   }
 }
 
+// Cock, hold, accelerate to contact on fire zero; recoil then slow return.
+// The two machines share a stroke, but retain their own Sim charge windows.
+function ramTravel(w, h, g, full, charge, release) {
+  var travel = 0
+  if (g.winding) {
+    var cock = Math.min(1, h.t / Math.floor(charge / 3))
+    var strike = Math.max(0, (h.t - (charge - 1 - release)) / release)
+    travel = -3 * cock + (full + 3) * strike * strike
+  }
+  if (g.live) {
+    var rebound = w.reducedMotion ? 0 : Math.max(0, 1 - Math.abs(h.t - 3) / 3)
+    travel = full - rebound * 2
+  }
+  if (g.cool) travel = full * g.cool * g.cool
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return Math.round(travel * grid) / grid
+}
+
 function drawHzPiston(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, show = geo.show, hot = geo.hot
-  // A ram in a housing, driven out sideways.
-  var ext = hzStroke(geo, wide - 8, 4)
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y0, 5, tall)                      // housing
+  var x0 = geo.x0, y0 = geo.y0, tall = geo.tall
+  var ext = ramTravel(w, h, geo, geo.wide - 8, 18, 5)
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0 + 5, y0 + 2, ext, tall - 4)        // the ram
-  ctx.fillStyle = show ? hot : pal.warn
-  ctx.fillRect(x0 + 5 + ext, y0 + 1, 3, tall - 2)    // the head
+  ctx.fillRect(x0 + 5, y0 + 2, Math.max(0, ext), tall - 4)
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(x0, y0, 5, tall)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  ctx.fillRect(x0 + 5 + ext, y0 + 1, 3, tall - 2)
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x0 + 6 + ext, y0 + 2, 0.5, tall - 4)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(x0 + 5, y0 + 3, Math.max(0, ext), 0.5)
+  }
   hzLamp(ctx, pal, h, geo, x0, y0 + 1)
   hzImpact(ctx, pal, h, geo, x0 + 5 + ext, geo.y1, pal.warn)
 }
@@ -8166,31 +8188,59 @@ function drawHzFence(ctx, w, pal, h, geo) {
 }
 
 // --- biome-exclusive oddities -----------------------------------------
-function drawHzEchobat(ctx, w, pal, h, geo) {
-  var y0 = geo.y0, cx = geo.cx, t = geo.t, show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(cx - 2, y0, 4, 5)
-  ctx.fillStyle = show ? hot : pal.rig
-  var wing = geo.winding ? 3 + Math.round(geo.progress * 3) : 5
-  var breath = Math.floor(t / 24) % 2
-  hzTri(ctx, cx - wing, y0 + 4 + breath, wing, 4, 1)
-  hzTri(ctx, cx + wing, y0 + 4 + breath, wing, 4, 1)
-  // The screech, out to where it actually kills: three rings travelling to
-  // the full reach either side. It used to stop at five cells while the
-  // lethal zone ran to fifteen — the colony died to something nobody could see.
-  if (show) {
-    var span = geo.live ? (h.reach || 9) * geo.C * Math.min(1, h.t / 18) : 3 + geo.progress * 5
-    ctx.fillStyle = hot
-    for (var eb = 1; eb <= 3; eb++) {
-      var er = Math.round(((t + eb * 6) % 18) / 18 * span) + 3
-      ctx.globalAlpha = 1 - er / (span + 4)
-      ctx.fillRect(cx - er, y0 + 8 + eb * 2, er * 2, 1)
-      ctx.fillRect(cx - er, y0 + 6 + eb * 2, 1, 3)
-      ctx.fillRect(cx + er - 1, y0 + 6 + eb * 2, 1, 3)
-    }
-    ctx.globalAlpha = 1
+// Fold for a breath, open the wings and jaw before the first lethal screech.
+function echoBatPose(w, h, g) {
+  var wing = 5, lift = w.reducedMotion ? 0 : Math.floor((g.t || 0) / 24) % 2, jaw = 0
+  if (g.winding) {
+    var inhale = Math.min(1, h.t / 12), open = Math.max(0, (h.t - 15) / 8)
+    wing = 5 - inhale * 3 + open * 8
+    lift = -inhale * 3 + open * 3
+    jaw = open * 3
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y0 + 8, pal.rig)
+  if (g.live) {
+    var beat = w.reducedMotion ? 0 : Math.sin(Math.min(1, h.t / 17) * Math.PI * 3)
+    wing = 10 - beat * beat * 3; lift = beat * beat * 2; jaw = 3
+  }
+  if (g.cool) { wing = 5 + g.cool * 5; lift = 0; jaw = g.cool * 3 }
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return {wing: Math.round(wing * grid) / grid, lift: Math.round(lift * grid) / grid,
+    jaw: Math.round(jaw * grid) / grid}
+}
+
+function drawEchoRings(ctx, w, pal, h, g, y) {
+  if (!g.show) return
+  var tick = w.reducedMotion ? 17 : h.t
+  var span = g.live ? (h.reach || 9) * g.C * Math.min(1, tick / 18) : 3 + g.progress * 5
+  ctx.fillStyle = g.hot
+  for (var i = 1; i <= 3; i++) {
+    var radius = Math.round(((tick + i * 6) % 18) / 18 * span) + 3
+    ctx.globalAlpha = 1 - radius / (span + 4)
+    ctx.fillRect(g.cx - radius, y + i * 2, radius * 2, 1)
+    ctx.fillRect(g.cx - radius, y - 2 + i * 2, 1, 3)
+    ctx.fillRect(g.cx + radius - 1, y - 2 + i * 2, 1, 3)
+  }
+  ctx.globalAlpha = 1
+}
+
+function drawHzEchobat(ctx, w, pal, h, geo) {
+  var pose = echoBatPose(w, h, geo), cx = geo.cx, y = geo.y0 + 4
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(cx - 2, geo.y0, 4, 5)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rig
+  hzTri(ctx, cx - pose.wing, y + pose.lift, pose.wing, 4, 1)
+  hzTri(ctx, cx + pose.wing, y + pose.lift, pose.wing, 4, 1)
+  if (pose.jaw) {
+    ctx.fillRect(cx - 2, y, 4, 3 + pose.jaw)
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(cx - 1, y + 2, 2, pose.jaw)
+  }
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.warn
+    ctx.fillRect(cx - 1.5, y + 0.5, 1, 0.5)
+    ctx.fillRect(cx + 0.5, y + 0.5, 1, 0.5)
+    ctx.fillRect(cx - 1, y + 2.5 + pose.jaw, 2, 0.5)
+  }
+  drawEchoRings(ctx, w, pal, h, geo, y + 4)
 }
 
 function drawHzScarab(ctx, w, pal, h, geo) {
@@ -8728,7 +8778,7 @@ function drawHzStamper(ctx, w, pal, h, geo) {
   ctx.fillStyle = pal.rigDark
   ctx.fillRect(x0 + 1, y0, wide - 2, 3)                   // the gantry
   ctx.fillStyle = pal.rig
-  var stroke = hzStroke(geo, tall - 15, 3)
+  var stroke = ramTravel(w, h, geo, tall - 15, 30, 7)
   ctx.fillRect(cx - 2, y0 + 3, 4, 6 + stroke)    // the ram
   var headY = y0 + 9 + stroke
   ctx.fillRect(x0 + 2, headY, wide - 4, 6)                // the head
@@ -8738,6 +8788,12 @@ function drawHzStamper(ctx, w, pal, h, geo) {
   if (show) {
     ctx.fillStyle = hot
     ctx.fillRect(x0 + 2, live ? y1 - 1 : headY + 6, wide - 4, 1)
+  }
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(cx - 1.5, y0 + 3, 0.5, 6 + stroke)
+    ctx.fillStyle = pal.warn
+    ctx.fillRect(x0 + 2.5, headY + 5, wide - 5, 0.5)
   }
   hzLamp(ctx, pal, h, geo, cx - 2, y0 + 1)
   hzImpact(ctx, pal, h, geo, cx, y1, pal.rig)

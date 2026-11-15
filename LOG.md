@@ -13299,3 +13299,115 @@ covers C12, C13 and 479. Reviewed C12 and C13 in their before/after strips
 jaws, the pendulum's continuous swing, snowball impacts). **Before:** gate
 1796/1796, CRAP green; `npm run smoke -- --level 3` passed (3–9).
 **After:** `npm run verify -- --previous 9595552a` passed.
+
+## C14 — 2026-11-15 · Pull back, press down, breathe in
+
+**Chose:** Push Notification (piston), Batch Process (stamper), and Echo
+Location (echobat), after re-rendering the complete catalogue: eight hostile
+kinds × eleven state fixtures, plus all 48 hazards, at res 1 and res 2. The
+piston barely moved before jumping to full extension; the press jumped from
+its raised head to the floor; the bat's nearly fixed wings did not explain
+its impending screech. C12/C13's sniper, icicles, servo, trap, pendulum and
+snowballs remain exact.
+
+**Changed (Draw only):** the piston retracts into its housing, holds, then
+accelerates through its last five charge ticks to contact at fire zero.
+The press lifts its bolted head, holds, then drops over its last seven charge
+ticks to the same boundary. Both have a brief two-pixel rebound during fire
+and a slowing twelve-tick return during recovery. Their native poses carry
+the action; half-pixel piston rod/head edges and press ram/sole detail follow
+the same stroke at res 2. The bat folds its wings upward for a twelve-tick
+inhale, holds, then spreads them and opens its jaw over the last eight charge
+ticks. Its live wing beats and mouth lead into a settling, closing recovery.
+The screech rings use the hazard clock, retaining its reach; reduced motion
+holds a late, broad ring pose and still wings, and suppresses machine recoil.
+Charge progress remains a persistent tell. Restored the bat's original quiet
+idle breath after the idle-animation regression caught its removal. Native
+motion, existing palette roles and the triangular wing / bolted press / ram
+identities remain; res 2 adds mouth, eye and mechanical half-pixel edges.
+
+No Sim.js, sfx.js, North Pole painter, umbrella, behaviour, timer, dependency,
+UI text, drawing RNG or world-write changes. Existing seasonal head riders
+retain exact pixels and anchors.
+
+**Review/tool:** extended tools/foe-strips.js with C14 compact consecutive
+strips, side-by-side keys and ordinary/Christmas/New Year full-board pairs.
+The existing tool regression exercises the new writers. Checked that
+test/foe-round3.test.js was free before adding it. Baseline catalogue:
+/tmp/xmas-dressing/foes3-0. Inspected native/page hostile and hazard overviews,
+selected consecutive cycles, key comparisons and full boards. Rejected the
+first bat draft's overextended live wing beat and restored its idle breath.
+Reviewed the scene-pin changes in foes3-3. A reused seasonal fixture initially
+introduced a ticker-note difference: separate worlds removed that false
+change; no text pin was accepted. Final ordinary strips are identical across
+the last reduced-motion-only radius adjustment.
+
+Final inspected before/after strips (each eight-tick window: before above,
+after below; consecutive left to right):
+
+- /tmp/xmas-dressing/foes3-4/piston-compact-res1.png
+- /tmp/xmas-dressing/foes3-4/piston-compact-res2.png
+- /tmp/xmas-dressing/foes3-4/stamper-compact-res1.png
+- /tmp/xmas-dressing/foes3-4/stamper-compact-res2.png
+- /tmp/xmas-dressing/foes3-4/echobat-compact-res1.png
+- /tmp/xmas-dressing/foes3-4/echobat-compact-res2.png
+
+Also inspected the corresponding *-compare-res*.png keys (before left / after
+right), staged full boards at both scales including seasonal riders, recovery
+boards, and affected real/staged Factory scene pairs. These use the real
+renderer; they are not a live Omarchy/QML session.
+
+**Pins deliberately advanced:** no existing golden JSON was overwritten.
+test/fixtures/foe-round3-pins.json adds independent historical/reviewed complete
+cycles, both facings; prefixes below apply to either facing:
+
+- piston res 1: baa74b58 → 3f316717; res 2: 24141047 → 9744aba9 — pullback, accelerated stroke, recoil and return, plus attached fine edges.
+- stamper res 1: d375a077 → ecc83993; res 2: 6b858ec0 → 3a79afff — lifted head, drop and recovery, plus ram and sole details.
+- echobat res 1: da651977 → efe70186; res 2: 84d4a7ea → 4f24f9b1 — inhale, jaw, wing beats and settling, plus face details.
+
+test/fixtures/foe-round3-scenes.json records every advanced scene/aggregate.
+Old assertions remain separately in force with exactly these three painters
+restored; new C14 scope tests recover the complete baseline by the same three
+entry points. No hazard, biome or frame was exempted:
+
+- ordinary Factory level 8 / res 2 / ticks 120, 350, 900: 2ef9163c → a3483264; 40b4330a → 1a642af3; 27b93522 → 61f4b7d3. The press's fine details change these otherwise idle frames.
+- Christmas round-six unseasoned staged Factory / res 1 / ticks 120, 400: 97d574e2 → 241eb1d6; dc50f730 → 593d4905. Res 2 / ticks 120, 400: ce60e5b3 → 5be633b0; 77c39bd5 → d7ecc99c. Those staged fixtures include the changed press poses and fine details.
+- New Year preservation corpus, level 8 / none / res 1, 2: 3a7e5bfa → 69493728; b8d42f69 → d62898d7. Christmas / res 1, 2: 23f1d1fe → 14832889; 594317b5 → 8f59ec36. The live Factory hazard changes; seasonal/actor paint stays. Every other biome and all report pins stay exact.
+- round-three ordinary aggregate (ticks 350/900): 7bbf5ffc → 00fabc79; round-four/five ordinary aggregate (120/350): 6cd8b9ef → 36ae5beb. They contain the listed Factory page frames.
+- C10 scope audit with C11 colony poses disabled, ticks 350/900: 0644914d → cbc151b8; ticks 120/350: e6652116 → 2af2ffb8. Historical C10 hashes still run against the old renderer and the restored painters; the current equivalents include the new hazards.
+- Factory component aggregate res 2: 1649b28c → 1c281dfd, for the press's attached fine details. The native/default aggregate remains 1dd2ada3 exactly.
+- umbrella-office arrival actor aggregate (native/default/share): e5692e5a → 3443fb1d, because that full actor pass also contains live hazards. The exact e5692e5a predecessor and independent 44940033 original reference remain asserted.
+
+**Validation:** baseline full check **1796/1796**. Eight new tests pin complete
+cycles and changed ordinary scenes, require substantial native key changes,
+check phase joins/acceleration/expiry, still reduced-motion poses with a broad
+held screech, purity/RNG/grid/bounded paint in every theme and facing,
+complete-board scope, all excluded hazards and every hostile state with
+seasonal riders. Digests and bounded counts only, no raw-buffer deepEqual.
+Focused seasonal/pin regressions **176/176**. The initial full run exposed eight
+intentional pin assertions and the missing idle breath; the next full check
+passed **1804/1804**. Its coverage pass also passed 1804 and printed scores,
+but the outer wrapper returned 143; repeated the gates after the final held
+ring refinement. Final `npm run check` exited 0: **1804/1804** in 173.06 s.
+Final `npm run crap -- --changed --threshold 30` exited 0 after fresh
+coverage **1804/1804** in 389.04 s. Changed renderer scores: echoBatPose
+9, ramTravel 7, drawEchoRings 6, drawHzStamper 6, drawHzEchobat 5,
+drawHzPiston 4.1; highest changed tool score 13. All under 30.
+`npm run stamp` refreshed Draw to 79ffc0de and build to 85ee9f1d.
+Shared heavy-run lock and concurrency six retained; source stayed frozen
+through the final gates. Only this log entry was appended afterwards.
+
+**Performance:** a first after-run printed complete metrics but its wrapper
+returned 143. A matched pair under the shared heavy-run lock used the same
+temporary serving root with exact baseline assets, then the current Draw and
+page, and completed with exit 0 and an fps-complete marker. Final
+`npm run fps -- 8 12 18`, before → after: all three levels **60 median / 60 p5,
+17 ms worst, 0% long tasks**. CPU **12/12/13% → 14/12/13%**. No frame-rate loss
+measured. Logs: foes3-0/{check,fps}.log; foes3-3/focused-final.log;
+foes3-4/{final-before-fps,final-after-fps,fps-pair-queue}.log and fps-complete;
+foes3-5/{focused,check,crap}.log, under /tmp/xmas-dressing/.
+
+**Next:** watch the three tells in crowded native colonies. No known unresolved
+art/test issue; visual review used renderer strips and staged boards, not a
+live QML panel. No merge, push, deploy, production requests, port 8787 changes,
+sibling writes or Omarchy writes.

@@ -8,6 +8,7 @@ import {load,canvas,frame,themeOf} from '../tools/render.js'
 import {MACHINES,machineWorld,round5Sheets} from '../tools/christmas-round5-art.js'
 import {renderer,season} from '../tools/gag-art.js'
 import {christmasFrame} from '../tools/christmas-art.js'
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
 function ink(w) {
@@ -18,6 +19,8 @@ function ink(w) {
   D.drawChristmasMachines(ctx,w)
   return {calls,digest:hash(img.buf)}
 }
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test('eight Christmas machines paint bold native and page kit without touching their worlds',()=>{
   for(const [name,key]of MACHINES)for(const res of[1,2]) {
     const w=machineWorld(name,key);w.res=res;const before=JSON.stringify(w)
@@ -36,10 +39,14 @@ test('machine kit is absent with no season, other seasons and at the North Pole'
   const w=S.generate(21,0,3);w.res=2;w.season={name:'christmas'};assert.equal(ink(w).calls.length,0)
 })
 test('ordinary out of season frames remain byte identical across every biome and resolution',()=>{
-  const h=createHash('sha256'),random=Math.random;Math.random=()=>0.5
-  try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350])h.update(frame(S,D,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)}finally{Math.random=random}
+  const historical=createHash('sha256'),h=createHash('sha256'),random=Math.random;Math.random=()=>0.5
+ try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350]){
+  h.update(frame(S,D,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)
+  historical.update(frame(S,foeBefore,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)
+ }}finally{Math.random=random}
   // Same C11 live-colony review and exact C10 scope audit as round four.
-  assert.equal(h.digest('hex'),'6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b')
+  assert.equal(historical.digest('hex'),'6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b')
+ assert.equal(h.digest('hex'),foePins.aggregates['120,350'].after)
 })
 test('new machine animation is still with reduced motion at both resolutions',()=>{
   for(const [name,key]of MACHINES)for(const res of[1,2]) {

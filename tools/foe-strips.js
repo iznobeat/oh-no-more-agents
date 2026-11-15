@@ -69,7 +69,7 @@ export function run(base,out,options={}){
  enemyStrips(out,old,now,manifest,options.kinds)
  hazardStrips(out,old,now,manifest,S.HAZARDS.filter(s=>!options.hazards || options.hazards.includes(s.id)))
  overview(out,now)
- choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now)
+ choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now);roundThreeReview(out,old,now)
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2))
 }
 export function enemyStrips(out,old,now,manifest,kinds=KINDS){
@@ -168,12 +168,12 @@ export function roundTwoReview(out,old,now){
  }
  roundTwoBoards(out,old,now)
 }
-export function roundTwoBoards(out,old,now){
+export function roundTwoBoards(out,old,now,names=ROUND_TWO,prefix="round2"){
  for(const res of [1,2])for(const phase of ['charge','fire','rest'])for(const season of ['none','christmas','newyear']){
   const {w}=enemyFixture('gun','walk',4)
   w.res=res;w.season={name:season,redHats:season==='christmas'?'santa':season==='newyear'?'party':undefined}
   w.enemies=KINDS.map((kind,i)=>({...enemyFixture(kind,'walk',4).en,x:12+i*10,y:18}))
-  w.hazards=ROUND_TWO.map((id,i)=>{
+  w.hazards=names.map((id,i)=>{
    const spec=S.HAZARDS.find(s=>s.id===id),{h}=hazardFixture(spec,phase,phase==='charge'?spec.charge-2:phase==='fire'?2:3)
    h.zx0=26+i*22;h.zx1=h.zx0+spec.w-1;h.zy0=31-spec.h;h.zy1=30;return h
   })
@@ -185,8 +185,22 @@ export function roundTwoBoards(out,old,now){
    D.drawTerrain(img.ctx,w,pal);D.drawActors(img.ctx,w,pal,{})
    copyPixels(pair,img,j*400*res,0)
   }
-  writePNG(path.join(out,`round2-${season}-${phase}-full-res${res}.png`),pair)
+  writePNG(path.join(out,`${prefix}-${season}-${phase}-full-res${res}.png`),pair)
  }
+}
+
+export const ROUND_THREE=['piston','stamper','echobat']
+export function roundThreeReview(out,old,now){
+ for(const res of [1,2])for(const name of ROUND_THREE){
+  const spec=S.HAZARDS.find(s=>s.id===name)
+  compactHazardStrip(out,old,now,spec,res)
+  const keys=[['idle',0],['charge',Math.floor(spec.charge/2)],['charge',spec.charge-4],['charge',spec.charge-1],['fire',0],['fire',3],['rest',0],['rest',6]]
+  const pair=canvas(16*48*res,48*res,'#1a1b26')
+  for(const [j,D]of [old,now].entries())for(const [i,[phase,t]]of keys.entries())
+   copyPixels(pair,crop(hazardFrame(D,spec,phase,t,res),8*res,0,48*res,48*res),(j*8+i)*48*res,0)
+  writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
+ }
+ roundTwoBoards(out,old,now,ROUND_THREE,'round3')
 }
 
 
