@@ -12882,3 +12882,12 @@ the full check, so no controlled CPU comparison is claimed. Logs:
 No known unresolved art/test issue; visual review used the real renderer and
 natural/staged fixtures, not a live QML panel. No merge, push, deploy, production
 request, port 8787 change or Omarchy write.
+
+## 475 — 2026-11-15 · Deploy: mining, blocking and floating animated
+
+**Deployed** build 5031515c (Worker version c3f7be83), replacing 421b7508;
+covers 474 and C10 (reviewed in enlarged strips: the miner crouches and
+presses, the blocker plants wide with palms out, the floater grips the
+umbrella's handle with its legs trailing). **Before:** gate 1768/1768, CRAP
+green; `npm run smoke -- --level 8 --season christmas` passed (8–14).
+**After:** `npm run verify -- --previous 421b7508` passed.
