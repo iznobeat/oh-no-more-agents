@@ -28,6 +28,7 @@ export function frame(D,name,t,res,dir=1){
  img.ctx.translate(28-ag.x*4,36-(ag.y+1)*4)
  // One full sprite frame, unscaled art pixels, on a quiet floor.
  img.ctx.fillStyle=pal.dirtShade;img.ctx.fillRect(ag.x*4-28,(ag.y+1)*4,64,2)
+ if(name==='explode')D.drawBlast(img.ctx,w,pal,{x:ag.x,y:ag.y-1,r:S.BOMB_RADIUS,t:400})
  if(ag.gone)D.drawDeath(img.ctx,w,pal,ag)
  else D.drawAgent(img.ctx,w,pal,ag,{})
  return img
@@ -85,7 +86,7 @@ export function liveBoards(base,out){
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const base=process.argv[2]||'HEAD',out=process.argv[3]||'/tmp/xmas-dressing/anim-0'
- run(base,out);liveBoards(base,out);actionBoards(base,out)
+ run(base,out);liveBoards(base,out);actionBoards(base,out);balanceBoards(base,out)
 }
 
 // A quiet, complete board with the three reviewed actions, not enlarged crops.
@@ -106,5 +107,35 @@ export function actionBoards(base,out) {
    copyPixels(pair,img,j*400*res,0)
   }
   writePNG(path.join(out,`actions-full-${t}-res${res}.png`),pair)
+ }
+}
+
+// Round-three review: compact native strips and complete staged boards.
+export function balanceBoards(base,out) {
+ const old=renderer(execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()),now=load('Draw.js')
+ fs.mkdirSync(out,{recursive:true})
+ for(const res of [1,2]) {
+  for(const name of ['mine','block','float']) {
+   const strip=canvas(16*24*res,4*36*res)
+   for(const [j,D]of [old,now].entries())for(const [k,dir]of [1,-1].entries())for(let t=0;t<16;t++)
+    copyPixels(strip,crop(frame(D,name,t,res,dir),16*res,4*res,24*res,36*res),t*24*res,(j*2+k)*36*res)
+   writePNG(path.join(out,`${name}-compact-res${res}.png`),strip)
+  }
+  for(const t of [0,2,4,6,10,14]) {
+   const {w}=fixture('block',t);w.res=res;w.agents=[];w.wind=0
+   for(let y=20;y<=31;y++)for(let x=25;x<=76;x++)w.terrain[y*w.k.COLS+x]=y===31?w.k.DIRT:w.k.EMPTY
+   for(const [i,name]of ['mine','block','float'].entries()) {
+    const {ag}=fixture(name,t);ag.x=34+i*16;if(name==='float')ag.y=27
+    w.agents.push(ag)
+   }
+   w.mines=[{x:34,y:31,fuse:90-t}]
+   const pal=P.build(themeOf('tokyo-night').theme,1),pair=canvas(800*res,248*res)
+   for(const [j,D]of [old,now].entries()) {
+    const img=canvas(400*res,248*res)
+    D.drawTerrain(img.ctx,w,pal);D.drawActors(img.ctx,w,pal,{})
+    copyPixels(pair,img,j*400*res,0)
+   }
+   writePNG(path.join(out,`balance-full-${t}-res${res}.png`),pair)
+  }
  }
 }

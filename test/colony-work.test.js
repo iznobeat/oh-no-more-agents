@@ -77,10 +77,13 @@ test('work painting preserves complete umbrella-parry frames in both facings and
 })
 test('the ten other C8 actions retain exact pixels or their deliberately reviewed C9 pins',()=>{
  const pins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-action-pins.json',import.meta.url),'utf8'))
+ const balance=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-balance-pins.json',import.meta.url),'utf8'))
  for(const name of CASES.filter(n=>!['build','bash','dig'].includes(n)))for(const res of [1,2])for(const dir of [-1,1])for(let t=0;t<12;t++){
   const before=hash(frame(beforeDraw,name,t,res,dir).buf),pin=pins[name]?.frames[`${res}/${dir}/${t}`]
   if(pin)assert.equal(before,pin.before,'historical '+`${name}/${res}/${dir}/${t}`)
-  assert.equal(hash(frame(D,name,t,res,dir).buf),pin?pin.after:before,`${name}/${res}/${dir}/${t}`)
+  const next=balance[name]?.[`${res}/${dir}/${t}`],previous=pin?pin.after:before
+  if(next)assert.equal(previous,next.before,'C10 historical pin')
+  assert.equal(hash(frame(D,name,t,res,dir).buf),next?next.after:previous,`${name}/${res}/${dir}/${t}`)
  }
 })
 test('review tool retains every action, real gameplay boards and reproducible strip pixels',()=>{

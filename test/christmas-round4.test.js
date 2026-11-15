@@ -80,7 +80,7 @@ test("gift hatch keeps original mouth, footprint and opening timing at both reso
 test("ordinary biomes retain complete baseline pixels at both scales",()=>{
  const h=createHash("sha256"),random=Math.random;Math.random=()=>0.5
  try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350])h.update(frame(S,D,P,{level,seed:3,ticks,theme:"tokyo-night",res,page:res===2}).img.buf)}finally{Math.random=random}
- assert.equal(h.digest("hex"),"7bb0cef0fc82da3a4e05509b823ca24f3ee5a9262e135237859ab0ada20eb575")
+ assert.equal(h.digest("hex"),"e665211633368a4fcdbbffbda8590fa73f9d0c1f411f34870bc3b9a097b04964")
 })
 test("round four review retains full boards, both-facing poses and hatch phases at both scales",()=>{
  const out=fs.mkdtempSync(path.join(os.tmpdir(),"christmas-r4-"))
