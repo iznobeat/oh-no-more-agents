@@ -4068,6 +4068,7 @@ function drawFloorDuck(ctx, w, d) {
 }
 
 function drawActorFixtures(ctx, w, pal) {
+  drawChristmasMachines(ctx, w)
   drawActorMines(ctx, w, pal)
   drawActorLadders(ctx, w, pal)
   drawActorParticles(ctx, w, pal)
@@ -25478,5 +25479,169 @@ function drawNorthGiftFlaps(ctx,x,y,open) {
     var dx=Math.round(i*Math.cos(angle)),dy=Math.round(i*Math.sin(angle))
     ctx.fillStyle=i%4<2?"#c73542":"#f4ca68"
     ctx.fillRect(x-9+dx,y+2+dy,1,2);ctx.fillRect(x+8-dx,y+2+dy,1,2)
+  }
+}
+
+// December kit belongs to the moving machinery. No simulation fields or RNG.
+var CHRISTMAS_MACHINES = {
+  Factory: drawChristmasBelts, Subway: drawChristmasMetro, Harbour: drawChristmasFerries,
+  "Data Center": drawChristmasRacks, "Clock Tower": drawChristmasGates,
+  Rooftops: drawChristmasZips, "Building Site": drawChristmasCranes,
+  Spaceship: drawChristmasPads
+}
+function drawChristmasMachines(ctx, w) {
+  if (!w.season || w.season.name !== "christmas") return
+  var paint = CHRISTMAS_MACHINES[w.biome]
+  if (!paint) return
+  var boxes = christmasMachineReservations(w)
+  var ink = { fillStyle: "#fff1cf", clear: function(x,y,width,height) {
+    return christmasClear(boxes,x,y,width,height) && mechanismAir(w,x,y) && mechanismAir(w,x+width-0.5,y+height-0.5)
+  }, fillRect: function(x,y,width,height) {
+    if (!christmasClear(boxes,x,y,width,height)) return
+    if (!mechanismAir(w,x,y) || !mechanismAir(w,x+width-0.5,y+height-0.5)) return
+    ctx.fillStyle=this.fillStyle;ctx.fillRect(x,y,width,height)
+  } }
+  ctx.save();paint(ink,w);ctx.restore()
+}
+function christmasMachineReservations(w) {
+  var C=w.k.CELL
+  var boxes=assemblyReserved(w)
+  for(var i=0;i<w.hazards.length;i++) {
+    var h=w.hazards[i]
+    boxes.push({x:h.zx0*C-3,y:h.zy0*C-4,width:(h.zx1-h.zx0+1)*C+6,height:(h.zy1-h.zy0+1)*C+8})
+  }
+  if(w.mission) for(var m=0;m<w.mission.targets.length;m++) {
+    var t=w.mission.targets[m]
+    boxes.push({x:t.x*C-14,y:t.y*C-22,width:28,height:28})
+  }
+  return boxes
+}
+function christmasMachineTick(w) { return w.reducedMotion ? 0 : w.ticks }
+function christmasMachineBulb(ctx,w,x,y,n) {
+  ctx.fillStyle="#435c48";ctx.fillRect(x,y,2,1)
+  var chase=Math.floor(christmasMachineTick(w)/8)%4
+  ctx.fillStyle=n%2 ? "#73e58b" : "#ff5769"
+  ctx.fillRect(x,y+1,2,3)
+  ctx.fillStyle=chase===n%4 ? "#fff1bf" : "#ffb976"
+  ctx.fillRect(x,y+1,1,1)
+  if(w.res===2) {ctx.fillStyle="#fff5d7";ctx.fillRect(x+0.5,y+1,0.5,1)}
+}
+function drawChristmasParcel(ctx,w,x,y,n) {
+  if (!ctx.clear(x-4,y-9,8,9)) return
+  ctx.fillStyle=n%2 ? "#286745" : "#b92e46";ctx.fillRect(x-4,y-7,8,7)
+  ctx.fillStyle=n%2 ? "#73ba77" : "#fa6870";ctx.fillRect(x-4,y-7,8,1)
+  ctx.fillStyle="#ffdc85";ctx.fillRect(x-1,y-7,2,7);ctx.fillRect(x-4,y-4,8,1)
+  ctx.fillRect(x-3,y-9,2,2);ctx.fillRect(x+1,y-9,2,2)
+  if(w.res===2) {ctx.fillStyle="#fff1cf";ctx.fillRect(x+2,y-6,1.5,1)}
+}
+function drawChristmasBelts(ctx,w) {
+  for(var i=0;i<w.belts.length;i++) {
+    var b=w.belts[i],span=(b.x1-b.x0)*4-12
+    if(span<8) continue
+    var previous=-1000
+    for(var n=0;n<2;n++) {
+      var offset=((Math.floor(christmasMachineTick(w)*BELT_DRIFT)*b.dir+n*Math.floor(span/2))%span+span)%span
+      var y=(b.y+1)*4, x=christmasParcelPosition(ctx,w,b,offset,span,y,previous)
+      if(x>=0) {drawChristmasParcel(ctx,w,x,y-1,n);previous=x}
+    }
+  }
+}
+function christmasParcelPosition(ctx,w,b,offset,span,y,previous) {
+  for(var attempt=0;attempt<4;attempt++) {
+    var x=b.x0*4+6+(offset+attempt*9)%span
+    if(Math.abs(x-previous)<11) continue
+    if(!w.terrain[(b.y+1)*w.k.COLS+Math.floor(x/4)]) continue
+    if(ctx.clear(x-4,y-10,8,9)) return x
+  }
+  return -1
+}
+function drawChristmasWreath(ctx,w,x,y) {
+  ctx.fillStyle="#206344";ctx.fillRect(x-3,y-4,6,2);ctx.fillRect(x-4,y-2,2,4)
+  ctx.fillRect(x+2,y-2,2,4);ctx.fillRect(x-3,y+2,6,2)
+  ctx.fillStyle="#70c879";ctx.fillRect(x-2,y-4,3,1);ctx.fillRect(x-4,y-1,1,2)
+  ctx.fillStyle="#ff5769";ctx.fillRect(x-3,y+2,2,3);ctx.fillRect(x+1,y+2,2,3)
+  ctx.fillStyle="#ffdc85";ctx.fillRect(x-1,y+2,2,2)
+}
+function drawChristmasMetro(ctx,w) {
+  for(var i=0;i<w.trains.length;i++) {
+    var tr=w.trains[i],g=subwayTrainDrawing(w,tr)
+    var y=g.y+(w.res===2 ? metroBodyBob(w,tr,g.open) : 0)
+    for(var car=0;car<g.cars;car++) {
+      var x=g.x-g.dir*car*38
+      for(var n=0;n<5;n++) christmasMachineBulb(ctx,w,x-13+n*6,y-24,n+car)
+    }
+    drawChristmasWreath(ctx,w,g.x+g.dir*17,y-11)
+  }
+}
+function drawChristmasFerries(ctx,w) {
+  for(var i=0;i<w.trains.length;i++) {
+    var tr=w.trains[i],g=harbourFerryDrawing(w,tr)
+    if(w.reducedMotion) g.y=w.pits[tr.pit].surfaceY*4
+    // Festoon from the mast to each end, above the passenger windows.
+    for(var n=0;n<7;n++) {
+      var x=g.x-18+n*6,y=g.y-26+Math.abs(n-3)*3
+      ctx.fillStyle="#b5a47c";ctx.fillRect(x,y,6,1)
+      christmasMachineBulb(ctx,w,x,y,n)
+    }
+  }
+}
+function drawChristmasRacks(ctx,w) {
+  var k=w.k,T=w.terrain,cols=k.COLS
+  for(var y=k.SKY;y<k.ROWS-1;y++) for(var x=1;x<cols-1;x++) {
+    var i=y*cols+x
+    if(T[i]!==k.ORE) continue
+    var side=T[i-1]===k.EMPTY ? -1 : T[i+1]===k.EMPTY ? 1 : 0
+    if(!side) continue
+    christmasMachineBulb(ctx,w,x*4+(side<0 ? -2 : 4),y*4,y+x)
+  }
+}
+function drawChristmasGates(ctx,w) {
+  for(var i=0;i<w.gates.length;i++) {
+    var b=clockGateDrawing(w,w.gates[i])
+    drawChristmasWreath(ctx,w,b.x-7,b.y+7)
+  }
+}
+function drawChristmasZips(ctx,w) {
+  for(var i=0;i<w.ziplines.length;i++) {
+    var g=roofLineDrawing(w,w.ziplines[i],i)
+    for(var s=4;s<g.length-3;s+=5) {
+      var x=Math.round(g.x+g.dir*s),y=Math.round(g.y+roofCableSag(g,s))
+      christmasMachineBulb(ctx,w,x,y+1,Math.floor(s/5))
+    }
+  }
+}
+function drawChristmasTreeLoad(ctx,w,x,y) {
+  ctx.fillStyle="#8a5c3d";ctx.fillRect(x-1,y-2,2,3)
+  for(var tier=0;tier<3;tier++) {
+    var width=10-tier*3,top=y-4-tier*3
+    ctx.fillStyle=tier%2 ? "#479e63" : "#226948";ctx.fillRect(x-Math.floor(width/2),top,width,3)
+    ctx.fillStyle="#ff5769";ctx.fillRect(x-Math.floor(width/2)+1,top+1,width-2,1)
+  }
+  ctx.fillStyle="#ffdc72";ctx.fillRect(x-1,y-14,2,5);ctx.fillRect(x-2,y-13,4,2)
+  if(w.res===2) {ctx.fillStyle="#fff5d7";ctx.fillRect(x-0.5,y-13,0.5,1)}
+}
+function drawChristmasCranes(ctx,w) {
+  for(var i=0;i<w.cranes.length;i++) {
+    var g=craneDrawing(w,w.cranes[i])
+    if(w.reducedMotion) g.tipX=g.x
+    ctx.fillStyle="#dbc18c";ctx.fillRect(g.tipX+1,g.tipY,7,1)
+    drawChristmasTreeLoad(ctx,w,g.tipX+9,g.tipY+3)
+  }
+}
+function drawChristmasPads(ctx,w) {
+  for(var i=0;i<w.pads.length;i++) {
+    var p=w.pads[i]
+    if(p.tube) continue
+    drawChristmasPadStars(ctx,w,p.ax,p.ay)
+    drawChristmasPadStars(ctx,w,p.bx,p.by)
+  }
+}
+function drawChristmasPadStars(ctx,w,x,y) {
+  var tick=christmasMachineTick(w)
+  for(var n=0;n<4;n++) {
+    var px=x*4+(n%2 ? 4 : -3),py=(y+1)*4-5-((Math.floor(tick/5)+n*4)%17)
+    ctx.fillStyle=n%2 ? "#73e58b" : "#ff5769"
+    ctx.fillRect(px-1,py,3,1);ctx.fillRect(px,py-1,1,3)
+    ctx.fillStyle="#fff1bf";ctx.fillRect(px,py,1,1)
   }
 }
