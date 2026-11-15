@@ -13162,3 +13162,119 @@ foes-3/crap.log, all under `/tmp/xmas-dressing/`.
 unresolved art/test issue; review uses real Canvas rendering and staged boards,
 not a live Omarchy/QML session. No merge, push, deploy, production request,
 port 8787 change or Omarchy write.
+
+## C13 — 2026-11-15 · Spring, swing, snow
+
+**Chose:** Catch Block (beartrap), Mood Swing (pendulum), and Frost's Cold
+Cache (snowball), after re-rendering the complete C12 catalog: eight enemy
+kinds × eleven state fixtures (including C12's stress cross-product) and all
+48 hazards, native and page resolution. The trap
+barely changed its tiny open pose before becoming two solid lumps. The
+pendulum jumped from its cocked position to the centre at fire zero and its
+blade stayed at a fixed height. Snowballs jumped from a suspended load to
+unrelated falling positions; their tell did not explain the coming drop.
+C12's sniper, icicle and servo remain exact.
+
+**Changed (Draw only):** the trap spreads its jaws on fixed hinges, then snaps
+them together over the last three of its eight charge ticks; the teeth and
+chain follow the same pose at res 2, and the jaws ease open over recovery.
+The pendulum draws back over twelve ticks, holds, accelerates through the
+last seven of its 28 charge ticks and crosses centre at fire zero. The blade
+rises at either end of its arc, follows through to the far side, returns to
+centre on fire tick 23, then makes one small damped recovery swing. Snowballs
+pack visibly, accelerate down over the last seven of their 28 charge ticks,
+and the first load contacts at fire zero. The remaining loads land six ticks
+apart during the existing 24-tick fire window, squash, rebound and crumble;
+recovery starts at the exact final fire pose and shrinks the remnants away.
+Native pixels carry each action; half-pixel jaw teeth, blade joints and snow
+undersides refine res 2. Existing palettes, jaw/blade/block identities and
+seasonal head riders remain. Reduced motion holds secondary live/idle poses;
+charge progress remains a persistent gameplay tell.
+
+No Sim.js, sfx.js, North Pole drawing, umbrella, world write, RNG, behaviour,
+timer, dependency or UI text changes. The legacy hzSwing helper was removed
+from production; the historical-renderer audit restores it only in its local
+reference renderer.
+
+**Review/tool:** tools/foe-strips.js already covered every enemy kind and
+hazard. Added compact eight-column consecutive strips for these choices,
+side-by-side keys and full-board none/Christmas/New Year pairs containing
+every enemy. The existing tool smoke test exercises the same writers. Checked
+that test/foe-round2.test.js and tools/foe-reference.js were free before adding
+them. Complete baseline catalog: /tmp/xmas-dressing/foes2-0 (including native
+and page consecutive enemy state contact sheets). All current full catalog
+strips were rendered again in foes2-1 and foes2-2. Inspected both resolutions'
+overviews, the enemy state contact sheets, the eight all-hazard consecutive
+transition sheets (transitions-{0,12,24,36}-res{1,2}.png), selected full cycles and staged
+native/page boards. Rejected the first snowball draft's merged bar and crossed
+trap jaw tips; rejected a later snowball draft's merged settled loads. The
+final separate impacts and crumbling remnants are in foes2-4.
+
+Final inspected before/after paths (before above after in consecutive strips;
+before left / after right in key comparisons):
+
+- /tmp/xmas-dressing/foes2-4/beartrap-compact-res1.png
+- /tmp/xmas-dressing/foes2-4/beartrap-compact-res2.png
+- /tmp/xmas-dressing/foes2-4/pendulum-compact-res1.png
+- /tmp/xmas-dressing/foes2-4/pendulum-compact-res2.png
+- /tmp/xmas-dressing/foes2-4/snowball-compact-res1.png
+- /tmp/xmas-dressing/foes2-4/snowball-compact-res2.png
+
+Also inspected the corresponding six *-compare-res*.png key sheets and ordinary/
+Christmas/New Year full-board comparisons. These are staged art fixtures using
+the real renderer, not a live QML panel.
+
+**Pins:** no existing golden digest file changed. C12's historical other-hazard
+and full-board scope assertions still run unchanged against a renderer with
+only these three painters, the trap's fine entry and the old swing helper
+restored. New C13 tests separately pin both baseline and reviewed complete
+cycles, then restore precisely those same entry points to recover every
+baseline full board (21 biomes, res 1/2, ticks 120/350/400). Thus the historical
+assertions remain and the new pixels have exact replacements, rather than
+exemptions. New test/fixtures/foe-round2-pins.json records both directions; the
+following SHA-256 prefixes apply to either direction:
+
+- beartrap res 1: 79863622 → 9b7a7890 — articulated jaws and reopening.
+- beartrap res 2: ef0869a2 → 59c8e1f1 — same plus jaw-following teeth/chain.
+- pendulum res 1: 10f61d7c → d4d19c73 — continuous release, arc and recovery.
+- pendulum res 2: 2ff563ef → ae91878f — same plus half-pixel joints.
+- snowball res 1: 3218f490 → 0b95e881 — packing, timed impacts and remnants.
+- snowball res 2: 8c1a564e → b2c88493 — same plus half-pixel settling/shadows.
+
+Seven new tests cover exact consecutive cycles, substantial full-size native
+changes, phase-boundary joins and expiry, reduced motion, purity/RNG/grid/
+bounded paint in every theme, whole-board scope, every excluded hazard and all
+enemy states with both seasonal riders/facings. Digests and counts only; no
+raw-buffer deepEqual. The initial two-world scope fixture forgot to pin Sim's
+RNG; pinning it removed the false positive. The first baseline check ended
+with signal 143 without a result; its clean retry passed.
+
+**Validation:** baseline full check **1788/1788**; final full check
+**1795/1795**, exit 0 (159.42 seconds). Intermediate draft also passed 1795.
+`npm run crap -- --changed --threshold 30` exited 0, including a second
+**1795/1795** coverage run (368.08 seconds). New/changed functions all remain
+below 30: highest new renderer score 10.0 (`snowLoadPose`); other new renderer
+scores are 8.5 (snow painter), 8.0 (jaw pose/jaws), 7.1 (pendulum painter),
+7.0 (snow fall), 6.6 (pendulum pose), 5.0 (pendulum angle), 4.0 (snowball),
+2.0 (trap fine), 1.0 (trap painter). Highest new tool score 13.0
+(`roundTwoBoards`); review 5.0, compact writer 3.0, reference helper 2.0.
+Stamps refreshed. Both gates used the shared lock and unchanged six-file
+concurrency; the source tree remained frozen during them. Only this log was
+added after they passed. Logs: foes2-0/before-check-retry.log and
+foes2-4/{final-check,crap}.log under /tmp/xmas-dressing/.
+
+**Performance:** the initial baseline and loaded after-run retained 60 median /
+60 p5 at 8/12/18, but that after-run overlapped the sibling's coverage and had
+one long task. A controlled pair used the same static serving path, an exact
+baseline extraction of f252faa2, and the shared heavy-run lock. Its complete
+reports matched on median/p5/worst/long tasks, but the wrapper later returned
+143. Repeated the pair to obtain clean exit 0 and a completion marker. Final
+`npm run fps -- 8 12 18`, before → after: every level **60 median / 60 p5,
+17 ms worst, 0% long tasks**; CPU **13/12/13% → 13/12/13%**. No performance
+loss measured. Final logs: /tmp/xmas-dressing/foes2-4/final-before-fps.log,
+final-after-fps.log, final-fps-queue.log and fps-complete.
+
+**Next:** watch the warnings in crowded native colonies. No known unresolved
+art/test issue; visual review used the real Canvas renderer and staged boards,
+not a live Omarchy/QML panel. No merge, push, deploy, production requests,
+port 8787 changes, sibling writes or Omarchy writes.

@@ -7670,16 +7670,7 @@ var HAZARD_FINE = {
     ctx.fillStyle = g.show ? g.hot : (Math.floor(w.ticks / 12) % 2 ? "#5dffa0" : "#1f4a33")
     ctx.fillRect(g.x0 + 0.5, g.y1 - 5, 1, 0.5)                  // armed lamp on the post
   },
-  beartrap: function (ctx, w, pal, h, g) {
-    if (g.live || g.cool > 0.5) return
-    ctx.fillStyle = "#e9edf7"                                   // teeth along both jaws
-    for (var j = 0; j < 5; j += 1) {
-      ctx.fillRect(g.x0 + j + 0.5 + (g.winding ? Math.round(g.progress * 2) : 0), g.y1 - 3.5 - j, 0.5, 0.5)
-      ctx.fillRect(g.x1 - 1.5 - j - (g.winding ? Math.round(g.progress * 2) : 0), g.y1 - 3.5 - j, 0.5, 0.5)
-    }
-    ctx.fillStyle = pal.rigDark                                 // chain to the floor
-    for (var c = 0; c < 4; c++) ctx.fillRect(g.cx + 1 + c, g.y1 - 0.5 - (c % 2) * 0.5, 0.5, 0.5)
-  },
+  beartrap: drawTrapFine,
   gun: function (ctx, w, pal, h, g) {
     ctx.fillStyle = "#1c1c22"
     ctx.fillRect(g.cx - 0.5, g.y0 + 10.5, 1, 0.5)               // the bore
@@ -7942,26 +7933,44 @@ function drawHzSpikes(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, geo.cx, y1 - 3, pal.rig)
 }
 
-function drawHzBeartrap(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, cx = geo.cx, live = geo.live,
-    show = geo.show, hot = geo.hot
-  // Jaws: open and waiting, or shut.
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(cx - 1, y1 - 2, 2, 2)                 // the plate between them
-  ctx.fillStyle = show ? hot : pal.rigDark
-  if (live || geo.cool > 0.5) {
-    hzTri(ctx, cx - 3, y1 - 2, 3, 7, -1)
-    hzTri(ctx, cx + 3, y1 - 2, 3, 7, -1)
-  } else {
-    for (var jw = 0; jw < 5; jw++) {
-      ctx.fillRect(x0 + jw + (geo.winding ? Math.round(geo.progress * 2) : 0), y1 - 3 - jw, 2, 1)       // open, leaning out
-      ctx.fillRect(x1 - 2 - jw - (geo.winding ? Math.round(geo.progress * 2) : 0), y1 - 3 - jw, 2, 1)
-    }
-    ctx.fillStyle = pal.warn
-    ctx.fillRect(cx - 2, y1 - 3, 4, 1)
+// Whole-pixel jaw spread is the tell; the last three charge ticks snap it shut.
+function trapJawPose(w, h, g) {
+  var spread = 0
+  if (g.winding) spread = h.t < 4 ? h.t / 3 : Math.max(-1, 1 - (h.t - 4) * 2 / 3)
+  if (g.live) spread = -1
+  if (g.cool) spread = -g.cool
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { spread: Math.round((spread > 0 ? spread * 4 : spread) * grid) / grid,
+    lift: Math.round(Math.max(0, -spread) * 2 * grid) / grid }
+}
+
+function drawTrapJaws(ctx, w, pal, h, g, fine) {
+  var pose = trapJawPose(w, h, g)
+  ctx.fillStyle = fine ? "#e9edf7" : g.show ? g.hot : pal.rigDark
+  for (var side = -1; side <= 1; side += 2) for (var j = 0; j < 5; j++) {
+    var x = g.cx - 1 + side * (5 - j + pose.spread * j / 4)
+    var grid = (w.res || 1) >= 2 ? 2 : 1
+    x = Math.round(x * grid) / grid
+    var y = Math.round((g.y1 - 3 - j - pose.lift * j / 4) * grid) / grid
+    if (fine) ctx.fillRect(x + 0.5, y - 0.5, 0.5, 0.5)
+    else ctx.fillRect(x, y, 2, 1)
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y1 - 2)
-  hzImpact(ctx, pal, h, geo, cx, y1 - 2, pal.rig)
+}
+
+function drawHzBeartrap(ctx, w, pal, h, geo) {
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.cx - 1, geo.y1 - 2, 2, 2)
+  drawTrapJaws(ctx, w, pal, h, geo, false)
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(geo.cx - 2, geo.y1 - 3, 4, 1)
+  hzLamp(ctx, pal, h, geo, geo.cx - 2, geo.y1 - 2)
+  hzImpact(ctx, pal, h, geo, geo.cx, geo.y1 - 2, pal.rig)
+}
+
+function drawTrapFine(ctx, w, pal, h, g) {
+  drawTrapJaws(ctx, w, pal, h, g, true)
+  ctx.fillStyle = pal.rigDark
+  for (var c = 0; c < 4; c++) ctx.fillRect(g.cx + 1 + c, g.y1 - 0.5 - (c % 2) * 0.5, 0.5, 0.5)
 }
 
 function drawHzSawblade(ctx, w, pal, h, geo) {
@@ -8022,30 +8031,44 @@ function drawHzCrusher(ctx, w, pal, h, geo) {
   drawCrusherLandingDust(ctx,w,pal,h,geo)
 }
 
-function hzSwing(g, h) {
-  if (g.live) return Math.sin(h.t * 0.26)
-  if (g.winding) return -0.3 - g.progress * 0.65
-  if (g.cool) return Math.sin(h.t * 0.26) * g.cool
+// Release crosses the centre on fire zero, rather than teleporting there.
+function pendulumAngle(w, h, g) {
+  if (g.winding) {
+    var cock = Math.min(1, h.t / 12)
+    var release = Math.max(0, (h.t - 20) / 7)
+    return -0.95 * cock * (1 - release * release)
+  }
+  if (w.reducedMotion) return 0
+  if (g.live) return 0.95 * Math.sin(Math.PI * h.t / 23)
+  if (g.cool) return -0.3 * Math.sin(Math.PI * h.t / 12) * g.cool
   return Math.sin(g.t * 0.035) * 0.2
 }
 
+function pendulumPose(w, h, g) {
+  if (!g.show && !g.cool) return { x: Math.round(g.cx + (w.reducedMotion ? 0 : Math.sin(g.t * 0.035) * 0.2) * (g.wide / 2 - 2)), y: g.y0 + g.tall - 6 }
+  var angle = pendulumAngle(w, h, g), grid = (w.res || 1) >= 2 ? 2 : 1
+  var length = g.tall - 9
+  return { x: Math.round((g.cx + Math.sin(angle) * (g.wide / 2 - 2)) * grid) / grid,
+    y: Math.round((g.y0 + 3 + Math.cos(angle) * length) * grid) / grid }
+}
+
 function drawHzPendulum(ctx, w, pal, h, geo) {
-  var y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall, t = geo.t,
-    show = geo.show, hot = geo.hot
-  // A blade on an arm, swinging from a pivot.
-  var swing = hzSwing(geo, h)
-  var sw = swing * (wide / 2 - 2)
+  var pose = pendulumPose(w, h, geo), bx = pose.x, by = pose.y
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(cx - 2, y0, 4, 3)                     // pivot
+  ctx.fillRect(geo.cx - 2, geo.y0, 4, 3)
   ctx.fillStyle = pal.rig
-  var bx = Math.round(cx + sw)
-  var by = y0 + tall - 6
-  var an = Math.max(1, Math.round(Math.max(Math.abs(bx - cx), by - y0)))
+  var an = Math.max(1, Math.ceil(Math.max(Math.abs(bx - geo.cx), by - geo.y0)))
   for (var pa = 0; pa <= an; pa++)
-    ctx.fillRect(Math.round(cx + (bx - cx) * pa / an), Math.round(y0 + 3 + (by - y0 - 3) * pa / an), 2, 2)
-  ctx.fillStyle = show ? hot : pal.warn
-  hzTri(ctx, bx, by + 5, 4, 6, -1)                   // the blade
-  hzLamp(ctx, pal, h, geo, cx - 2, y0)
+    ctx.fillRect(Math.round(geo.cx + (bx - geo.cx) * pa / an), Math.round(geo.y0 + 3 + (by - geo.y0 - 3) * pa / an), 2, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  hzTri(ctx, bx, by + 5, 4, 6, -1)
+  if ((w.res || 1) >= 2 && (geo.show || geo.cool)) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(bx - 0.5, by + 0.5, 1, 2)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(geo.cx - 0.5, geo.y0 + 0.5, 1, 1)
+  }
+  hzLamp(ctx, pal, h, geo, geo.cx - 2, geo.y0)
   hzImpact(ctx, pal, h, geo, bx, by + 5, pal.rig)
 }
 
@@ -8185,20 +8208,56 @@ function drawHzScarab(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, cx, y1 - 2, pal.rig)
 }
 
-function drawHzSnowball(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, wide = geo.wide, live = geo.live,
-    show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 2)
-  ctx.fillStyle = show ? hot : pal.decorLit
-  for (var sn = 0; sn < 4; sn++) {
-    if (!show && !geo.cool && sn > 0) continue
-    var snowX = (h.zx0 + 0.5 + ((sn * 2.3 + (live ? h.fired : 0)) % Math.max(1, h.zx1 - h.zx0 + 1))) * C
-    var sny = live ? (h.zy0 + ((h.t * 0.55 + sn * 3.1) % Math.max(1, h.zy1 - h.zy0 + 1))) * C
-        : (geo.cool ? geo.y1 - 2 : y0 + 3 + (sn % 2) + Math.round(geo.progress * 2) + (!show ? Math.floor(geo.t / 24) % 2 : 0))
-    var snr = live ? 4 : 2
-    ctx.fillRect(snowX - snr, sny - snr, snr * 2, snr * 2)
+// Staggered impacts span the fire window; settled loads crumble into remnants.
+function snowFallPose(w, t, index) {
+  var age = (w.reducedMotion ? 0 : t) - index * 6
+  var bounce = age < 0 ? -age * 2 / 3 : Math.abs(Math.sin(age * Math.PI / 10)) * Math.max(0, 6 - age / 4)
+  var radius = age > 8 ? Math.max(1, 4 - Math.floor((age - 8) / 3)) : 4
+  var squash = age >= 0 && age < 3 && !w.reducedMotion ? 2 - age / 2 : 0
+  return { bounce: bounce, radius: radius, squash: squash }
+}
+
+// Pack, release, squash and rebound: the first load lands at fire zero.
+function snowLoadPose(w, h, g, index) {
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  var radius = g.show ? 2 + Math.min(2, Math.floor(g.progress * 4)) : 2
+  var y = g.y0 + 3 + index % 2 + (!g.show && !g.cool && !w.reducedMotion ? Math.floor(g.t / 24) % 2 : 0)
+  var squash = 0
+  if (g.winding) {
+    var drop = Math.max(0, Math.min(1, (h.t - 20) / 7))
+    y += (g.tall - 4 - index * 4 - (y - g.y0)) * drop * drop
   }
+  if (g.live) {
+    var fall = snowFallPose(w, h.t, index)
+    radius = fall.radius; y = g.y1 - radius - fall.bounce; squash = fall.squash
+  }
+  if (g.cool) {
+    var end = snowFallPose(w, 23, index)
+    radius = Math.max(1, Math.ceil(end.radius * g.cool))
+    y = g.y1 - radius - end.bounce * g.cool
+  }
+  return { y: Math.round(y * grid) / grid, radius: radius,
+    squash: Math.round(squash * grid) / grid }
+}
+
+function drawSnowLoad(ctx, w, pal, h, g, index) {
+  var pose = snowLoadPose(w, h, g, index), r = pose.radius
+  var x = g.x0 + 2 + (index * 9.2) % g.wide
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  x = Math.round(x * grid) / grid
+  ctx.fillStyle = g.show ? g.hot : pal.decorLit
+  ctx.fillRect(Math.round((x - r - pose.squash / 2) * grid) / grid, pose.y - r + pose.squash, r * 2 + pose.squash, r * 2 - pose.squash)
+  if ((w.res || 1) >= 2 && (g.show || g.cool)) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x - r + 0.5, pose.y + r - 0.5, r * 2 - 1, 0.5)
+  }
+}
+
+function drawHzSnowball(ctx, w, pal, h, geo) {
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0, geo.y0, geo.wide, 2)
+  var count = geo.show || geo.cool ? 4 : 1
+  for (var sn = 0; sn < count; sn++) drawSnowLoad(ctx, w, pal, h, geo, sn)
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.decorLit)
 }
 

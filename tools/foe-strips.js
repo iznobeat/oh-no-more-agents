@@ -69,7 +69,7 @@ export function run(base,out,options={}){
  enemyStrips(out,old,now,manifest,options.kinds)
  hazardStrips(out,old,now,manifest,S.HAZARDS.filter(s=>!options.hazards || options.hazards.includes(s.id)))
  overview(out,now)
- choices(out,old,now);boards(out,old,now);pairs(out,old,now)
+ choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now)
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2))
 }
 export function enemyStrips(out,old,now,manifest,kinds=KINDS){
@@ -102,7 +102,6 @@ export function overview(out,D){
   writePNG(path.join(out,`enemies-res${res}.png`),sheet)
  }
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv[2]||'HEAD',process.argv[3]||'/tmp/xmas-dressing/foes-0')
 
 export function choices(out,old,now){
  fs.mkdirSync(out,{recursive:true})
@@ -154,3 +153,48 @@ export function pairs(out,old,now){
   writePNG(path.join(out,`${name}-compare-res${res}.png`),img)
  }
 }
+
+export const ROUND_TWO=['beartrap','pendulum','snowball']
+// Compact before-left / after-right keys; the cycle files retain every tick.
+export function roundTwoReview(out,old,now){
+ for(const res of [1,2])for(const name of ROUND_TWO){
+  const spec=S.HAZARDS.find(s=>s.id===name)
+  compactHazardStrip(out,old,now,spec,res)
+  const keys=[['idle',0],['charge',Math.floor(spec.charge/2)],['charge',spec.charge-2],['charge',spec.charge-1],['fire',0],['fire',4],['rest',0],['rest',6]]
+  const pair=canvas(16*48*res,48*res,'#1a1b26')
+  for(const [j,D]of [old,now].entries())for(const [i,[phase,t]]of keys.entries())
+   copyPixels(pair,crop(hazardFrame(D,spec,phase,t,res),8*res,0,48*res,48*res),(j*8+i)*48*res,0)
+  writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
+ }
+ roundTwoBoards(out,old,now)
+}
+export function roundTwoBoards(out,old,now){
+ for(const res of [1,2])for(const phase of ['charge','fire','rest'])for(const season of ['none','christmas','newyear']){
+  const {w}=enemyFixture('gun','walk',4)
+  w.res=res;w.season={name:season,redHats:season==='christmas'?'santa':season==='newyear'?'party':undefined}
+  w.enemies=KINDS.map((kind,i)=>({...enemyFixture(kind,'walk',4).en,x:12+i*10,y:18}))
+  w.hazards=ROUND_TWO.map((id,i)=>{
+   const spec=S.HAZARDS.find(s=>s.id===id),{h}=hazardFixture(spec,phase,phase==='charge'?spec.charge-2:phase==='fire'?2:3)
+   h.zx0=26+i*22;h.zx1=h.zx0+spec.w-1;h.zy0=31-spec.h;h.zy1=30;return h
+  })
+  w.hazard=null;w.terrain=w.terrain.slice()
+  for(let y=14;y<32;y++)for(let x=8;x<96;x++)w.terrain[y*w.k.COLS+x]=y===19||y===31?w.k.DIRT:w.k.EMPTY
+  const pair=canvas(800*res,248*res),pal=P.build(themeOf('tokyo-night').theme,1)
+  for(const [j,D]of [old,now].entries()){
+   const img=canvas(400*res,248*res)
+   D.drawTerrain(img.ctx,w,pal);D.drawActors(img.ctx,w,pal,{})
+   copyPixels(pair,img,j*400*res,0)
+  }
+  writePNG(path.join(out,`round2-${season}-${phase}-full-res${res}.png`),pair)
+ }
+}
+
+
+export function compactHazardStrip(out,old,now,spec,res){
+ const seq=hazardSequence(spec),sheet=canvas(8*40*res,Math.ceil(seq.length/8)*80*res,'#1a1b26')
+ for(const [j,D]of [old,now].entries())for(const [i,{phase,t}]of seq.entries())
+  copyPixels(sheet,crop(hazardFrame(D,spec,phase,t,res),12*res,4*res,40*res,40*res),i%8*40*res,(Math.floor(i/8)*80+j*40)*res)
+ writePNG(path.join(out,`${spec.id}-compact-res${res}.png`),sheet)
+}
+
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv[2]||'HEAD',process.argv[3]||'/tmp/xmas-dressing/foes-0')

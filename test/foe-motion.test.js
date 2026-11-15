@@ -8,9 +8,12 @@ import {createHash} from 'node:crypto'
 import {load,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {enemyFrame,hazardFrame,enemyFixture,hazardFixture,hazardSequence,choices,run} from '../tools/foe-strips.js'
+import {restoreFoeRoundTwo} from '../tools/foe-reference.js'
+const c12Source=execFileSync('git',['show','f252faa2c0f8d22dec66208580177bfccaf29036:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
 const base='b2cfda639e17a142b4e8b280af26df5267a74bc9'
 const oldSource=execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
 const source=fs.readFileSync('public/agents/Draw.js','utf8')
+const c12Current=renderer(restoreFoeRoundTwo(source,c12Source))
 const old=renderer(oldSource),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const specs=['icicle','servo'].map(id=>S.HAZARDS.find(s=>s.id===id))
@@ -107,7 +110,7 @@ function replaceFunction(text,name,reference){
  return text.replace(pattern,reference.match(pattern)[0])
 }
 test('C12 scope audit restores the complete baseline by replacing only the three reviewed painters',()=>{
- let restored=source
+ let restored=restoreFoeRoundTwo(source,c12Source)
  for(const fn of ['drawHzIcicle','drawHzServo','drawSniper','drawSniperFine','drawCastEnemyKit','drawCastMarksman'])restored=replaceFunction(restored,fn,oldSource)
  const R=renderer(restored)
  for(let level=1;level<=S.BIOMES.length;level++){
@@ -139,7 +142,7 @@ export {corpus,old,D}
 test('C12 every other hazard and hostile retains exact pixels',()=>{
  for(const res of [1,2])for(const dir of [-1,1]){
   for(const spec of S.HAZARDS.filter(s=>!['icicle','servo'].includes(s.id)))for(const phase of ['idle','charge','fire','rest']){
-   assert.equal(hash(hazardFrame(D,spec,phase,3,res,dir).buf),hash(hazardFrame(old,spec,phase,3,res,dir).buf),`${spec.id}/${phase}/${res}/${dir}`)
+   assert.equal(hash(hazardFrame(c12Current,spec,phase,3,res,dir).buf),hash(hazardFrame(old,spec,phase,3,res,dir).buf),`${spec.id}/${phase}/${res}/${dir}`)
   }
   for(const kind of ['gun','bouncer','operator','drone','moderator','xeno','harpoon'])for(const state of ['walk','aim','reload','brawl','hit','death']){
    assert.equal(hash(enemyFrame(D,kind,state,4,res,dir).buf),hash(enemyFrame(old,kind,state,4,res,dir).buf),`${kind}/${state}/${res}/${dir}`)
