@@ -1,0 +1,76 @@
+{
+  "aggregates": {
+    "350,900": {
+      "before": "00fabc79662a75d5104cca0c6c02cde0959af36306d05a52ed59e149e23bebcf",
+      "after": "94528dd4f25bc9b8ab3bc47b6120dc52b29b156bc0bdc089cc898abe217819e7"
+    },
+    "120,350": {
+      "before": "36ae5beb2e1f82b7ac43c10a503c97acfa40ed95fb1aaad7b232c96e2105f683",
+      "after": "cd0e1080312bece9041627e173e24fd7559cce960321d33fee33a273e11aeabc"
+    }
+  },
+  "disabled": {
+    "350,900": {
+      "before": "cbc151b8a47d9324da2972f56eaebd8901f1521d22c5f0a5176155ee9038bda2",
+      "after": "026e857d4c32093db36eab99f94232da4a9d4eb568fe217da5e84315ddf6bd01"
+    },
+    "120,350": {
+      "before": "2af2ffb8c180a74380e3c85fd4218589fe53c627652d956e529457c238033d5d",
+      "after": "c1d36e9b56e06f24efdda89476da2ff27ef707dbab5c908402bc79aed79c91df"
+    }
+  },
+  "c6full": {
+    "Foundry/1/120": {
+      "before": "3277b365739cc50fc20e86b19e3508cf47acd994392531999f83b09efa244258",
+      "after": "421dabc82b4d10d0aebd2d21c24878e54cc4cc1129ca551f44b6c741e99825dc"
+    },
+    "Foundry/1/400": {
+      "before": "b59073301b8a727a4dc375b0bc92b97d59582d39a64af385673ecc83d62944bc",
+      "after": "591cacaaa345236a174fca2c569da5cf84d26df359557663ab48ec301a788d43"
+    },
+    "Foundry/2/120": {
+      "before": "c8b45a617f608c06d07130af02207bfbad2333a7cdc97c4eb19d2817102a23fa",
+      "after": "a0e93b93d795494ed4608891b78279035343b9c2b229b8a76a8f89299e9dc701"
+    },
+    "Foundry/2/400": {
+      "before": "60b831fd9b1aab9f7ab26487416d375675a39970e339963b4b2d15eff8e0887d",
+      "after": "afe80a3e21d7c7e28ac176f0e58867b650b201c4dfe0e6f19c65cb7348600e38"
+    }
+  },
+  "c6cast": {
+    "Foundry/1": {
+      "before": "b7d517ce2b0bfca0ea5bd2c295441427826588a65b50ab219ec7b0808221c85e",
+      "after": "47ffb22136f697bfe7a7e9037b1abaa4372fe2f5a5e892a29376b1342850a39f"
+    },
+    "Foundry/2": {
+      "before": "722a9ec9f7b728127d9cc52f05a14cef89169ab88508fff0c03d36ec89be2e85",
+      "after": "8a93e4f645a4e6a1587f32cf4e028aa095a77bd172748ff0f9dd5d3f32ca448e"
+    }
+  },
+  "newyear": {
+    "none/4/1": {
+      "before": "9903719153a05281fbf02a98292c3cc5260e03207d46c4cacc940672d918309a",
+      "after": "1944173e8014dc60e2d808350517954c50c20439fe4b76efc5f38d8690cad8d1"
+    },
+    "christmas/4/1": {
+      "before": "973b1ac4f7e95d91ea594af4d86b580513a9dc7d559c2fada9707782fcc73d02",
+      "after": "ec8093caaf32f4d6400b6d206bf7c63c4eff94753b373ee8670f9a23454bf9dc"
+    },
+    "none/4/2": {
+      "before": "88ac1d6e4bfce903d1878694f7e5bc526c0d42710b3c0e0b764d46a880a741eb",
+      "after": "8204d77505a855cca210c8853225c9de85bef8ab834c3453aa0700cd1d1b0e64"
+    },
+    "christmas/4/2": {
+      "before": "a697241e97de4acfa6d5b35c49ed04d61b05cb8f898883b34bd254189361c631",
+      "after": "df8a2e2fc9b6ea8f2516b047cc0ccd4917ad9762e1c5e621a2efa361dd1be020"
+    }
+  },
+  "exitNative": {
+    "before": "6e2d911a92aac8b8ddfc0cdcf031cab485629b67a6f6c5e7289f3dbdf5742227",
+    "after": "ad0c879200c94e5a6f7cc96192f4385938eb1d68982a4ac1bf386af7dec37fec"
+  },
+  "office": {
+    "before": "3443fb1d33f067e3c8c0c7910e477abb86b0ddce5aa0212c770ec3bbcdb136ae",
+    "after": "2a9147ecdca38e4f2c7db851016eb08ca8f9c5f6261011763d09b7001cd31992"
+  }
+}

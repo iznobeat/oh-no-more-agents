@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -41,7 +42,8 @@ test('native/default work poses and unchanged share actors match reviewed arriva
  }
  assert.equal(c.digest('hex'),'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
  assert.equal(foePins.office.before,'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
- assert.equal(a.digest('hex'),foePins.office.after)
+ assert.equal(ironPins.office.before,foePins.office.after)
+ assert.equal(a.digest('hex'),ironPins.office.after)
  assert.equal(b.digest('hex'),'44940033400759c68548aaab3304eebd1bbceb0cbdff353a3bbf588416d61e57')
 })
 test('saved count fills five slots then a capped tidy pile, using the actual arrival colours',()=>{

@@ -13411,3 +13411,139 @@ foes3-5/{focused,check,crap}.log, under /tmp/xmas-dressing/.
 art/test issue; visual review used renderer strips and staged boards, not a
 live QML panel. No merge, push, deploy, production requests, port 8787 changes,
 sibling writes or Omarchy writes.
+
+## C15 — 2026-11-15 · The ironworks fills its empty bays
+
+**Chose:** Foundry, after rendering all 21 biomes out of season with
+`shoot.js biomes` and every `shoot.js level N --ticks 350`, at res 1 and 2,
+scale 1. Inspected both entire catalogues and the page catalogue in three
+seven-board parts. The Library's stacks, Subway's tiled station and Clock
+Tower's masonry/works give their boards a material and a place. Foundry had
+large almost empty bays and flat native slabs; its page-only furnaces did
+nothing for the panel. Frost's open space at least reads as a snowfield.
+Foundry was the weakest full-frame industrial scene, especially at 1x.
+Baseline: 6aaf4b4b2a2aa720eea7ce0488d85d34f0fded3b.
+
+**Changed (Draw only):** additive refractory courses with offset joints,
+sparse chipped faces and a clear near ledge lip, inside surviving DIRT/ROCK
+in the cached terrain pass. A distant mill hall has sawtooth clerestories,
+mullioned windows with occasional warm panes, braced columns and collared
+exhaust ducts. Chimney silhouettes extend into the sky band. Native bays gain
+small barred kiln mouths; the original page furnaces/converters/ladles,
+heat, girders, chains, pipes, slag, decor and all original painters remain.
+New paint uses only existing Palette roles, including the existing lava
+lip/glint for the kiln openings; Palette.js and its colours are unchanged.
+
+A few housed vent fans turn slowly and breathe short exhaust wisps from
+`drawMachines`. Their layout-only positions live in a world-keyed WeakMap,
+invalidated by terrain version and terrain identity. Complete motion bounds
+avoid original decor, hazard zones, pits and the exit; every live rectangle
+also checks current air. Reduced motion holds the new fan/exhaust poses.
+No per-tick board search, world writes, drawing RNG, simulation changes,
+new copy, dependencies or actor/umbrella changes. Sim.js, sfx.js and season.js
+were untouched. All twenty other biomes retain exact complete-frame pixels.
+
+**Review/tool:** retained baseline assets in /tmp/xmas-dressing/biome-4/before
+and inspected rounds 1–3. Rejected the first page mortar highlights as too
+blue against the original warm brick; softened them, varied window panes and
+added duct collars and chimney silhouettes. Enlarged the live fitting's
+reserved rectangle to include the exhaust's whole motion. The final reusable
+`tools/ironworks-art.js <before-ref> <out>` retains six complete before-left /
+after-right boards per resolution (4/24/44, ticks 350/900), individual pairs,
+all 21 catalogue frames in seven-board parts, and exact before/after digests.
+It pins cosmetic randomness too: a first two-world comparison without that
+reported a false scope change even before the art was applied.
+
+Final full-frame sheets inspected at native/page size:
+
+- /tmp/xmas-dressing/biome-4/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome-4/final/full-res2-sheet.png
+
+Also inspected /tmp/xmas-dressing/biome-4/round3/pinned-res1-sheet.png and
+pinned-res2-sheet.png, containing the deliberately advanced C6 Foundry scenes.
+The original audit is /tmp/xmas-dressing/biome-audit/res{1,2}/biomes.png,
+with all individual level shots alongside. Review used the real renderer,
+not a live Omarchy/QML panel; gradients use the documented render.js
+approximation. No known unresolved art issue.
+
+**Pins deliberately advanced:** no historical golden JSON was overwritten.
+`test/fixtures/ironworks-pins.json` independently pins all twelve reviewed
+full frames before and after. `ironworks-scenes.json` records each affected
+historical scene/aggregate below. The four C15 hooks can be removed to recover
+the exact whole-board predecessor; the new test audits this across all 21
+biomes, both scales and ticks 120/350. Earlier C12–C14 painter-restoration
+helpers now first remove these four later hooks, retaining every historical
+assertion. Existing tests separately assert each prior pin and its explicit
+C15 successor. No other biome or frame is exempted.
+
+The old C6 "opaque" fixture samples an RGB buffer with a four-byte stride,
+so it also includes scenery. Its historical and current scene pins remain;
+a new proper two-background RGB mask independently proves that truly opaque
+colony and umbrella pixels keep their exact complete-frame colours.
+The exit and office aggregates include live scenery/crops; their change is
+the Foundry art, not a change to the arrival or stand painter.
+SHA-256 prefixes (full hashes and exact keys are retained in the fixtures):
+- new full frames (level/ticks/res) `4/350/1`: `489d4338` → `95ec9192`.
+- new full frames (level/ticks/res) `4/900/1`: `7a4d1c24` → `8aa9f728`.
+- new full frames (level/ticks/res) `24/350/1`: `b6a6cada` → `411d1620`.
+- new full frames (level/ticks/res) `24/900/1`: `6ee7d719` → `33b2411d`.
+- new full frames (level/ticks/res) `44/350/1`: `43512cd6` → `4669aab9`.
+- new full frames (level/ticks/res) `44/900/1`: `c6495710` → `0b77581e`.
+- new full frames (level/ticks/res) `4/350/2`: `be761dd6` → `cdc8d3a7`.
+- new full frames (level/ticks/res) `4/900/2`: `6c19bdc5` → `2f77feec`.
+- new full frames (level/ticks/res) `24/350/2`: `1c917c7c` → `fc502ee9`.
+- new full frames (level/ticks/res) `24/900/2`: `cfdadf46` → `1f1e790d`.
+- new full frames (level/ticks/res) `44/350/2`: `7efb1228` → `dd8f05ea`.
+- new full frames (level/ticks/res) `44/900/2`: `08baa69b` → `7050811f`.
+- aggregates `350,900`: `00fabc79` → `94528dd4`.
+- aggregates `120,350`: `36ae5beb` → `cd0e1080`.
+- disabled `350,900`: `cbc151b8` → `026e857d`.
+- disabled `120,350`: `2af2ffb8` → `c1d36e9b`.
+- c6full `Foundry/1/120`: `3277b365` → `421dabc8`.
+- c6full `Foundry/1/400`: `b5907330` → `591cacaa`.
+- c6full `Foundry/2/120`: `c8b45a61` → `a0e93b93`.
+- c6full `Foundry/2/400`: `60b831fd` → `afe80a3e`.
+- c6cast `Foundry/1`: `b7d517ce` → `47ffb221`.
+- c6cast `Foundry/2`: `722a9ec9` → `8a93e4f6`.
+- newyear `none/4/1`: `99037191` → `1944173e`.
+- newyear `christmas/4/1`: `973b1ac4` → `ec8093ca`.
+- newyear `none/4/2`: `88ac1d6e` → `8204d775`.
+- newyear `christmas/4/2`: `a697241e` → `df8a2e2f`.
+- exitNative `exitNative`: `6e2d911a` → `ad0c8792`.
+- office `office`: `3443fb1d` → `2a9147ec`.
+
+**Validation:** baseline full check **1804/1804**, exit 0 (211.94 s).
+Checked the new test filename was free before adding it. Eight new tests cover
+independent reviewed frames and substantial native pixel changes, all-biome
+scope, palette/grid/context/purity on frozen worlds in every theme, surviving
+materials and static cached art, terrain-version/source cache invalidation,
+fixture exclusions, live animation/current-air clipping/reduced motion,
+truly opaque colony/umbrella colours, and reproducible review artifacts.
+Digests and bounded byte/count loops only; no raw-buffer deepEqual.
+The first reviewed gate found twelve intentional historical scene assertions;
+all were retained with explicit C15 transitions, then the focused regression
+set passed **100/100**. Final `npm run check`: **1812/1812**, exit 0,
+177.82 s. Final `npm run crap -- --changed --threshold 30`: exit 0, with
+fresh coverage **1812/1812** in 332.45 s. New renderer maximum **9.0**
+(drawIronworksJoint), other new renderer scores 2–7, all with 100% coverage;
+changed drawTerrain **29.0**, drawMachines **24.0**. New review functions
+score at most 4.0; historical-reference helpers at most 2.0. All under 30.
+Stamps refreshed: Draw 47c51480, build 563e8216. The shared FIFO lock and
+six-file concurrency were retained. Persistent user services avoided the
+transient launcher's baseline SIGTERM; explicit exit files prove completion.
+One queued focused command named a nonexistent round-one test; cancelled only
+that owned queue process and reran with foe-motion.test.js. The sibling soak
+was left alone. Source stayed frozen through both final gates; only this log
+was appended afterwards.
+
+**Performance:** `npm run fps -- 4 24 44 --season none`, matched runs behind
+the shared lock, before → after: all three **60 median / 60 p5, 17 ms worst,
+0% long tasks**. CPU **17/13/15% → 11/11/11%**; no CPU speedup is claimed
+against changing desktop load. No frame-rate loss measured. Complete logs and
+exit files: /tmp/xmas-dressing/biome-4/{before-fps,after-fps,focused-final,
+final-check,crap}.{log,exit}; baseline check is in biome-audit/before-check.*.
+
+**Next:** watch the native hall and vent silhouettes in crowded colonies.
+No known unresolved test, art or performance issue; visual review was through
+the real renderer rather than live QML. No merge, push, deploy, production
+requests, port 8787 changes, sibling writes or Omarchy writes.

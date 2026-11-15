@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import {ironworksSourceBefore} from './ironworks-reference.js'
 import {execFileSync} from 'node:child_process'
 import {renderer} from './gag-art.js'
 // Reconstruct a reviewed historical renderer without dropping any assertions.
@@ -18,6 +19,7 @@ export function restoreFoeRoundTwo(source,reference){
 // Preserve C12/C13 assertions against their exact historical three painters.
 // C14 separately pins these complete cycles and audits the whole-board scope.
 export function restoreFoeRoundThree(source,reference){
+ source=ironworksSourceBefore(source)
  for(const name of ['drawHzPiston','drawHzStamper','drawHzEchobat']){
   const pattern=new RegExp('function '+name+'\\([^]*?\\n}\\n')
   source=source.replace(pattern,reference.match(pattern)[0])
