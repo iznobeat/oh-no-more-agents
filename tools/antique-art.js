@@ -1,3 +1,4 @@
+import {cryoSourceBefore} from './cryo-art.js'
 // C17 complete-frame review: before left, after right, out of season.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -5,10 +6,10 @@ import {fileURLToPath} from 'node:url'
 import {createHash} from 'node:crypto'
 import {load,frame,stack,side,writePNG} from './render.js'
 import {renderer} from './gag-art.js'
-export function antiqueSourceBefore(source){return source.replace(/^  drawAntique(?:Hall|Stone|Garden|Life)\(ctx, w, pal\)\n/gm,'')}
+export function antiqueSourceBefore(source){return cryoSourceBefore(source).replace(/^  drawAntique(?:Hall|Stone|Garden|Life)\(ctx, w, pal\)\n/gm,'')}
 export function antiqueSheets(out){
  fs.mkdirSync(out,{recursive:true})
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=renderer(antiqueSourceBefore(source)),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
+ const source=cryoSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=renderer(antiqueSourceBefore(source)),D=renderer(source),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
  Math.random=()=>0.5
  try{for(const res of[1,2]){
   const rows=[]

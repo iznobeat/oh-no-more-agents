@@ -200,6 +200,7 @@ function drawTerrain(ctx, w, pal) {
   drawNorthSky(ctx, w, pal)
   if (desertPage(w)) drawDesertSky(ctx, w)
 
+  drawCryoVault(ctx, w, pal)
   if (iceCavePage(w)) drawGlacierBackdrop(ctx, w)
   if (spaceshipPage(w)) drawSpaceshipBackdrop(ctx, w, pal)
   if (ruinsPage(w)) drawRuinsTemple(ctx, w, pal)
@@ -249,6 +250,7 @@ function drawTerrain(ctx, w, pal) {
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
   drawIronworksBrick(ctx, w, pal)
   drawAntiqueStone(ctx, w, pal)
+  drawCryoFacets(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -270,6 +272,7 @@ function drawTerrain(ctx, w, pal) {
   drawChristmasGround(ctx, w)
   drawAlpineFirs(ctx, w, pal)
   drawAntiqueGarden(ctx, w, pal)
+  drawCryoGarden(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2363,6 +2366,7 @@ function drawBeltDrum(ctx, w, pal, x, top, side, dir) {
 function drawMachines(ctx, w, pal) {
   drawAlpineLife(ctx, w, pal)
   drawAntiqueLife(ctx, w, pal)
+  drawCryoLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -27114,4 +27118,129 @@ function drawAntiqueStone(ctx,w,pal) {
     if((x+Math.floor(y/2)%2)%3===0)ctx.fillRect(x*C,y*C,1,C-1)
   }
   ctx.restore()
+}
+
+// C18: a cathedral of blue ice. Preserve the old ice, icicles and page
+// inclusions; broad distant facets and a few reserved crystals give it depth.
+function drawCryoVault(ctx,w,pal) {
+  if(w.biome!=="Ice Cave")return
+  ctx.save()
+  var C=w.k.CELL,top=w.k.SKY*C,bottom=w.k.ROWS*C,width=w.k.COLS*C
+  for(var x=18;x<width;x+=91) {
+    var shoulder=10+(x+w.level*7)%17
+    for(var y=top;y<bottom;y+=2) {
+      var bend=Math.round(5*Math.sin(y/43+x)),half=13+Math.floor((y-top)/28)%9
+      ctx.fillStyle=pal.back
+      ctx.fillRect(x+bend-half,y,half*2,2)
+      ctx.fillStyle=pal.backLit
+      ctx.fillRect(x+bend-half,y,Math.max(2,Math.floor(half/3)),2)
+      ctx.fillStyle=pal.backDim
+      ctx.fillRect(x+bend+3,y,half,2)
+    }
+    // A broad hanging ice shoulder, cut into steps rather than thin streaks.
+    for(var s=0;s<shoulder;s++) {
+      ctx.fillStyle=pal.backLit
+      ctx.fillRect(x-25+s,top+s,50-s*2,1)
+      ctx.fillStyle=pal.back
+      ctx.fillRect(x,top+s,25-s,1)
+    }
+  }
+  for(var row=0;row<w.corridors.length;row++)
+    for(var bay=0;bay<2;bay++)drawCryoArch(ctx,pal,34+bay*197+(row*19+w.level)%31,w.corridors[row].floorY*C)
+  ctx.restore()
+}
+function drawCryoArch(ctx,pal,x,y) {
+  // Broad interlocking crystal fans in the far wall, never playable ledges.
+  for(var shard=0;shard<3;shard++) {
+    var height=31-shard*7,xx=x+shard*15
+    for(var row=0;row<height;row++) {
+      var left=xx-Math.floor(row/3),width=2+Math.floor(row*0.8)
+      ctx.fillStyle=pal.back;ctx.fillRect(left,y-height+row,width,1)
+      ctx.fillStyle=pal.backLit;ctx.fillRect(left,y-height+row,Math.max(1,Math.floor(width/3)),1)
+      ctx.fillStyle=pal.backDim;ctx.fillRect(xx+2,y-height+row,Math.max(1,Math.floor(row/4)),1)
+    }
+  }
+}
+function drawCryoFacets(ctx,w,pal) {
+  // Native faces have no page inclusions: a sparse, coherent ice lens inside
+  // bare DIRT, never a second repeated pattern over the page's existing grain.
+  if(w.biome!=="Ice Cave" || (w.res||1)>=2)return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=1;x<k.COLS-1;x++) {
+    if(w.terrain[y*k.COLS+x]!==k.DIRT || (x*7+y*13)%19!==0)continue
+    ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.55
+    ctx.fillRect(x*C,y*C,3,1);ctx.fillRect(x*C+1,y*C+1,3,1)
+    ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.3
+    ctx.fillRect(x*C+1,y*C+2,2,1)
+  }
+  ctx.restore()
+}
+var CRYO_CACHE=new WeakMap()
+function cryoSpots(w) {
+  var old=CRYO_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=abyssReserved(w)
+  // Keep the suspended colleagues and hatch approach as clear as hazards.
+  for(var f=0;f<(w.frozen||[]).length;f++) {
+    var a=w.frozen[f];boxes.push({x:a.x*C-12,y:a.y*C-18,width:28,height:26})
+  }
+  if(w.hatch)boxes.push({x:w.hatch.x*C-16,y:0,width:32,height:64})
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var x=24+(w.level*11+row*23)%43;x<w.k.COLS*C-28;x++) {
+      if(!cryoSupport(w,x,y) || !alpineClear(w,x-2,y-24,22,24,boxes))continue
+      spots.push({x:x,y:y,seed:x+row*29});break
+    }
+    if(spots.length===5)break
+  }
+  CRYO_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function drawCryoGarden(ctx,w,pal) {
+  if(w.biome!=="Ice Cave")return
+  ctx.save()
+  var spots=cryoSpots(w)
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    drawCryoCrystal(ctx,pal,b.x+6,b.y,7,20)
+    drawCryoCrystal(ctx,pal,b.x,b.y,5,11)
+    drawCryoCrystal(ctx,pal,b.x+13,b.y,5,9)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(b.x-1,b.y-2,20,2)
+    ctx.fillStyle=pal.decorLit;ctx.fillRect(b.x+2,b.y-1,13,1)
+  }
+  ctx.restore()
+}
+function drawCryoCrystal(ctx,pal,x,y,width,height) {
+  for(var row=0;row<height;row++) {
+    var inset=Math.max(0,Math.ceil((5-row)/2)),span=width-inset*2
+    if(span<=0)continue
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x+inset,y-height+row,span,1)
+    ctx.fillStyle=pal.decor;ctx.fillRect(x+inset,y-height+row,Math.max(1,Math.floor(span/2)),1)
+  }
+  ctx.fillStyle=pal.decorLit;ctx.fillRect(x+2,y-height+5,1,height-7)
+  ctx.fillRect(x+2,y-height+3,2,2)
+  ctx.fillStyle=pal.dirtShade;ctx.fillRect(x+width-2,y-7,1,6)
+}
+function drawCryoLife(ctx,w,pal) {
+  if(w.biome!=="Ice Cave")return
+  ctx.save()
+  var spots=cryoSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++)drawCryoDrift(ctx,w,pal,spots[i],t)
+  ctx.restore()
+}
+function drawCryoDrift(ctx,w,pal,b,t) {
+  for(var n=0;n<3;n++) {
+    var age=(Math.floor(t/7)+b.seed+n*11)%31
+    var x=b.x-1+Math.floor(age/2),y=b.y-24+n*4+Math.floor(age/10)
+    if(!alpineClear(w,x,y,3,2,[]))continue
+    ctx.globalAlpha=0.4;ctx.fillStyle=pal.decorLit
+    ctx.fillRect(x,y,2,1)
+    if(age%9<3)ctx.fillRect(x+1,y+1,1,1)
+  }
+}
+
+function cryoSupport(w,x,y) {
+  for(var dx=0;dx<20;dx+=4)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
+  return true
 }
