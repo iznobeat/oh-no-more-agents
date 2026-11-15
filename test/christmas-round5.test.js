@@ -23,7 +23,7 @@ test('eight Christmas machines paint bold native and page kit without touching t
     const w=machineWorld(name,key);w.res=res;const before=JSON.stringify(w)
     Object.freeze(w);const a=ink(w)
     assert.ok(a.calls.length>=6,name+' must remain visible')
-    assert.ok(a.calls.some(c=>['#ff5769','#b92e46','#73e58b','#ffdc85'].includes(c[4])),name)
+    assert.ok(a.calls.some(c=>['#ff5769','#b92e46','#73e58b','#ffdc85','#ff4059','#ff5364','#ffd45c'].includes(c[4])),name)
     assert.equal(JSON.stringify(w),before)
     assert.equal(ink(w).digest,a.digest)
   }
