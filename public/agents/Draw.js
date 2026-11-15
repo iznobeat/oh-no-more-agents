@@ -5140,6 +5140,7 @@ function drawDeathDust(ctx, pal, age, spread) {
 }
 
 function drawDeathSplat(ctx, w, pal, age) {
+  if ((w.res||1)<=2 && !w.submerged) return drawColonySplat(ctx,w,pal,age)
   drawDeathFlat(ctx, pal, 7, age < 4 ? 3 : 2)
   if (age < 8) {
     ctx.fillStyle = pal.robe
@@ -9087,6 +9088,7 @@ function drawIdleTie(ctx, w, pal, ox, oy, dir, robe, phase) {
 }
 
 function drawAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, skin, st, bodyDrop, walkLead, squash, idle) {
+  if (drawColonyActionBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawColonyWorkBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawPageAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, st, bodyDrop, idle)) return
   if ((w.res || 1) >= 2 && st === "bomb") return drawBombPose(ctx, w, pal, ag, ox, oy, dir, robe)
@@ -11107,6 +11109,7 @@ var FINE_POSES = {
   bomb: drawFineBomb, ceil: drawFineStride
 }
 function drawAgentFine(ctx, pal, ag, ox, oy, dir, drop, lead, squash, robe, w) {
+  if (w && colonyAction(w, ag)) return drawColonyActionFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && colonyWorking(w, ag)) return drawColonyWorkFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && libraryShelfPose(w, ag)) {
     drawFineHead(ctx, pal, ag, ox, oy, dir, drop)
@@ -11523,6 +11526,7 @@ function drawFloatGrip(ctx, w, pal, ag, ox, oy, dir) {
 var SKILL_DETAIL_DRAW = { climb: drawClimbContactDetail, bomb: drawBombFuse, fall: drawFloatGrip }
 function drawSkillDetail(ctx, w, pal, ag, ox, oy, dir) {
   if ((w.res || 1) < 2) return
+  if (colonyAction(w,ag)) return drawColonyActionDetail(ctx,w,pal,ag,ox,oy,dir)
   var draw = SKILL_DETAIL_DRAW[ag.state]
   if (!draw) return
   ctx.save()
@@ -14192,7 +14196,7 @@ function drawAgent(ctx, w, pal, ag, opts) {
   var dir = ag.dir
   var st = ag.state
   // At page resolution the body stays outside the face, with palms on it.
-  if ((w.res || 1) >= 2 && st === "climb" && !libraryShelfPose(w, ag))
+  if (colonyClimbAlignment(w, ag) && st === "climb" && !libraryShelfPose(w, ag))
     ox += dir * (climbContacts(w, ag, ox, dir).x - 8)
   // A rider hangs off the car's own position, not its stale one: agents step
   // before lifts within a tick, so ag.y trails a descending car by a whole
@@ -14444,7 +14448,7 @@ function agentDrawMotion(w, ag, st, idle) {
 
   var m = pageAgentMotion(w, ag, st, idle, { lead: walkLead, squash: squash, drop: bodyDrop })
   if (!idle && skating(w, ag)) { m.lead = SKATE_GAIT[(ag.anim >> 3) % 4]; m.drop = 0 }
-  return colonyWorkMotion(w, ag, m)
+  return colonyActionMotion(w, ag, colonyWorkMotion(w, ag, m))
 }
 // On the ice the stride is held: a long push one leg, a long push the other.
 var SKATE_GAIT = [1, 1, -1, -1]
@@ -22851,13 +22855,7 @@ function drawPageDeathShot(ctx,w,pal,age) {
   ctx.restore()
 }
 function drawPageDeathSplat(ctx,w,pal,age) {
-  var settle=Math.max(0,1.5-Math.floor(age/2)/2)
-  drawDeathFlat(ctx,pal,7,2+settle)
-  if (age<10) {
-    ctx.fillStyle=pal.hair
-    ctx.fillRect(-4-Math.floor(age/4)/2,-7+Math.floor(age/2)/2,4,1)
-  }
-  if (age<20) drawDeathDust(ctx,pal,age,8)
+  return drawColonySplat(ctx,w,pal,age)
 }
 function drawPageCharge(ctx,w,pal,mine,x,y) {
   ctx.save()
@@ -26141,4 +26139,118 @@ function drawColonyWorkFine(ctx,w,pal,ag,x,y,d,drop) {
   drawFineHead(ctx,pal,ag,x,y,d,drop)
   drawFineSuit(ctx,pal,x,y,d,7+drop)
   drawFineShoes(ctx,pal,x,y,d,0,15.5,6,15.5,2)
+}
+
+
+// Native key poses first, page cuffs and soles second. The climb alternates a
+// planted hand/pushing boot and a reaching hand/tucked knee on Sim's anim.
+var COLONY_CLIMB = [[2,7,11,0],[2,6,10,0],[3,4,9,-1],[5,2,10,-1],
+  [7,2,11,0],[6,2,10,0],[4,3,9,-1],[2,5,10,-1]]
+var COLONY_BOMB = [0,1,2,2,1,0]
+function colonyAction(w,ag) {
+  if ((w.res||1)>2 || ag.special || w.submerged || ag.brollyFor>0) return false
+  return ag.state==='bomb' || (ag.state==='climb' && !libraryShelfPose(w,ag))
+}
+function colonyClimbRow(w,ag) {
+  return COLONY_CLIMB[w.reducedMotion?0:((ag.anim||0)>>1)%8]
+}
+function colonyBombDrop(w,ag) {
+  if(w.reducedMotion)return 1
+  var base=bombCrouch(ag),beat=Math.floor(Math.max(0,ag.fuse||0)/(ag.fuse<15?1:2))%6
+  return base+COLONY_BOMB[beat]
+}
+function colonyActionMotion(w,ag,m) {
+  if(!colonyAction(w,ag))return m
+  m.drop=ag.state==='bomb'?colonyBombDrop(w,ag):colonyClimbRow(w,ag)[3]
+  return m
+}
+function drawColonyActionBody(ctx,w,pal,ag,x,y,d,robe) {
+  if(!colonyAction(w,ag))return false
+  ctx.save()
+  if(ag.state==='climb')drawColonyClimb(ctx,w,pal,ag,x,y,d,robe)
+  else drawColonyBomb(ctx,w,pal,ag,x,y,d,robe)
+  ctx.restore();return true
+}
+function drawColonyClimb(ctx,w,pal,ag,x,y,d,robe) {
+  var r=colonyClimbRow(w,ag),drop=r[3]
+  ctx.fillStyle=robe
+  blit(ctx,x,y,d,2,7+drop,4,6)
+  blit(ctx,x,y,d,5,r[0]+1,2,Math.max(1,7+drop-r[0]))
+  blit(ctx,x,y,d,6,r[0]+1,2,1)
+  blit(ctx,x,y,d,5,r[1]+1,3,1)
+  blit(ctx,x,y,d,1,12+drop,3,4)
+  blit(ctx,x,y,d,4,r[2],4,2)
+  blit(ctx,x,y,d,6,r[2]+1,2,3)
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,7,r[0],1,1);blit(ctx,x,y,d,7,r[1],1,1)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,1,15+drop,3,1);blit(ctx,x,y,d,6,r[2]+3,2,1)
+  if(w.res!==2)return
+  ctx.fillStyle=pal.shirt
+  blitFine(ctx,x,y,d,6.5,r[0]+1,1,0.5);blitFine(ctx,x,y,d,6.5,r[1]+1,1,0.5)
+  ctx.fillStyle=pal.lapel;blitFine(ctx,x,y,d,6,r[2],1,0.5)
+}
+function drawColonyBomb(ctx,w,pal,ag,x,y,d,robe) {
+  var drop=colonyBombDrop(w,ag),wide=drop>2?1:0
+  ctx.fillStyle=robe
+  blit(ctx,x,y,d,1,7+drop,6,Math.max(2,6-drop))
+  blit(ctx,x,y,d,1-wide,13,3,3);blit(ctx,x,y,d,5,13,2+wide,3)
+  // Elbows lift out as the knees fold: a full silhouette recoil, not a tint.
+  blit(ctx,x,y,d,-1,8+drop,3,2);blit(ctx,x,y,d,6,8+drop,3,2)
+  blit(ctx,x,y,d,0,9+drop,2,2);blit(ctx,x,y,d,6,9+drop,2,2)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,1-wide,15,3,1);blit(ctx,x,y,d,5,15,2+wide,1)
+  if(w.res!==2)drawColonyCharge(ctx,w,pal,ag,x,y,d,drop)
+}
+function drawColonyCharge(ctx,w,pal,ag,x,y,d,drop) {
+  var top=9+drop,fuse=w.reducedMotion?2:Math.max(1,Math.ceil((ag.fuse||0)/30))
+  ctx.fillStyle=pal.rigDark;blit(ctx,x,y,d,2,top,4,3)
+  ctx.fillStyle=pal.urgent;blit(ctx,x,y,d,3,top,2,1)
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,1,top+1,1,1);blit(ctx,x,y,d,6,top+1,1,1)
+  ctx.fillStyle=pal.rig;blit(ctx,x,y,d,4,top-fuse,1,fuse)
+  ctx.fillStyle=pal.fireHot
+  if(!w.reducedMotion)blit(ctx,x,y,d,3+(ag.fuse%2),top-fuse-1,2,1)
+  if(w.res!==2)return
+  ctx.fillStyle=pal.steelEdge;blitFine(ctx,x,y,d,2.5,top+0.5,0.5,1.5)
+  ctx.fillStyle=pal.shirt
+  blitFine(ctx,x,y,d,0.5,top+0.5,0.5,1);blitFine(ctx,x,y,d,7,top+0.5,0.5,1)
+}
+function drawColonyActionFine(ctx,w,pal,ag,x,y,d,drop) {
+  drawFineHead(ctx,pal,ag,x,y,d,drop)
+  drawFineSuit(ctx,pal,x,y,d,7+drop)
+}
+// A compressed impact, one rebound, then a spreading flat suit. The original
+// hat is still painted by drawFallenHat; dust is local and never world state.
+var COLONY_SPLAT = [[5,4,0],[8,2,0],[9,1,0],[8,3,1],[7,4,1],[8,3,0],[9,2,0],[9,2,0]]
+function drawColonySplat(ctx,w,pal,age) {
+  var t=w.reducedMotion?7:Math.min(7,Math.floor(Math.max(0,age)/2)),r=COLONY_SPLAT[t]
+  ctx.save();ctx.translate(0,-r[2])
+  drawDeathFlat(ctx,pal,r[0],r[1])
+  if(t<6) {
+    ctx.fillStyle=pal.robe;ctx.fillRect(-r[0]+1,-r[1]-2,3,2)
+    ctx.fillStyle=pal.eye;ctx.fillRect(-r[0],-r[1]-2,2,1)
+  }
+  if(w.res===2) {
+    ctx.fillStyle=pal.shirt;ctx.fillRect(1,-r[1]+0.5,0.5,Math.max(0.5,r[1]-1))
+    ctx.fillStyle=pal.lapel;ctx.fillRect(-r[0]+3,-r[1]+0.5,2,0.5)
+  }
+  ctx.restore()
+  if(!w.reducedMotion && age<16)drawDeathDust(ctx,pal,age,5+Math.min(4,t))
+}
+
+function colonyClimbAlignment(w,ag) { return (w.res||1)>=2 || colonyAction(w,ag) }
+
+function drawColonyActionDetail(ctx,w,pal,ag,x,y,d) {
+  ctx.save()
+  if(ag.state==='bomb')drawColonyCharge(ctx,w,pal,ag,x,y,d,colonyBombDrop(w,ag))
+  else drawColonyClimbGrip(ctx,w,pal,ag,x,y,d)
+  ctx.restore()
+}
+function drawColonyClimbGrip(ctx,w,pal,ag,x,y,d) {
+  var r=colonyClimbRow(w,ag)
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,7,r[0],1,1);blit(ctx,x,y,d,7,r[1],1,1)
+  ctx.fillStyle=pal.shirt
+  blitFine(ctx,x,y,d,6.5,r[0]+1,1,0.5);blitFine(ctx,x,y,d,6.5,r[1]+1,1,0.5)
 }

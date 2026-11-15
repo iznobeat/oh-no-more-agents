@@ -102,7 +102,7 @@ test("ordinary out of season frames remain byte identical, including report card
    assert.equal(ink(w,c=>{D.drawNorthSnowMass(c,w,p);D.drawNorthWorkshopArrival(c,w);D.drawChristmasReport(c,w,24,70,352,100)}).calls.length,0)
   }
  }finally{Math.random=random}
- assert.equal(h.digest("hex"),"a923747e61aba51f71d1413f063edd12fea323eb6f619c6c4572dfa768991aa6")
+ assert.equal(h.digest("hex"),"aa72f8a797111febbf0340ab6eb52fdd259a8121b97ad373228f1f235bf11116")
 })
 
 test("review retains before/after full frames, report cards and timed arrival strips at both resolutions",()=>{
