@@ -406,3 +406,28 @@ test("reindeer rounded up: the sleigh flies a lap of honour with them harnessed 
   const width = extra => { const img = canvas(400, 248, "#000000"); D.drawSleigh(img.ctx, w, 100, 30, 1, extra); let max = 0; for (let x = 0; x < 400; x++) for (let y = 15; y < 40; y++) if (img.buf[(y * 400 + x) * 3]) max = x; return max }
   assert.equal(width(2) - width(0), 12)
 })
+
+test("at the Pole the special who restocks the toolbar is Santa: hat and beard, nowhere else", () => {
+  let seen = 0
+  for (let level = 21; level <= 420; level += 21) {
+    const w = S.generate(level, 0, 3)
+    if (w.special) { seen++; assert.equal(w.special, "pkgmanager", "level " + level) }
+  }
+  assert.ok(seen >= 10, "most Pole levels have one: " + seen)
+  // The roll is the same as before: elsewhere the specials are as varied as ever.
+  assert.ok(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(l => S.generate(l, 0, 3).special)).size > 3)
+  const w = S.generate(42, 0, 3), pal = P.build(theme, 42)
+  const ag = Object.assign(S.spawn(w), { x: 40, y: 30, state: "walk", dir: 1, special: "pkgmanager" })
+  w.agents = [ag]
+  const shot = biome => {
+    w.biome = biome
+    const img = canvas(400, 248, "#000000")
+    D.drawPoleSanta(img.ctx, w, ag, D.pageAgentX(w, ag), D.pageAgentY(w, ag), 1, 0, "walk")
+    return digest(img.buf)
+  }
+  const blank = digest(canvas(400, 248, "#000000").buf)
+  assert.notEqual(shot("North Pole"), blank, "hat and beard")
+  assert.equal(shot("Cavern"), blank, "only at the Pole")
+  w.biome = "North Pole"; ag.special = "rubberduck"
+  assert.equal(shot("North Pole"), blank, "only the Package Manager")
+})

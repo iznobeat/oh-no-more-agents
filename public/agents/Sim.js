@@ -1537,6 +1537,9 @@ if (w.biome === "Ice Cave") {
 // that fires once or twice a visit meant a given special was a rare sight.
 if (rng() < 0.75) {
   w.special = pick(rng, SPECIALS).id
+  // At the North Pole the one who restocks the toolbar is Santa (Draw dresses
+  // the Package Manager for it). After the roll, so the stream is unchanged.
+  if (w.biome === "North Pole") w.special = POLE_SPECIAL
   // Resolved here and carried on the world, exactly like `w.k`. Draw.js has
   // no imports and no way to reach into this file — in a browser both are in
   // one global scope so calling specialSpec() from there appeared to work,
@@ -4060,6 +4063,9 @@ function obstacleCliff(w, rng, c, x, o) {
 }
 
 
+
+// The North Pole's special: the one who restocks the toolbar is Santa there.
+var POLE_SPECIAL = "pkgmanager"
 
 var SPECIALS = [
 

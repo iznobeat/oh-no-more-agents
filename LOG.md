@@ -13017,3 +13017,18 @@ was idle; no controlled CPU speedup is claimed. Logs:
 No known unresolved art/test issue; visual review used the real renderer and
 staged/natural boards, not a live QML panel. No merge, push, deploy, production
 request, port 8787 change, sibling write or Omarchy write.
+
+## 476 — 2026-11-15 · Santa at the Pole
+
+**Changed (Sim):** on a North Pole level the special, when there is one, is
+always the Package Manager — the one who restocks the toolbar when the colony
+runs out of a tool, already in a red coat with white hair (`POLE_SPECIAL`,
+set after the roll, so every level's stream is as it was and elsewhere the
+specials are as varied as ever).
+**Changed (Draw):** at the Pole it wears a Santa hat and a white beard that
+ride its head like the season's hats (`drawPoleSanta`, every resolution; a
+shadow line in the beard at res 2).
+**Measured:** 20 Pole levels × 8 colonies: 98% home with Santa, 98% without.
+**Test:** northpole (the special at every Pole level that has one, specials
+elsewhere still varied; hat and beard at the Pole only, on the Package
+Manager only). The native North Pole pin re-captured (level 42 has him).

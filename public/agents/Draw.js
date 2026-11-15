@@ -14601,6 +14601,7 @@ function drawAgentHead(ctx, w, pal, ag, ox, oy, dir, hair, skin, st, bodyDrop) {
     var seasonHat = w.season.hats === "party" ? drawNewyearHat : drawSantaHat
     seasonHat(ctx, w, ag, ox + dir * hatLook.x, oy, dir, bodyDrop + (w.submerged ? collarLift : hatLook.y))
   }
+  drawPoleSanta(ctx, w, ag, ox, oy, dir, bodyDrop, st)
 
 }
 
@@ -21950,6 +21951,17 @@ function gagRateLimitRect(w) {
 }
 
 // Christmas is display data supplied by the web host; no season, no new pixels.
+// At the North Pole the Package Manager, who restocks the toolbar, is Santa:
+// the hat, and a white beard over the collar.
+function drawPoleSanta(ctx, w, ag, ox, oy, dir, drop, st) {
+  if (w.biome !== "North Pole" || ag.special !== "pkgmanager" || st === "saved" || w.milestone) return
+  var look = traitHeadOffset(w, ag), x = ox + dir * look.x, d = drop + look.y
+  var pixel = (w.res || 1) >= 2 ? blitFine : blit
+  ctx.fillStyle = "#f4f8ff"
+  pixel(ctx, x, oy, dir, 2, 5 + d, 5, 2); pixel(ctx, x, oy, dir, 3, 7 + d, 3, 1); pixel(ctx, x, oy, dir, 4, 8 + d, 1, 1)
+  if ((w.res || 1) >= 2) { ctx.fillStyle = "#c9d4e4"; pixel(ctx, x, oy, dir, 2.5, 6.5 + d, 4, 0.5) }
+  drawSantaHat(ctx, w, ag, x, oy, dir, d)
+}
 function drawSantaHat(ctx, w, ag, ox, oy, dir, drop) {
   var pixel = (w.res || 1) >= 2 ? blitFine : blit
   ctx.save()
