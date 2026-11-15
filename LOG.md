@@ -12616,3 +12616,115 @@ one file, so the gate would have caught it; the play-test caught it first.
 **Measured:** 1–420 × 8 colonies, before → after: 95.34% → 95.34% home,
 189 97% → 100%, problem levels 3 → 2 (225, 295 remain).
 **Test:** specials (189's colony all home; the drop-ahead rule).
+## C9 — 2026-11-15 · Reach, brace, bounce
+
+**Chose:** climb, bomb countdown and splat after re-rendering and looking at all
+thirteen C8 action strips at res 1 and 2. The native climber barely changed its
+arm and never its knees; the native bomber stood upright and flashed; the splat
+became a thin, almost static line before the impact could read. Build, bash and
+dig are unchanged from C8. Mine, block, walk, fall, float, explosion and arrival
+retain every C8 sprite pixel at both resolutions.
+
+**Changed (Draw only):** eight whole-pixel climb keys on the existing `ag.anim`
+(two ticks each): planted palm and pushing boot, bent elbow and tucked knee,
+reach, catch and the other side's pull. Head and shoulders rise with the pull.
+The native body now uses the page's wall-edge alignment, so both facings keep
+their palms and toes outside the actual wall even at fractional agent positions.
+Page cuffs and knee edges use half pixels. Library shelf grips keep their own
+pose. Countdown keys use the existing fuse: knees fold, elbows flare and the
+head recoils, getting lower and quicker in the final half-second. The native
+charge, hands, shortening fuse and spark now read as a held object too; page
+steel/cuff marks refine it. The splat compresses, spreads, rebounds once and
+settles over fourteen existing death-age ticks, with two local dust beats and
+the original fallen hat/umbrella pass. No explosion timing or art changes.
+
+New poses hold still under reduced motion; new dust and fuse sparks stop.
+Original palette roles, suit/hat/face language and all umbrella painting remain.
+Parrying umbrellas, specials, divers and res-3 share art keep their prior living
+poses. `drawSkillDetail` still paints the actual current palms/charge when called
+on its own, preserving its existing bounds, context, purity and fuse tests.
+No new world state, RNG or text. Sim.js, sfx.js and North Pole code are untouched.
+
+**Looked at:** C8 baseline is 91531f2a3b64ed55a341f10894cf7282cda24846.
+Initial all-action sheets: `/tmp/xmas-dressing/anim2-0/all-res1.png` and
+`/tmp/xmas-dressing/anim2-0/all-res2.png`. Extended `tools/skill-strips.js` from
+twelve to sixteen consecutive ticks, covering the complete climb cycle, both
+facings, and added complete quiet-board fixtures for the three reviewed actions
+at ages 0/4/8. These are explicitly staged art scenes, not simulated rescues.
+Inspected iterations anim2-1 through anim2-4; shortened an over-stretched first
+splat pose, corrected native wall alignment, and kept the charge in front of its
+tie through the existing detail entry point. Final before-left/after-right
+strips inspected at both resolutions:
+
+- `/tmp/xmas-dressing/anim2-4/climb-compare-res1.png`
+- `/tmp/xmas-dressing/anim2-4/climb-compare-res2.png`
+- `/tmp/xmas-dressing/anim2-4/bomb-compare-res1.png`
+- `/tmp/xmas-dressing/anim2-4/bomb-compare-res2.png`
+- `/tmp/xmas-dressing/anim2-4/splat-compare-res1.png`
+- `/tmp/xmas-dressing/anim2-4/splat-compare-res2.png`
+
+Also inspected `bomb-final-compare-res1.png` and
+`bomb-final-compare-res2.png` there (fuse ticks 18–3), and
+`live-climbs-res1.png` / `live-climbs-res2.png` there (natural Ruins, Mail Room
+and Clock Tower colonies at tick 400). Also inspected all six `actions-full-0-res1.png`, `actions-full-4-res1.png`,
+`actions-full-8-res1.png`, `actions-full-0-res2.png`, `actions-full-4-res2.png`,
+`actions-full-8-res2.png` in that directory, at true full-board size.
+
+**Pins deliberately moved:** exact comparisons remain, including their original
+historical renderer references. `test/fixtures/colony-action-pins.json` records
+before/after hashes for every selected sprite frame: three actions × two
+resolutions × two facings × sixteen ticks (192 pairs), plus scene audit hashes.
+C8's other-action test now checks the original historical hash and the reviewed
+new hash for the 144 selected frames in its twelve-tick window; all seven other
+C8 comparisons remain exact old-pixel comparisons. C9 additionally pins all ten
+unselected actions against C8 over the full sixteen ticks.
+
+- agents: native/unspecified pose aggregate, ee81abc8… → 76f5fc4c…, for the
+  reviewed climb and bomb poses. Its fine-mask test uses the same actual climbing
+  wall origin as the body; every fine pixel still has to lie in the silhouette.
+- christmas-round3: ordinary full boards at ticks 350/900, both resolutions,
+  a923747e… → aa72f8a7…, for live selected poses in the aggregate.
+- christmas-round4 and christmas-round5: ordinary full boards at ticks 120/350,
+  both resolutions, e97d87d3… → 7bb0cef0…, for the same live-pose reason.
+- christmas-round6 full frames: Mail Room/1/120, Mail Room/1/400,
+  Mail Room/2/120, Mail Room/2/400, Ruins/1/120, Ruins/1/400,
+  Ruins/2/120, Ruins/2/400. The worlds contain the newly posed climbers.
+- christmas-round6 opaque cast masks: Mail Room/1, Mail Room/2, Ruins/1,
+  Ruins/2. New palms, knees and wall-aligned native bodies change the opaque
+  actor mask and its pixels; the exact historical pixels under that mask remain
+  separately asserted. C8's other worker pins are retained.
+- newyear full frames: none/2/1, none/2/2, none/14/1, none/14/2, none/16/1,
+  none/16/2; christmas/2/1, christmas/2/2, christmas/14/1, christmas/14/2,
+  christmas/16/1, christmas/16/2. Ruins, Mail Room and Clock Tower have live
+  climbers at the pinned tick. Season and terrain code are unchanged.
+- umbrella-office native/default/share actor aggregate: 00472f6a… → 012959c5…,
+  for selected native actors in the arrival scenes; the independent historical
+  44940033… pin and res-3 output remain unchanged.
+
+**Validation:** baseline full check 1,749/1,749; final full check and
+CRAP coverage both 1,758/1,758, exit 0. Nine new tests cover exact changed/native
+poses, visible change, full timer cycle, still reduced-motion art, palette/grid/
+bounds, no drawing RNG or world writes, excluded costumes/parries/shelf grips,
+all ten unselected actions, true wall contacts and retained review artifacts.
+Focused new tests 9/9; existing skill-art 9/9, Christmas round-six 8/8 and
+New Year 10/10. `npm run crap -- --changed --threshold 30` exit 0: largest changed function
+`drawAgent` 26.0; `agentDrawMotion` 16.0; `drawAgentBody` 15.0; new drawing
+helpers at most 8.0 and review helpers at most 9.0. Stamps refreshed. Heavy gates use the shared lock
+and unchanged six-file concurrency, with no edits during either gate. A launcher
+was interrupted with SIGTERM before totals; persistent user-service runs retain
+explicit exit codes. The subsequent contract failures were fixed in the painter,
+without changing those existing assertions. Logs:
+`/tmp/xmas-dressing/anim2-before-check.log`, `anim2-final-check.log`,
+`anim2-crap.log`, `anim2-focused4.log`, `anim2-skills.log`.
+
+**Performance:** `npm run fps -- 8 12 18`: before and final after, 60 median /
+60 p5 on all three with no long tasks. Worst frames before 17/17/50 ms,
+after 33/17/33 ms. CPU before 18/17/20%, after 20/17/20%. Baseline and final logs:
+`/tmp/xmas-dressing/anim2-before-fps.log` and
+`/tmp/xmas-dressing/anim2-final-fps.log`. Measurements overlapped test work, so
+CPU variation is not a controlled speed comparison.
+
+**Next:** review the remaining native mine-planting and float/block motion.
+No known unresolved art, test or FPS issue. Review used the real renderer and
+full-board fixtures, not a live QML panel. No merge, push, deploy, production
+request, sibling write or port 8787 change.

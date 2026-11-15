@@ -47,12 +47,68 @@
     "Frost/2/400": {
       "before": "d61041321bcac04f0ae08981002a28399b27e80b1550e697da83b5f9385b96e6",
       "after": "b14fd5bad1a2caa741517639ebbef50db718c370c4d0bfefee43e0c17c549d87"
+    },
+    "Mail Room/1/120": {
+      "before": "c731774574fb99e8aec34ec992de0cb39ee78672c001a9ccb116daec9cc2ed4b",
+      "after": "b8ce8b418f92fbfab5a8d809643dcca248e73218f3fbbfb8a6d86737f85de9d2",
+      "c8": "c731774574fb99e8aec34ec992de0cb39ee78672c001a9ccb116daec9cc2ed4b"
+    },
+    "Mail Room/1/400": {
+      "before": "17acd7d8a2875ff8ae0682cc4cd48f6a47d0fe758537a31ddb3e6bd6a74ce9ad",
+      "after": "b688c6cf82600789e51e4cf95a617b8799332e93fd4003107452bbd5453b0849",
+      "c8": "17acd7d8a2875ff8ae0682cc4cd48f6a47d0fe758537a31ddb3e6bd6a74ce9ad"
+    },
+    "Mail Room/2/120": {
+      "before": "acab17e38660a06dc1aa9652c82843a47bacc8beb2e71b96919b01d3398bce52",
+      "after": "457eeae4945724050f9414bbda912e713386de53476938591333576f760a8d00",
+      "c8": "acab17e38660a06dc1aa9652c82843a47bacc8beb2e71b96919b01d3398bce52"
+    },
+    "Mail Room/2/400": {
+      "before": "b3e5c9957dc8260f21c2daedb2d3226ee08330e09d202e6007cddcae19fcc13a",
+      "after": "bfb9f39ff17cfe6f7624bc01f84211329759a451a8e4cf801d0e6bc28694440a",
+      "c8": "b3e5c9957dc8260f21c2daedb2d3226ee08330e09d202e6007cddcae19fcc13a"
+    },
+    "Ruins/1/120": {
+      "before": "e975a2d1273186832ba59f23778cddd48524f2b6fa1a27e3719630203c401079",
+      "after": "288a3d101fcbb1fd99a7cacb717ba649703b81b72d16de3238781016c7f98e3c",
+      "c8": "e975a2d1273186832ba59f23778cddd48524f2b6fa1a27e3719630203c401079"
+    },
+    "Ruins/1/400": {
+      "before": "60cf1debd6cbe775974cd935794642acf18b8e8d772dc53c293aca31d67120a0",
+      "after": "5af62a8ad8eb9338ac338c17b7f259ac645d8198b5f4e106d384b7e283b70ab5",
+      "c8": "60cf1debd6cbe775974cd935794642acf18b8e8d772dc53c293aca31d67120a0"
+    },
+    "Ruins/2/120": {
+      "before": "a1a524b64d12531e47578c89e3549d17bc504935d3cafc5ccc141bb0f707459d",
+      "after": "82ada44d09d66e66d1c685c3ad6fa92c7d60fd74d9369643343920c3747f2b83",
+      "c8": "a1a524b64d12531e47578c89e3549d17bc504935d3cafc5ccc141bb0f707459d"
+    },
+    "Ruins/2/400": {
+      "before": "793828d2f7e03b16b3820f96e2e32ca75b93e952660b04e5b6b37fb5ae308936",
+      "after": "9471cb1cda999ac5bbf8791dd597f6253f38b19658b3696aad2e32f980421bb0",
+      "c8": "793828d2f7e03b16b3820f96e2e32ca75b93e952660b04e5b6b37fb5ae308936"
     }
   },
   "c6cast": {
     "Data Center/2": {
       "before": "1fa1c16215ed520dddba6b99032b9656d21909ab22f1e0b006a1c628e686108d",
       "after": "f034cc62a7da9f588fbfce6cd44f98d1f829f7efebabeaa0f1e9ca4dad1c3131"
+    },
+    "Mail Room/1": {
+      "before": "a82863e3143e86b7fe123cdf5ff3fda44dca09a62b19e8155809726812c72472",
+      "after": "8104673c040aa85d1d2078d10a0cfdab8298e9a8b1816deb65703ed0bd5c9814"
+    },
+    "Mail Room/2": {
+      "before": "f0421d821a5e1983c75a042d69a2a34b96c213c81c5a520e522aff7b1c50a687",
+      "after": "ed89d28c9a5bb84f05b40bc6de765e1234f92eddfdfd4cc61d8121149c8b8caf"
+    },
+    "Ruins/1": {
+      "before": "2dcf648790ff9428d36e857403ed6fd88d55e0b30466d7a85f7c2ff396f2d5d3",
+      "after": "2b618b1cd674fe4b1c8a69696f97c2786b8c42e620da6c9663543273f45301da"
+    },
+    "Ruins/2": {
+      "before": "e4fe12f2b784efea1ff771e661bfcc66cd2236a36a71d79e1073d7555ab56750",
+      "after": "713aa9bd6203dabeb7ca22c52b12eba908722171d3fcd6a36ed36a3318fd87b5"
     }
   },
   "newyear": {
@@ -103,6 +159,66 @@
     "christmas/18/2": {
       "before": "8ebfb7d10b962d4e9be65f48ff69574921ed5a203d358f58a337015c18ea121d",
       "after": "e2b004c9777b1944811f973ba05cb4437bbdbfddc4b3bdd8be9caf9a09cd636b"
+    },
+    "none/2/1": {
+      "before": "0821620a7dfe9a9f73188afe6c198f26f2671f8deb7571299ad2ce2df23dc789",
+      "after": "218736945c24a420aa75ac5f26de244ce9a359f14ad0414b096bca272a91d944",
+      "c8": "0821620a7dfe9a9f73188afe6c198f26f2671f8deb7571299ad2ce2df23dc789"
+    },
+    "none/2/2": {
+      "before": "16c54a7cc03c0f4819b391202a3dd96aeb83b81406faa35545b8ea630976e31a",
+      "after": "4c93cf8b4440a9b11e763d2bbb1d394fb0d0418e7234071206c56a594db22cbb",
+      "c8": "16c54a7cc03c0f4819b391202a3dd96aeb83b81406faa35545b8ea630976e31a"
+    },
+    "none/14/1": {
+      "before": "17acd7d8a2875ff8ae0682cc4cd48f6a47d0fe758537a31ddb3e6bd6a74ce9ad",
+      "after": "b688c6cf82600789e51e4cf95a617b8799332e93fd4003107452bbd5453b0849",
+      "c8": "17acd7d8a2875ff8ae0682cc4cd48f6a47d0fe758537a31ddb3e6bd6a74ce9ad"
+    },
+    "none/14/2": {
+      "before": "b3e5c9957dc8260f21c2daedb2d3226ee08330e09d202e6007cddcae19fcc13a",
+      "after": "bfb9f39ff17cfe6f7624bc01f84211329759a451a8e4cf801d0e6bc28694440a",
+      "c8": "b3e5c9957dc8260f21c2daedb2d3226ee08330e09d202e6007cddcae19fcc13a"
+    },
+    "none/16/1": {
+      "before": "18f2b47de95f1117584d4647e3704cbb03b8ab01a8327b8694b3c4e24ba7b243",
+      "after": "f68464ab2c791452c84e9bec582775ad8cc2498776c913ef166bc9cb1e013969",
+      "c8": "18f2b47de95f1117584d4647e3704cbb03b8ab01a8327b8694b3c4e24ba7b243"
+    },
+    "none/16/2": {
+      "before": "5e83c3c9030d25c96906bc774a7ce16db44d70cd50a32b98ceee04ebb20c0188",
+      "after": "b2f513eae13331f5087ab586cc7aa9b5da46f27bb0170f50026f28b295aeccb0",
+      "c8": "5e83c3c9030d25c96906bc774a7ce16db44d70cd50a32b98ceee04ebb20c0188"
+    },
+    "christmas/2/1": {
+      "before": "38b78f3e2b0ec98dadca364eeeeab21825dcb573db1c6cecf2520ad78de62681",
+      "after": "43ecf943ea9d8e34b655a029ed6e74eb1bac67433e221bd89618d05e89ff2b27",
+      "c8": "38b78f3e2b0ec98dadca364eeeeab21825dcb573db1c6cecf2520ad78de62681"
+    },
+    "christmas/2/2": {
+      "before": "e566a3cc31a5f007fbbeddfa01230f69c4e0224f2a9fcb7752436f84bb44665f",
+      "after": "53bb388e98f6738df367c783984037a07e10ce1f5c50fa93dbea4e81501f161a",
+      "c8": "e566a3cc31a5f007fbbeddfa01230f69c4e0224f2a9fcb7752436f84bb44665f"
+    },
+    "christmas/14/1": {
+      "before": "c9340873aac679f8372a7566656c6d129024678bec7a9e208ee4864d86be7e73",
+      "after": "d6e1a88c5f619406bd294ffb0e7450e629f785ff3254c0d975f83a57c5ec873a",
+      "c8": "c9340873aac679f8372a7566656c6d129024678bec7a9e208ee4864d86be7e73"
+    },
+    "christmas/14/2": {
+      "before": "c1a53c62910aae0523471bd7bd157e6b8993fab231e44ed52ede62e6acdf7e6f",
+      "after": "dd39f40710b2e421f603d383abefa4fc8c97990d8d15ccd0ff064943a9a470b5",
+      "c8": "c1a53c62910aae0523471bd7bd157e6b8993fab231e44ed52ede62e6acdf7e6f"
+    },
+    "christmas/16/1": {
+      "before": "effe54bf6d6c33800e2d3e52a1d33ec82e66784cec1381a155ce893cfe2788bb",
+      "after": "4888dc8c758c735b4416af5c34a99b10efbc268726ea817bf7aea583c01f9eee",
+      "c8": "effe54bf6d6c33800e2d3e52a1d33ec82e66784cec1381a155ce893cfe2788bb"
+    },
+    "christmas/16/2": {
+      "before": "117adcf66dcfdeb0379166f338ea3d024fb9798ffe8723bdfc08e20dd4a1541c",
+      "after": "482cd9cb621b237b1e17e3215e146b51da69554cad5c584720f5254c81b0220a",
+      "c8": "117adcf66dcfdeb0379166f338ea3d024fb9798ffe8723bdfc08e20dd4a1541c"
     }
   },
   "r3": "a923747e61aba51f71d1413f063edd12fea323eb6f619c6c4572dfa768991aa6",

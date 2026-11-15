@@ -101,7 +101,7 @@ test("reviewed native poses match the pinned res 1 and unspecified res frames", 
       D.drawAgent(img.ctx, w, pal, fineSample(state, dir, phase, mode), {})
       hash.update(img.buf)
     }
-  assert.equal(hash.digest("hex"), "ee81abc84f7a8da3f01aa4f8e53d1df03eb20483d1a0cbeafd85e5e463724af0")
+  assert.equal(hash.digest("hex"), "76f5fc4cca041a81d0b444276d9455425f944ce6430daa0ec3884a34a9ad7eb5")
 })
 
 for (const state of FINE_STATES) {
@@ -142,7 +142,9 @@ for (const state of FINE_STATES) {
       if (state === "swim") D.drawFineSwim(fine.ctx, pal, ag, 36, 48, dir)
       else {
         const lead = [0, 1, 0, -1][(phase >> 2) % 4]
-        D.drawAgentFine(fine.ctx, pal, ag, 36, 48, dir, D.agentDrawMotion(w, ag, state, null).drop, lead, 0, pal.robe, w)
+        // Native climbing now shares the page wall-contact origin.
+        const origin = state === "climb" ? 36 + dir * (D.climbContacts(w, ag, 36, dir).x - 8) : 36
+        D.drawAgentFine(fine.ctx, pal, ag, origin, 48, dir, D.agentDrawMotion(w, ag, state, null).drop, lead, 0, pal.robe, w)
       }
       let marks = 0
       for (let i = 0; i < fine.buf.length; i += 3) {
