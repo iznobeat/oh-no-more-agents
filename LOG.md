@@ -13290,3 +13290,12 @@ final-after-fps.log, final-fps-queue.log and fps-complete.
 art/test issue; visual review used the real Canvas renderer and staged boards,
 not a live Omarchy/QML panel. No merge, push, deploy, production requests,
 port 8787 changes, sibling writes or Omarchy writes.
+
+## 480 — 2026-11-15 · Deploy: foes and hazards animated, snowballs while waiting
+
+**Deployed** build 1ae397e0 (Worker version 369cf3f3), replacing 9595552a;
+covers C12, C13 and 479. Reviewed C12 and C13 in their before/after strips
+(sniper bolt action, icicles that crack and fall, the servo's swing; trap
+jaws, the pendulum's continuous swing, snowball impacts). **Before:** gate
+1796/1796, CRAP green; `npm run smoke -- --level 3` passed (3–9).
+**After:** `npm run verify -- --previous 9595552a` passed.
