@@ -12382,3 +12382,13 @@ speedup claim. Final logs: `/tmp/xmas-dressing/r6-final-check.log`,
 reservations intentionally suppress individual ornaments where they cannot fit.
 No known unresolved test or performance issue. No merge, push, deploy, sibling
 writes or port 8787 changes.
+
+## 467 — 2026-11-15 · Deploy: mistletoe, cocoa, every biome's machinery for Christmas
+
+**Deployed** build 09f0e466 (Worker version 84097a8c), replacing 61b939a2;
+covers 464–466, C5 and C6. Reviewed C5 at full frame and sent four of its
+eight touches back as too faint to see (Data Center, Clock Tower, Spaceship,
+Rooftops); C6 made them read and dressed the other eleven ordinary biomes.
+**Before:** gate 1728/1728, CRAP green; `npm run smoke -- --level 12
+--season christmas` passed (12–18). **After:** `npm run verify --
+--previous 61b939a2` passed.
