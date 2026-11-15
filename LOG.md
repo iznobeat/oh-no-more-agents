@@ -13555,3 +13555,15 @@ final-check,crap}.{log,exit}; baseline check is in biome-audit/before-check.*.
 No known unresolved test, art or performance issue; visual review was through
 the real renderer rather than live QML. No merge, push, deploy, production
 requests, port 8787 changes, sibling writes or Omarchy writes.
+
+## 482 — 2026-11-15 · Deploy: the Foundry's mill hall
+
+**Deployed** build 563e8216 (Worker version 5ac96699), replacing 85ee9f1d;
+covers C15 (reviewed at full frame, both resolutions: brickwork, mill
+windows, chimneys and ducts behind the bays, kilns, fans and exhaust; the
+colony still reads). **Before:** gate 1812/1812, CRAP green; `npm run smoke
+-- --level 4` passed (4–10). **After:** `npm run verify -- --previous
+85ee9f1d` passed.
+**Held back:** C16 (Frost) — sent back: its new strata lie over Frost's own
+mottled texture as horizontal streaks, and the peaks and firs are too faint
+at full frame.
