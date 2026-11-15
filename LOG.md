@@ -12737,3 +12737,21 @@ build, bash and dig were near-static poses and now fetch, swing and stroke;
 climb reaches and pulls, the bomb countdown braces, the splat squashes and
 rebounds. **Before:** gate 1759/1759, CRAP green; `npm run smoke -- --level
 1` passed (1–6). **After:** `npm run verify -- --previous 520e7677` passed.
+
+## 474 — 2026-11-15 · Load time, measured again (no change made)
+
+**Measured** (`npm run loadtime`, CPU ×4, Fast 3G / Fast 4G first frame):
+production 4.4 s / 1.78 s; a local shipped build 3.5 s / 1.27 s. At LOG 244
+the local shipped build was 2.7 s / 0.76 s. The page scripts, as shipped and
+compressed (brotli 5), went 265 KB (15 Oct) → 285 → 296 (1 Nov) → 313 → 323 KB
+today; Draw.js alone 166 → 215 KB. Gradual art growth, today's share ~10 KB.
+**Options, not taken on my own:**
+- esbuild `--minify` on the shipped copy only (top-level names are kept for
+  a classic script; the panel and the repo keep the source): Draw.js 182 →
+  155 KB at brotli 11, about 15%. It gives up 244's rule that the shipped
+  copy keeps every source line (debugging in the browser), unless a source
+  map ships with it, and `test/ship.test.js` compares shipped bytes with
+  `lean(source)`.
+- The lazy per-biome art split proposed at 244 remains the big lever.
+Also looked at 295 (69% home, the lowest level): the red team's guard and
+operator hold its middle floor; difficulty by design, not a stall.
