@@ -301,3 +301,38 @@ test("Frost's ponds go on over its crust, and the ice takes no footprints", () =
   const i = (((p.y + 1) * 4 + 1) * 2 * 800 + ((p.x0 + 2) * 4 + 1) * 2) * 3
   assert.deepEqual([...img.buf.slice(i, i + 3)], [0x8c, 0xc4, 0xe6], "ice drawn live in Frost")
 })
+
+test("mistletoe: hung over the lowest floors clear of everything; two under it send up a heart; never written to the world", () => {
+  let total = 0
+  for (let level = 21; level <= 210; level += 21) {
+    const w = S.generate(level, 0, 3), spots = D.mistletoeSpots(w)
+    assert.equal(D.mistletoeSpots(w), spots, "cached")
+    total += spots.length
+    for (const s of spots) {
+      assert.ok(s.y < s.floor - 4, "headroom under it")
+      for (const h of w.hazards) assert.ok(s.x < h.zx0 - 4 || s.x > h.zx1 + 4)
+      assert.ok(Math.abs(w.hatch.x - s.x) >= 8)
+    }
+    if (spots.length === 2 && spots[0].floor === spots[1].floor) assert.ok(Math.abs(spots[0].x - spots[1].x) >= 20, "spaced apart")
+  }
+  assert.ok(total >= 15, "most levels have some: " + total)
+  const w = S.generate(21, 0, 3), s = D.mistletoeSpots(w)[0]
+  const one = Object.assign(S.spawn(w), { x: s.x + 0.5, y: s.floor, state: "walk", dir: 1 })
+  const two = Object.assign({}, one, { id: one.id + 1, x: s.x + 1.5, dir: -1 })
+  const shot = (ticks, agents) => {
+    w.ticks = ticks; w.agents = agents
+    const img = canvas(400, 248, "#000000"), before = JSON.stringify(w)
+    D.drawNorthMistletoe(img.ctx, w)
+    assert.equal(JSON.stringify(w), before, "drawing wrote to the world")
+    return digest(img.buf)
+  }
+  w.agents = [one]; assert.ok(!D.mistletoeMeeting(w, s), "one alone: no heart")
+  w.agents = [one, two]; assert.ok(D.mistletoeMeeting(w, s), "two together")
+  assert.notEqual(shot(10, [one, two]), shot(10, [one]), "a heart")
+  assert.notEqual(shot(10, [one, two]), shot(30, [one, two]), "and it rises")
+  w.reducedMotion = true
+  assert.equal(shot(10, [one, two]), shot(30, [one, two]), "still under reduced motion")
+  w.reducedMotion = false
+  w.biome = "Cavern"
+  assert.equal(shot(10, [one, two]), digest(canvas(400, 248, "#000000").buf), "only at the Pole")
+})

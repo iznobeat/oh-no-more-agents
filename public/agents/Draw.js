@@ -2374,6 +2374,7 @@ function drawMachines(ctx, w, pal) {
   drawAmbience(ctx, w, pal)
   if (w.biome === "Factory") drawFactoryMachines(ctx, w, pal)
   drawNorthElves(ctx, w)
+  drawNorthMistletoe(ctx, w)
   drawNorthPondLife(ctx, w)
   if (w.gifts) drawNorthPoleGifts(ctx, w, pal)
   if (w.sleighRuns && w.sleighRuns.length) drawNorthPoleSleigh(ctx, w, pal)
@@ -3354,6 +3355,89 @@ function elfSpotClear(w, x, y) {
   if (m) for (var t = 0; t < m.targets.length; t++) if (Math.abs(m.targets[t].x - x) < 7) return false
   return true
 }
+// Mistletoe, hung from a corridor ceiling or two at the Pole. Two agents
+// under it at once send a little heart up between them. Placed from the layout and cached like the elves; nothing
+// is written to the world, and nobody stops for it.
+var MISTLETOE_CACHE = new WeakMap(), MISTLETOE_HEART = "#e8435a"
+var MISTLETOE_LEAF = "#3f8f4a", MISTLETOE_DARK = "#24603a", MISTLETOE_BERRY = "#f4f6ec"
+function mistletoeSpots(w) {
+  var c = MISTLETOE_CACHE.get(w)
+  if (c && c.v === w.terrainVersion) return c.spots
+  // The lowest floors first: that is where the colony walks most, on its way
+  // to the door.
+  var spots = [], order = w.corridors.slice().sort(function (a, b) { return b.floorY - a.floorY })
+  for (var i = 0; i < order.length && spots.length < 2; i++) {
+    var cor = order[i], floor = cor.floorY - 1
+    for (var n = 0; n < 7; n++) {
+      var x = cor.x0 + 8 + ((n * 29 + w.level * 11 + i * 5) % Math.max(1, cor.x1 - cor.x0 - 16))
+      var top = mistletoeCeiling(w, x, floor)
+      if (top >= 0 && mistletoeClear(w, x, floor) && !mistletoeNear(spots, x, floor)) { spots.push({ x: x, y: top, floor: floor }); break }
+    }
+  }
+  MISTLETOE_CACHE.set(w, { v: w.terrainVersion, spots: spots })
+  return spots
+}
+function mistletoeNear(spots, x, floor) {
+  for (var i = 0; i < spots.length; i++) if (spots[i].floor === floor && Math.abs(spots[i].x - x) < 20) return true
+  return false
+}
+// The row of the ceiling cell over a walkable floor, with headroom under it.
+function mistletoeCeiling(w, x, floor) {
+  var k = w.k, at = function (yy) { return w.terrain[yy * k.COLS + x] }
+  if (at(floor + 1) === k.EMPTY || at(floor) !== k.EMPTY) return -1
+  for (var y = floor - 1; y >= floor - 7 && y > k.SKY; y--) if (at(y) !== k.EMPTY) return y < floor - 4 ? y : -1
+  return -1
+}
+function mistletoeClear(w, x, floor) {
+  if (w.hatch && Math.abs(w.hatch.x - x) < 8) return false
+  var e = w.exit
+  if (e && x > e.x - 6 && x < e.x + e.w + 6) return false
+  for (var h = 0; h < w.hazards.length; h++) if (x >= w.hazards[h].zx0 - 4 && x <= w.hazards[h].zx1 + 4) return false
+  var elves = elfSpots(w)
+  for (var i = 0; i < elves.length; i++) if (elves[i].y === floor && Math.abs(elves[i].x - x) < 7) return false
+  return true
+}
+function drawNorthMistletoe(ctx, w) {
+  if (w.biome !== "North Pole") return
+  var spots = mistletoeSpots(w)
+  for (var i = 0; i < spots.length; i++) {
+    drawMistletoe(ctx, w, spots[i])
+    if (mistletoeMeeting(w, spots[i])) drawMistletoeHeart(ctx, w, spots[i])
+  }
+}
+function drawMistletoe(ctx, w, s) {
+  var C = w.k.CELL, x = s.x * C + 2, y = (s.y + 1) * C
+  var sway = w.reducedMotion || (w.res || 1) < 2 ? 0 : Math.round(Math.sin(w.ticks * 0.05 + s.x) * 2) / 2
+  ctx.fillStyle = MISTLETOE_DARK
+  ctx.fillRect(x, y, 1, 3)                                         // the thread
+  ctx.fillStyle = MISTLETOE_HEART
+  ctx.fillRect(x - 1 + sway, y + 3, 3, 1)                          // the bow
+  ctx.fillStyle = MISTLETOE_LEAF
+  ctx.fillRect(x - 2 + sway, y + 4, 2, 2); ctx.fillRect(x + 1 + sway, y + 4, 2, 2)
+  ctx.fillStyle = MISTLETOE_DARK
+  ctx.fillRect(x - 1 + sway, y + 6, 3, 1)
+  ctx.fillStyle = MISTLETOE_BERRY
+  ctx.fillRect(x + sway, y + 5, 1, 1); ctx.fillRect(x - 1 + sway, y + 7, 1, 1); ctx.fillRect(x + 1 + sway, y + 7, 1, 1)
+}
+// Two of the colony on the floor under it at once, within a step of it.
+function mistletoeMeeting(w, s) {
+  var near = 0
+  for (var i = 0; i < w.agents.length && near < 2; i++) {
+    var ag = w.agents[i]
+    if (!ag.gone && ag.state !== "saved" && Math.floor(ag.y) === s.floor && Math.abs(ag.x - (s.x + 0.5)) < 3.5) near++
+  }
+  return near >= 2
+}
+var HEART_ROWS = [[1, 3], [0, 1, 2, 3, 4], [1, 2, 3], [2]]
+function drawMistletoeHeart(ctx, w, s) {
+  var C = w.k.CELL, rise = w.reducedMotion ? 0 : Math.floor((w.ticks % 36) / 4)
+  var x = s.x * C, y = (s.floor + 1) * C - SPRITE_PX - 7 - rise
+  ctx.fillStyle = MISTLETOE_HEART
+  ctx.globalAlpha = w.reducedMotion ? 1 : 1 - rise / 12
+  for (var r = 0; r < HEART_ROWS.length; r++) for (var j = 0; j < HEART_ROWS[r].length; j++) ctx.fillRect(x + HEART_ROWS[r][j], y + r, 1, 1)
+  ctx.globalAlpha = 1
+}
+
 function drawNorthElves(ctx, w) {
   if (w.biome !== "North Pole") return
   var spots = elfSpots(w), t = w.reducedMotion ? 0 : w.ticks

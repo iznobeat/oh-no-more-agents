@@ -12219,3 +12219,19 @@ fourteen of sixteen cores idle.
 machine's used memory from 15.5 GB to a peak of 20.4 GB (31 GB total). AGENTS.md
 says so, and how to cap a single run inside a scope without lowering the
 shared scripts again.
+
+## 465 — 2026-11-15 · Mistletoe at the Pole
+
+**Changed (Draw only):** one or two sprigs of mistletoe per North Pole level
+(a thread, a red bow, leaves, white berries; a slight sway at page
+resolution), hung from the ceiling over the lowest floors — where the
+colony walks most on its way to the door — clear of the hatch, door,
+hazards and elves, and spaced apart (`mistletoeSpots`, cached per terrain
+version like the elves). Two of the colony under it at once send a little
+heart up over it (`mistletoeMeeting`, read off the world each frame;
+nobody stops). Head-on meetings were the first idea: the colony streams one
+way, so in 20 levels of play they never happened; "two under it" shows a
+heart on 14 of 20. Still under reduced motion.
+**Test:** northpole (placement, spacing, cache, one vs two, the heart
+rises, reduced motion, no world writes, only at the Pole). The native
+North Pole pin re-captured for the sprigs.
