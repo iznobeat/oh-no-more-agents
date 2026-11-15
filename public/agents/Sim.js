@@ -9955,10 +9955,32 @@ function specialEscape(w, ag) {
       ag.still = 0
       return
     }
-    specialAtWall(w, ag)
+    escapeAtWall(w, ag)
   } else {
-    specialAtWall(w, ag)
+    escapeAtWall(w, ag)
   }
+}
+
+// Not on the way to a drop. Out in the open with a lethal drop ahead, a hero
+// spent its wall move on nothing every time the stall rule fired — on level
+// 189 Vector Van Damme kicked the air eighteen cells short of the pit it had
+// to leap, turned with the kick, and was back on cooldown before it ever
+// reached the lip: it paced until the stall cutoff in 3 of 8 colonies. Going
+// on to the lip, its edge rules (a leap, a height move) get their turn, and
+// forceEscape lends it the colony's tools meanwhile. Anywhere else the
+// fallback is what it was: opening it wider cost levels 50, 97 and 130.
+var DROP_LOOK = 24
+function escapeAtWall(w, ag) {
+  if (!dropAhead(w, ag)) specialAtWall(w, ag)
+}
+function dropAhead(w, ag) {
+  var fx = Math.floor(ag.x), fy = Math.floor(ag.y)
+  for (var d = 1; d <= DROP_LOOK; d++) {
+    var x = fx + ag.dir * d
+    if (solid(w, x, fy) || solid(w, x, fy - 1)) return false
+    if (!solid(w, x, fy + 1)) return dropDepth(w, x, fy) > killingFall(w)
+  }
+  return false
 }
 
 function stepSlide(w, ag) {

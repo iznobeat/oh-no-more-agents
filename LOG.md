@@ -12593,3 +12593,26 @@ idle, so no controlled CPU speedup is claimed. Final logs:
 **Next:** review more crowded live work sites; no known unresolved art/test
 issue. Visual review used the real renderer rather than a live QML panel.
 No merge, push, deploy, production request, port 8787 change or Omarchy write.
+
+## 472 — 2026-11-15 · A hero keeps going to the lip (level 189)
+
+**Found:** a play-test of 1–210 had one problem left: level 189 (a North
+Pole level) stalled in 3 of 8 colonies, one agent stranded. It was there
+before the ponds and the cocoa. The stranded one was Vector Van Damme, the
+roundhouse hero, on the far side of a pit from the door: walking back toward
+it, the stall rule fired eighteen cells short of the lip, its escape fell
+through to the wall move with no wall there, it kicked the air, turned with
+the kick, and was on cooldown again before it ever reached the lip, where its
+height move would have carried it across. Round and round to the cutoff.
+**Changed (Sim):** `specialEscape` skips the wall move when a drop that
+would kill lies ahead with no wall before it (`escapeAtWall`, `dropAhead`,
+using the existing `dropDepth`); the hero keeps walking to the lip and
+`forceEscape` lends it the colony's tools meanwhile. A first, wider version
+(no wall in its face at all) cost levels 50, 97 and 130 a run each.
+**Also learned:** my first `dropAhead` came with its own `dropDepth`,
+silently replacing Sim's (the later declaration wins): 68% home across
+1–420 in the play-test. `check-core-refs` refuses a name declared twice in
+one file, so the gate would have caught it; the play-test caught it first.
+**Measured:** 1–420 × 8 colonies, before → after: 95.34% → 95.34% home,
+189 97% → 100%, problem levels 3 → 2 (225, 295 remain).
+**Test:** specials (189's colony all home; the drop-ahead rule).

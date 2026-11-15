@@ -223,3 +223,17 @@ test("Package Manager's crate and delivery draw", async () => {
     assert.notEqual(Buffer.from(img.buf).toString("base64"), blank)
   }
 })
+
+test("a hero heading for a lethal drop keeps going to the lip instead of spending its wall move on the open floor (level 189)", async () => {
+  const { colonySeed } = await import("../tools/simcheck.js")
+  const Sim = S
+  const w = Sim.generate(189, 0, colonySeed(189, 0, 3))
+  for (let t = 0; t < 4000 && !w.done; t++) Sim.step(w)
+  assert.equal(w.saved, w.toRelease, "everyone home, Vector Van Damme included")
+  // The rule itself: a drop ahead that would kill, no wall first.
+  const v = Sim.generate(189, 0, colonySeed(189, 0, 3))
+  const ag = Object.assign(Sim.spawn(v), { x: 79.2, y: 56, dir: -1, state: "walk" })
+  assert.ok(Sim.dropAhead(v, ag), "the pit, eighteen cells on")
+  ag.dir = 1
+  assert.ok(!Sim.dropAhead(v, ag), "the east wall is a wall")
+})
