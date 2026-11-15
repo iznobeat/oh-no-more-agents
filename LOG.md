@@ -12728,3 +12728,12 @@ CPU variation is not a controlled speed comparison.
 No known unresolved art, test or FPS issue. Review used the real renderer and
 full-board fixtures, not a live QML panel. No merge, push, deploy, production
 request, sibling write or port 8787 change.
+
+## 473 — 2026-11-15 · Deploy: animated skills, a hero that reaches the lip
+
+**Deployed** build 421b7508 (Worker version c15ce02f), replacing 520e7677;
+covers 472, C8 and C9. Reviewed C8 and C9 in enlarged before/after strips:
+build, bash and dig were near-static poses and now fetch, swing and stroke;
+climb reaches and pulls, the bomb countdown braces, the splat squashes and
+rebounds. **Before:** gate 1759/1759, CRAP green; `npm run smoke -- --level
+1` passed (1–6). **After:** `npm run verify -- --previous 520e7677` passed.
