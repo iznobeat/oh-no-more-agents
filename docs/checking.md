@@ -197,6 +197,24 @@ Each hazard kind is drawn by its own function, listed in `HAZARD_DRAW` in
 `Draw.js`; `test/hazards.test.js` fails if a kind in `HAZARDS` has no row there
 and would fall back to the generic box.
 
+## Checking seasons
+
+The cosmetic web seasons live in `public/agents/season.js`. Christmas runs
+from Advent Sunday through 26 December. New Year (`?season=newyear`) runs
+31 December–1 January inclusive; `?season=none` disables calendar selection.
+New Year adds head-following party cones, safe-air fireworks (two to five as
+agents get home), arrival confetti and report-top streamers, with no new copy.
+Reduced motion holds bursts still. Confetti may continue outside the report;
+its exact plate bounds, the portal, actors, umbrellas and hazard tells exclude
+particles. Tight layouts deliberately suppress unsafe sparks.
+
+`node tools/newyear-art.js HEAD /tmp/xmas-dressing/ny-1` retains native/page
+full-frame before/after pairs for every biome, crops, red-team poses and arrival/
+report sheets. Use the pre-change commit as the first argument after committing.
+`test/newyear.test.js` compares Christmas and unseasoned full-frame pixel digests
+against its pinned baseline. Measure both `npm run fps -- 5 12 18 --season none`
+and `--season newyear` on the same machine.
+
 ## Checking the page itself, headlessly
 
 Layout, controls and anything using the browser's own APIs have to be checked in

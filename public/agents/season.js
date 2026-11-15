@@ -7,6 +7,10 @@
 // SEASONS; to retire one, delete it. Every field is optional.
 (function () {
   var SEASONS = {
+    newyear: {
+      from: [12, 31], to: [1, 1],
+      hats: "party", fireworks: true
+    },
     christmas: {
       from: [12, 1], advent: true, to: [12, 26],              // [month, day], both inclusive
       accent: "#e0314b",
@@ -45,7 +49,7 @@
 
   function tint(pal) {
     if (!name || !pal) return pal
-    pal.decorLit = SEASONS[name].accent
+    if (SEASONS[name].accent) pal.decorLit = SEASONS[name].accent
     return pal
   }
 
@@ -53,8 +57,8 @@
     if (!name || !w || w.season) return
     var s = SEASONS[name]
     w.season = { name: name, homePrefix: s.homePrefix, homeSuffix: s.homeSuffix,
-      candy: s.candy, candyEvery: s.candyEvery, hats: w.biome === "North Pole" ? null : s.hats, redHats: s.hats, note: null }
-    w.seasonProps = makeProps(w)
+      candy: s.candy, candyEvery: s.candyEvery, hats: w.biome === "North Pole" && name === "christmas" ? null : s.hats, redHats: s.hats, note: null }
+    w.seasonProps = name === "christmas" ? makeProps(w) : []
     w.seasonSeen = {}
     w.seasonHome = w.saved
   }
@@ -92,11 +96,17 @@
   function paint(ctx, w) {
     if (!name || !w || !w.season) return
     observe(w)
+    if (name === "newyear") newyearArrivals(w)
     // Weather and wrapping sit out report plates and blackout overlays.
-    if (w.done || (w.outage && w.ticks >= w.outage.at && w.ticks < w.outage.at + w.outage.len)) return
+    if (w.done) {
+      if (name === "newyear") { ctx.save(); drawNewyearConfetti(ctx,w,snowActors(w)); ctx.restore() }
+      return
+    }
+    if ((w.outage && w.ticks >= w.outage.at && w.ticks < w.outage.at + w.outage.len)) return
     var s = SEASONS[name]
     ctx.save()
     var actors = snowActors(w)
+    if (s.fireworks) { drawFireworks(ctx, w, actors); drawNewyearConfetti(ctx, w, actors) }
     drawProps(ctx, w, actors)
     if (s.snow) drawSettled(ctx, w, actors)
     if (s.snow) drawSnow(ctx, w, s.snow, actors)
@@ -360,6 +370,82 @@
     ctx.fillStyle="#24394e";ctx.fillRect(x+4+look,y+7,1,1);ctx.fillRect(x+7+look,y+7,1,1);ctx.fillRect(x+5,y+14,1,1);ctx.fillRect(x+5,y+17,1,1)
     ctx.fillStyle="#f6a84b";ctx.fillRect(x+6+look,y+9,3,1)
     if ((w.res || 1)>=2) {ctx.fillStyle="#ffffff";ctx.fillRect(x+3,y+13,0.5,3)}
+  }
+
+  // Bounded, tick-derived rockets: no particles enter the simulation or RNG.
+  var NY_COLOURS = ["#ff648e", "#ffd85c", "#64e8cf", "#8cbcff", "#d599ff"]
+  function newyearAir(w, x, y, size, actors) {
+    if (x < 1 || x + size > w.k.COLS*w.k.CELL-1 || y < 2 || y+size > w.k.ROWS*w.k.CELL-12) return false
+    if (y < w.k.SKY*w.k.CELL && newyearSkyBlocked(w,x,y,size)) return false
+    if (w.done && (!w.season.reportBox || overlap(x,y,size,size,w.season.reportBox))) return false
+    var p = {x:x,y:y,width:size,height:size}
+    return propAir(w,p) && propClear(w,p) && !propActors(w,p,actors)
+  }
+  function newyearSkyBlocked(w,x,y,size) {
+    if(w.special || w.event || w.standup || w.milestone)return true
+    var c=w.k.CELL,h=w.hatch,e=w.enemyHatch
+    if(h && x+size>h.x*c-16 && x<h.x*c+20)return true
+    return !!(e && x+size>e.x*c-16 && x<e.x*c+20)
+  }
+  function newyearSpots(w) {
+    var s=w.season
+    if(s.spots && s.spotsVersion===w.terrainVersion)return s.spots
+    var out=[],W=w.k.COLS*w.k.CELL,H=w.k.ROWS*w.k.CELL
+    for(var y=64;y<H-30;y+=16)for(var x=24;x<W-24;x+=20) {
+      var p={x:x-18,y:y-18,width:36,height:40}
+      if(propAir(w,p) && propClear(w,p))out.push({x:x,y:y})
+    }
+    s.spots=out;s.spotsVersion=w.terrainVersion;return out
+  }
+  function newyearPixel(ctx,w,actors,x,y,size,colour,alpha) {
+    var unit = (w.res || 1) >= 2 ? 0.5 : 1
+    x = Math.round(x/unit)*unit; y = Math.round(y/unit)*unit
+    if (!newyearAir(w,x,y,size,actors)) return
+    ctx.fillStyle=colour;ctx.globalAlpha=alpha;ctx.fillRect(x,y,size,size)
+  }
+  function firework(ctx,w,actors,i,t) {
+    var W=w.k.COLS*w.k.CELL
+    var cycle=Math.floor((t+i*31)/132),age=(t+i*31)%132,h=((i+1)*2654435761+cycle*2246822519)>>>0
+    var spots=newyearSpots(w),spot=spots.length ? spots[h%spots.length] : {x:W/2,y:64}
+    var sky=i%2===0,x=sky ? 30+(h%Math.max(1,W-60)) : spot.x,y=sky ? 13 : spot.y
+    var colour=NY_COLOURS[(i+cycle)%5],unit=(w.res||1)>=2 ? 0.5 : 1
+    if(age<26) {
+      for(var j=0;j<8;j++)newyearPixel(ctx,w,actors,x,y+(26-age)*1.4+j*2, j===0 ? 2 : unit,j===0 ? "#fff5cf" : colour,1-j/9)
+    } else if(age<100) {
+      var a=age-26,r=3+a*(sky ? 0.18 : 0.43),fall=a*a*(sky ? 0.001 : 0.004)
+      for(var n=0;n<20;n++) {
+        var angle=n*Math.PI/10,dx=Math.cos(angle),dy=Math.sin(angle)
+        newyearPixel(ctx,w,actors,x+dx*r,y+dy*r+fall,unit===1 ? 2 : 1,NY_COLOURS[(i+Math.floor(n/4))%5],1-a/100)
+        newyearPixel(ctx,w,actors,x+dx*(r-3),y+dy*(r-3)+fall-1,unit,colour,(1-a/85)*0.6)
+      }
+    }
+  }
+  function drawFireworks(ctx,w,actors) {
+    var count=2+Math.floor(3*Math.min(1,w.saved/Math.max(1,w.toRelease))),t=w.reducedMotion ? 64 : w.ticks
+    for(var i=0;i<count;i++)firework(ctx,w,actors,i,w.reducedMotion ? t-i*31 : t)
+  }
+  function newyearArrivals(w) {
+    var s=w.season
+    if(!s.arrivals)s.arrivals=[]
+    if(w.saved>w.seasonHome) {
+      s.arrivals.push({at:w.ticks,count:w.saved-w.seasonHome,last:w.saved+w.lost>=w.toRelease})
+      w.seasonHome=w.saved
+    }
+    s.arrivals=s.arrivals.filter(function(a){return w.ticks-a.at<80}).slice(-6)
+  }
+  function drawNewyearConfetti(ctx,w,actors) {
+    var e=w.exit
+    if(!e)return
+    for(var j=0;j<w.season.arrivals.length;j++) {
+      var burst=w.season.arrivals[j],a=w.reducedMotion ? 18 : w.ticks-burst.at,n=burst.last ? 80 : 36
+      for(var i=0;i<n;i++) {
+        var vx=((i*17)%31-15)/8,vy=1+((i*7)%13)/7
+        var away=e.x<w.k.COLS/2 ? 0.9 : -0.9
+        var x=(e.x+e.w/2)*w.k.CELL+(vx+away)*(a+8),y=e.y*w.k.CELL-10-vy*a*(burst.last ? 0.3 : 0.7)+a*a*0.018
+        var unit=(w.res||1)>=2 ? 0.5 : 1,flip=(Math.floor(a/5)+i)%3
+        newyearPixel(ctx,w,actors,x,y,flip===0 ? unit : 2,NY_COLOURS[i%5],Math.max(0,1-a/80))
+      }
+    }
   }
 
   function overlap(x, y, width, height, b) {
