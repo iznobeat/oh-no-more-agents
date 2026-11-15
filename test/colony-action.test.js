@@ -27,10 +27,13 @@ for(const name of ['climb','bomb','splat'])test(name+': reviewed native/page mot
 })
 test('the ten unselected actions keep C8 pixels or explicitly reviewed C10 pins',()=>{
  const balance=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-balance-pins.json',import.meta.url),'utf8'))
+ const last=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).frames
  for(const name of CASES.filter(n=>!['climb','bomb','splat'].includes(n)))for(const res of [1,2])for(const dir of [-1,1])for(let t=0;t<FRAME_COUNT;t++){
   const before=hash(frame(old,name,t,res,dir).buf),pin=balance[name]?.[`${res}/${dir}/${t}`]
   if(pin)assert.equal(before,pin.before,'C9 historical pin')
-  assert.equal(hash(frame(D,name,t,res,dir).buf),pin?pin.after:before,`${name}/${res}/${dir}/${t}`)
+  const prior=pin?pin.after:before,final=last[name]?.[`${res}/${dir}/${t}`]
+  if(final)assert.equal(prior,final.before,'C11 historical pin')
+  assert.equal(hash(frame(D,name,t,res,dir).buf),final?final.after:prior,`${name}/${res}/${dir}/${t}`)
  }
 })
 test('climb repeats on anim; fuse drives the accelerating brace; new reduced-motion paint holds still',()=>{

@@ -12891,3 +12891,129 @@ presses, the blocker plants wide with palms out, the floater grips the
 umbrella's handle with its legs trailing). **Before:** gate 1768/1768, CRAP
 green; `npm run smoke -- --level 8 --season christmas` passed (8–14).
 **After:** `npm run verify -- --previous 421b7508` passed.
+## C11 — 2026-11-15 · Clear the floor, catch the drop, wave home
+
+**Chose:** walk, short unassisted fall and native arrival after re-rendering
+walk, fall, explosion and home at res 1/2. Native walking kept both soles on the
+floor; the short drop held a rigid square pose; native arrival drifted upwards
+through its whole fade with two fixed raised arms. Explosion already reads as
+a bright ignition, expanding ragged fireball and smoke/rubble beat at both
+scales, so every explosion pixel stays. Page arrival already has readable
+steps/waves and a carried/folding umbrella, so every page-arrival pixel stays.
+The original fall fixture began above the windmill threshold: added a separate
+`shortfall` fixture (0.5–2.375 cells), retaining the original long-drop fixture.
+
+**Changed (Draw only):** walking boots clear the floor on the existing sixteen
+`ag.anim` ticks: a bent knee and forward toe, two whole pixels of native lift,
+two-and-a-half at the page peak with half-pixel heel edges. Dark soles now make
+contact visible at both scales. Kept `traitStride`, `pageGait`, head/torso drop,
+trait head offsets and every head rider on their exact original clocks; no new
+bob. Short falls (at most `FALL_FLAIL`, three cells, no open umbrella) balance
+with raised elbows and alternating tucked/reaching boots, eight two-tick keys
+on `ag.anim`. Native home uses the existing `ag.fade`: a two-pixel hop that
+settles, a lifted free hand and a small wave, with the original sparkle colour
+and radial beat. It stays by the doorway instead of drifting fourteen pixels
+upward. Existing terminal fades remain. New secondary motion freezes under
+reduced motion; its native home hop and sparks freeze too.
+
+Original palette roles, head/shades, suit silhouette language and all umbrella
+painters remain. Specials, divers, parries, skating, walk gags and share art
+retain their established poses. Mine planting's six work ticks remain exact;
+its subsequent walking uses the new boots. Sim.js, sfx.js and North Pole drawing
+code are untouched. No world writes, drawing RNG, new text or dependencies.
+
+**Looked at:** baseline f39eaa95655759625b82f665558d467e197d5605.
+Initial all-action strips and separate short drops in
+`/tmp/xmas-dressing/anim4-0/`; inspected refinements in anim4-1, anim4-2,
+anim4-3 and final anim4-5. Added full native/page compact comparisons and quiet
+complete boards to `tools/skill-strips.js` (also called by its CLI). Corrected
+paint-state carry from knee highlights into sleeves; avoided duplicate sole
+calls; strengthened faint page boots rather than lowering the visibility test.
+Final inspected before-top/after-bottom strips, both facings and sixteen ticks:
+
+- `/tmp/xmas-dressing/anim4-5/walk-compact-res1.png`
+- `/tmp/xmas-dressing/anim4-5/walk-compact-res2.png`
+- `/tmp/xmas-dressing/anim4-5/shortfall-compact-res1.png`
+- `/tmp/xmas-dressing/anim4-5/shortfall-compact-res2.png`
+- `/tmp/xmas-dressing/anim4-5/saved-compact-res1.png`
+- `/tmp/xmas-dressing/anim4-5/saved-compact-res2.png`
+
+Also inspected both final `explode-compact-res1.png` / `explode-compact-res2.png`
+there, and both `remaining-full-4-res1.png` / `remaining-full-4-res2.png` boards
+at true display size. Earlier full boards at age 10 were inspected in anim4-2.
+These quiet boards are staged art fixtures, not simulated rescues. Natural
+Christmas North Pole 21 and New Year Factory 8 boards were inspected in anim4-3;
+final New Year North Pole 42 boards were inspected at both scales in anim4-5.
+Natural seasonal boards for 8/21/42 and Cloud updraft strips are retained there.
+
+**Pins deliberately moved:** `test/fixtures/colony-last-pins.json` records the
+C10 baseline and exact before/after sprite frames, aggregate transitions, WHO
+frames, report frames and every changed historical scene. Earlier C8–C10
+assertions still check their historical hashes before the explicit C11 step.
+Changed sprites: walk, 64 frames; shortfall, 64; native saved, 28; mine returning
+to walk at ticks 6–15, 40. Page saved, long fall, explosion and every other skill
+retain exact C10 pixels. Unchanged mine planting stays pinned to C10.
+
+- christmas-round2 native North Pole 21/42 at tick 240: b54c44bd… → 3c613bcb…,
+  for colony boots/short falls; no North Pole painter changed.
+- christmas-round3 ordinary tick-350/900 aggregate: 0644914d… → 7bbf5ffc…;
+  christmas-round4/round5 ordinary tick-120/350 aggregate: e6652116… → 6cd8b9ef….
+  These include live colony boots, drops and native arrivals. A new test disables
+  only those three pose selectors and reproduces BOTH entire original C10
+  aggregates exactly across twenty biomes, both resolutions and both clocks.
+- christmas-round6 ordinary full frames (res: ticks), each containing the
+  reviewed living colony art: Factory 1:120/400, 2:400; Subway 1/2:120/400;
+  Harbour 1/2:400; Data Center 1/2:120/400; Clock Tower 1/2:400;
+  Rooftops 1/2:120/400; Building Site 1/2:400; Spaceship 1:120/400, 2:400;
+  Mail Room 1/2:400; Library 1/2:120/400; Jungle 1/2:120/400;
+  Desert 1/2:120/400; Cavern 1:120/400, 2:400; Ice Cave 1/2:120/400;
+  Foundry 1/2:400; The Cloud 1/2:120/400; Skyscraper 1/2:120/400;
+  Ruins 1/2:120/400; Frost 1/2:120/400. All 63 combinations are listed
+  individually with prior/current hashes in the C11 ledger. Opaque cast-mask
+  pins do not move.
+- newyear complete none/christmas frames: levels 1–9 and 11–21, each at res 1/2
+  in both modes (80 combinations), for shared colony poses. Level 10 stays exact.
+  Report controls for levels 1/21, res 1/2, both modes (eight combinations),
+  include the same changed live colony behind the report. The page arrival
+  sprite itself remains unchanged. Historical source hashes remain asserted.
+- exit-welcome native twenty-biome arrival-world aggregate: 55cb7717… →
+  6e2d911a…, for the new native greeting and other live colony poses.
+- umbrella-office native/default/share arrival-world aggregate: 3c463ae7… →
+  e5692e5a…, for native poses. Its independent historical pin and share art stay.
+- updraft-art natural level-60/seed-3 native after strip: f09b1345… → 22249efd…,
+  for walkers elsewhere in the crop. The original historical before strip and
+  C10 after pin remain separately asserted. Digests use decoded RGB scanlines.
+- WHO level 1/12/20, tick 200, default/res 1, labels false/true (twelve
+  combinations), for native boots/drops. C11 retains exact pre-WHO, C10 and
+  reviewed hashes including every text call. Level 10, res 3 and WHO-off page
+  contracts remain exact.
+
+**Validation:** Baseline full check 1,768/1,768; final full check and CRAP coverage
+both 1,777/1,777, exit 0. `npm run crap -- --changed --threshold 30` exits 0:
+`drawAgentBody` 17.0, `drawAgentWalk` 15.0, `drawAgentFine` 12.0; new art
+helpers at most 10.0, all with 100% function coverage. Review helper
+`remainingBoards` 15.0 and fixture 12.0. Full check 166 seconds, coverage
+284 seconds. Logs: `/tmp/xmas-dressing/anim4-before-check.log`,
+`anim4-final-check.log`, `anim4-crap.log`, `anim4-final-focused.log`.
+The focused log predates the final three explicitly audited aggregate pins;
+the full check and coverage include them and pass all tests.
+Nine new tests cover exact sprites, visible changes at native size, complete
+historical scope, all trait/head/umbrella anchors, clock cycles, reduced motion,
+palette/grid/bounds, context restoration, drawing purity, exclusions, every
+unchanged action and review artifacts. Exact comparisons use digests; no raw
+pixel-buffer deepEqual. Full gates use the shared heavy-run lock and unchanged
+six-file concurrency, with no tree edits during either gate. Stamps refreshed.
+The initial pin-update command was rejected by automatic approval review;
+explicit updates followed the full-frame pose-disable audit above, preserving
+all historical assertions. Audit log: `/tmp/xmas-dressing/anim4-scope-audit.log`.
+
+**Performance:** `npm run fps -- 8 12 18`: before and final after, 60 median /
+60 p5 on every level, no long tasks. Worst frames 33/17/50 ms → 17/17/33 ms;
+CPU 27/20/27% → 12/12/15%. Baseline overlapped its check while the final run
+was idle; no controlled CPU speedup is claimed. Logs:
+`/tmp/xmas-dressing/anim4-before-fps.log`, `anim4-final-fps.log`.
+
+**Next:** watch crowded native walking colonies and real threshold arrivals.
+No known unresolved art/test issue; visual review used the real renderer and
+staged/natural boards, not a live QML panel. No merge, push, deploy, production
+request, port 8787 change, sibling write or Omarchy write.

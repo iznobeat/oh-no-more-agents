@@ -11,12 +11,15 @@ const D=load('Draw.js'),P=load('Palette.js')
 const old=renderer(execFileSync('git',['show',BASE+':public/agents/Draw.js'],{maxBuffer:4e6}).toString())
 const names=['mine','block','float'],hash=b=>createHash('sha256').update(b).digest('hex')
 const pins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-balance-pins.json',import.meta.url),'utf8'))
+const lastPins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).frames
 for(const name of names)test(name+': reviewed native/page keys visibly change and retain exact before/after pins',()=>{
  for(const res of [1,2])for(const dir of [-1,1]) {
   const seen=new Set();let pixels=0
   for(let t=0;t<16;t++) {
    const a=frame(old,name,t,res,dir).buf,b=frame(D,name,t,res,dir).buf,pin=pins[name][`${res}/${dir}/${t}`]
-   assert.equal(hash(a),pin.before);assert.equal(hash(b),pin.after);seen.add(hash(b))
+   const final=lastPins[name]?.[`${res}/${dir}/${t}`]
+   assert.equal(hash(a),pin.before);if(final)assert.equal(final.before,pin.after,'C10 historical pose')
+   assert.equal(hash(b),final?final.after:pin.after);seen.add(hash(b))
    for(let i=0;i<a.length;i+=3)if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2])pixels++
   }
   assert.ok(seen.size>=6,'clear in-betweens');assert.ok(pixels>150*res*res,'full-size visible change')
@@ -66,9 +69,13 @@ test('specials, divers, parries, share art and deliberate blocker fidgets keep t
  const {w,ag}=fixture('block',0)
  for(let t=0;t<240;t++){w.ticks=t;if(D.agentIdle(w,ag).pose)assert.equal(D.colonyBalance(w,ag),'')}
 })
-test('all ten unselected actions retain every C9 sprite pixel',()=>{
- for(const name of CASES.filter(n=>!names.includes(n)))for(const res of [1,2])for(const dir of [-1,1])for(let t=0;t<16;t++)
-  assert.equal(hash(frame(D,name,t,res,dir).buf),hash(frame(old,name,t,res,dir).buf),`${name}/${res}/${dir}/${t}`)
+test('all ten unselected actions retain C9 pixels or the exact reviewed C11 transition',()=>{
+ const last=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).frames
+ for(const name of CASES.filter(n=>!names.includes(n)))for(const res of [1,2])for(const dir of [-1,1])for(let t=0;t<16;t++) {
+  const before=hash(frame(old,name,t,res,dir).buf),pin=last[name]?.[`${res}/${dir}/${t}`]
+  if(pin)assert.equal(before,pin.before,'C11 historical pin')
+  assert.equal(hash(frame(D,name,t,res,dir).buf),pin?pin.after:before,`${name}/${res}/${dir}/${t}`)
+ }
 })
 test('the complete original floating umbrella paint survives every new native/page pose',()=>{
  for(const res of [1,2])for(const dir of [-1,1])for(let t=0;t<16;t++) {

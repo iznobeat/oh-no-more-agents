@@ -102,7 +102,9 @@ test("ordinary out of season frames remain byte identical, including report card
    assert.equal(ink(w,c=>{D.drawNorthSnowMass(c,w,p);D.drawNorthWorkshopArrival(c,w);D.drawChristmasReport(c,w,24,70,352,100)}).calls.length,0)
   }
  }finally{Math.random=random}
- assert.equal(h.digest("hex"),"0644914d47455bcdc10e2a3adf86ffdb6480a101219505b4ab1ce98600881457")
+ // C11: live boot arcs and native greetings; disabling those poses restores
+ // the exact C10 aggregate (0644914d…), audited in colony-last.test.js.
+ assert.equal(h.digest("hex"),"7bbf5ffc46ddc2c003f06fd2edb13f70096c3b94bd85d4dd74affb778fc723bd")
 })
 
 test("review retains before/after full frames, report cards and timed arrival strips at both resolutions",()=>{

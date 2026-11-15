@@ -130,6 +130,8 @@ test('review reruns refresh both stamped sheets, retain natural lift frames and 
   assert.equal(b.drawSHA256,hash(fs.readFileSync(new URL('../public/agents/Draw.js',import.meta.url))));assert.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),new RegExp(b.contactSheet))
   assert.deepEqual(a.records[0].offsets,UPDRAFT_OFFSETS);assert.ok(a.records[0].frames[0].inDraft&&a.records[0].frames[0].floater);assert.equal(a.records[0].frames[0].state,'fall')
   assert.equal(stripPixels(path.join(dir,'60-3-before-res1.png')),balancePins.updraftStrip.before)
-  assert.equal(stripPixels(path.join(dir,'60-3-after-res1.png')),balancePins.updraftStrip.after)
+  const last=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).updraftStrip
+  assert.equal(balancePins.updraftStrip.after,last.before,'C10 historical native strip')
+  assert.equal(stripPixels(path.join(dir,'60-3-after-res1.png')),last.after)
  }finally{fs.rmSync(dir,{recursive:true,force:true})}
 })
