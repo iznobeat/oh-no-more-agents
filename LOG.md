@@ -12198,3 +12198,12 @@ has no bob). Four whole-biome pins re-captured for Frost's ice
 (christmas-round3, christmas-round4, exit-welcome); each passes with Frost's
 ponds switched off, so nothing else moved. umbrella-office compares the
 office alone (`iceAt` cleared), as it compares against a frozen renderer.
+
+## 463 — 2026-11-15 · Deploy: scarves, a present for a hatch, Frost's ponds
+
+**Deployed** build 61b939a2 (Worker version 0302e2c8), replacing c9970d81;
+covers C4 and 462. **Before:** gate 1708/1708, CRAP green; `npm run smoke
+-- --level 3 --season christmas` passed (3–9). **After:** `npm run verify --
+--previous c9970d81` passed.
+**Note:** the CRAP report now takes 10–15 minutes (coverage runs the
+browser tests at concurrency 2); worth a look at what dominates it.
