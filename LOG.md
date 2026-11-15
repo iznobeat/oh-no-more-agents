@@ -13411,3 +13411,12 @@ foes3-5/{focused,check,crap}.log, under /tmp/xmas-dressing/.
 art/test issue; visual review used renderer strips and staged boards, not a
 live QML panel. No merge, push, deploy, production requests, port 8787 changes,
 sibling writes or Omarchy writes.
+
+## 481 — 2026-11-15 · Deploy: piston, press and echo bat tells
+
+**Deployed** build 85ee9f1d (Worker version f8bf979c), replacing 1ae397e0;
+covers C14 (reviewed in its strips: the piston cocks, holds and thrusts; the
+factory press rises before it drops; the echo bat folds and opens its jaw
+before the screech). **Before:** gate 1804/1804, CRAP green; `npm run smoke
+-- --level 11` passed (11–18). **After:** `npm run verify -- --previous
+1ae397e0` passed.
