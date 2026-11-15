@@ -207,6 +207,7 @@ function drawTerrain(ctx, w, pal) {
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
   drawAlpineSky(ctx, w, pal)
+  drawAntiqueHall(ctx, w, pal)
   drawIronworksHall(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
@@ -247,6 +248,7 @@ function drawTerrain(ctx, w, pal) {
   if (w.biome === "Foundry") drawFoundryMaterials(ctx, w, pal)
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
   drawIronworksBrick(ctx, w, pal)
+  drawAntiqueStone(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -267,6 +269,7 @@ function drawTerrain(ctx, w, pal) {
   drawCloudPageBanks(ctx, w, pal)
   drawChristmasGround(ctx, w)
   drawAlpineFirs(ctx, w, pal)
+  drawAntiqueGarden(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2359,6 +2362,7 @@ function drawBeltDrum(ctx, w, pal, x, top, side, dir) {
 
 function drawMachines(ctx, w, pal) {
   drawAlpineLife(ctx, w, pal)
+  drawAntiqueLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -26978,4 +26982,136 @@ function drawAlpineWisp(ctx,w,pal,b,t) {
     ctx.globalAlpha=(43-age)/110
     moteFineRect(ctx,w,x,y,2+Math.floor(age/15),1)
   }
+}
+
+// C17: the ruined sanctuary. Only depth and reserved props; the original
+// material grain, page masonry and all gameplay silhouettes remain intact.
+function drawAntiqueHall(ctx,w,pal) {
+  if(w.biome!=="Ruins") return
+  ctx.save()
+  var C=w.k.CELL,top=w.k.SKY*C
+  // A distant stepped acropolis sits behind both the old pillars and temple.
+  for(var x=18;x<w.k.COLS*C-20;x+=94) {
+    var y=top+19+(x+w.level*3)%9
+    ctx.fillStyle=pal.back
+    for(var step=0;step<5;step++)ctx.fillRect(x+step*5,y-step*3,66-step*10,3)
+    ctx.fillRect(x+8,y+3,50,18)
+    ctx.fillStyle=pal.backDim
+    for(var door=0;door<4;door++)ctx.fillRect(x+13+door*11,y+5,5,16)
+    ctx.fillStyle=pal.backLit
+    ctx.fillRect(x+3,y+1,60,2)
+  }
+  for(var row=0;row<w.corridors.length;row++) {
+    var floor=w.corridors[row].floorY*C
+    for(var bay=0;bay<Math.ceil(w.k.COLS*C/87);bay++)drawAntiqueBay(ctx,pal,24+bay*87+(w.level+row*3)%13,floor,row+bay)
+  }
+  ctx.restore()
+}
+function drawAntiqueBay(ctx,pal,x,y,seed) {
+  // Back-wall reliefs, deliberately darker than the playable burgundy edges.
+  ctx.fillStyle=pal.back
+  ctx.fillRect(x-7,y-34,63,5)
+  for(var r=0;r<6;r++)ctx.fillRect(x+r*4,y-35-r,49-r*8,1)
+  for(var side=0;side<2;side++) {
+    var xx=x+side*45,h=(seed+side)%3===0?16:29
+    ctx.fillStyle=pal.backLit;ctx.fillRect(xx,y-h,7,h)
+    ctx.fillRect(xx-3,y-h-2,13,2);ctx.fillRect(xx-3,y-3,13,3)
+    ctx.fillStyle=pal.backDim;ctx.fillRect(xx+4,y-h+2,2,h-5)
+    for(var joint=7;joint<h;joint+=7)ctx.fillRect(xx,y-joint,7,1)
+  }
+  if(seed%3===0)drawAntiqueRelief(ctx,pal,x+22,y-9)
+  ctx.fillStyle=pal.backLit;ctx.fillRect(x-8,y-35,65,1)
+  ctx.fillStyle=pal.backDim
+  for(var key=0;key<7;key++){ctx.fillRect(x+key*8,y-33,4,1);ctx.fillRect(x+3+key*8,y-32,1,2)}
+}
+var ANTIQUE_CACHE=new WeakMap()
+function antiqueSpots(w) {
+  var old=ANTIQUE_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=abyssReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C,count=0
+    for(var x=20+(w.level*13+row*19)%37;x<w.k.COLS*C-28;x+=9) {
+      if(!antiqueSupport(w,x,y) || !alpineClear(w,x-3,y-24,25,24,boxes))continue
+      spots.push({x:x,y:y,seed:x+row*13});x+=44;count++
+      if(count===2 || spots.length===7)break
+    }
+    if(spots.length===7)break
+  }
+  ANTIQUE_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function antiqueSupport(w,x,y) {
+  for(var dx=0;dx<18;dx+=4)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
+  return true
+}
+function drawAntiqueGarden(ctx,w,pal) {
+  if(w.biome!=="Ruins")return
+  ctx.save()
+  var spots=antiqueSpots(w)
+  for(var i=0;i<spots.length;i++)drawAntiqueUrn(ctx,pal,spots[i])
+  ctx.restore()
+}
+function drawAntiqueUrn(ctx,pal,b) {
+  var x=b.x,y=b.y
+  ctx.fillStyle=pal.decorDim
+  ctx.fillRect(x,y-8,9,6);ctx.fillRect(x+2,y-2,5,2);ctx.fillRect(x+1,y-11,7,3)
+  ctx.fillRect(x-2,y-8,2,4);ctx.fillRect(x+9,y-8,2,4)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+1,y-8,2,5);ctx.fillRect(x,y-11,9,1)
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x+2,y-10,5,1)
+  // A small laurel has a visible branching silhouette, not a second ground texture.
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x+15,y-16,1,16)
+  for(var leaf=0;leaf<4;leaf++) {
+    var yy=y-5-leaf*3,dir=leaf%2?1:-1
+    ctx.fillStyle=pal.decor;ctx.fillRect(x+15+(dir<0?-4:1),yy,4,2)
+    ctx.fillStyle=pal.decorLit;ctx.fillRect(x+15+(dir<0?-3:1),yy,2,1)
+  }
+}
+function drawAntiqueLife(ctx,w,pal) {
+  if(w.biome!=="Ruins")return
+  ctx.save()
+  var spots=antiqueSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i],age=Math.floor(t/6)+b.seed
+    var x=b.x+7+Math.round(Math.sin(age/9)*6),y=b.y-19+Math.round(Math.cos(age/11)*2)
+    if(!alpineClear(w,x-3,y-2,7,5,[]))continue
+    var wing=age%4<2?2:1
+    ctx.fillStyle=pal.decorLit
+    ctx.fillRect(x-2,y-wing,2,wing);ctx.fillRect(x+1,y-wing,2,wing)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x,y,1,2)
+  }
+  ctx.restore()
+}
+
+function drawAntiqueRelief(ctx,pal,x,y) {
+  // A sun carved into the recessed wall; broken lower rays distinguish it
+  // from the round boulder, whose warm silhouette stays in the foreground.
+  for(var row=-9;row<=9;row++) {
+    var half=Math.floor(Math.sqrt(81-row*row))
+    ctx.fillStyle=pal.backLit;ctx.fillRect(x-half,y+row,half*2+1,1)
+    if(Math.abs(row)<7) {
+      var inner=Math.floor(Math.sqrt(49-row*row))
+      ctx.fillStyle=pal.backDim;ctx.fillRect(x-inner,y+row,inner*2+1,1)
+    }
+  }
+  ctx.fillStyle=pal.backLit
+  ctx.fillRect(x-3,y-4,6,8);ctx.fillRect(x-5,y-2,10,4)
+  ctx.fillStyle=pal.backDim
+  ctx.fillRect(x-1,y-2,2,4);ctx.fillRect(x+4,y+5,7,2)
+}
+
+function drawAntiqueStone(ctx,w,pal) {
+  // Native Ruins has flat material runs, unlike the page's existing masonry.
+  // Give those bare faces one coherent block course; never overlay page grain.
+  if(w.biome!=="Ruins" || (w.res||1)>=2)return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  ctx.fillStyle=pal.dirtShade
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=1;x<k.COLS-1;x++) {
+    var i=y*k.COLS+x
+    if(w.terrain[i]!==k.DIRT || w.terrain[i-k.COLS]!==k.DIRT)continue
+    if(y%2===0)ctx.fillRect(x*C,y*C+C-1,C,1)
+    if((x+Math.floor(y/2)%2)%3===0)ctx.fillRect(x*C,y*C,1,C-1)
+  }
+  ctx.restore()
 }
