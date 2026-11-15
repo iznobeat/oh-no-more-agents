@@ -13948,3 +13948,152 @@ balance of large far-wall fans and the few near crystal groups. No known
 unresolved art, test or frame-rate issue. Live Omarchy/QML appearance was not
 inspected. No merge, push, deploy, production requests, port 8787 changes,
 sibling writes or Omarchy writes.
+
+## C19 — 2026-11-16 · Factory becomes a brass assembly hall at both scales
+
+**Chose:** Factory, after rendering all 21 biomes out of season with
+`node tools/shoot.js biomes --ticks 350` and every individual
+`shoot.js level N --ticks 350`, res 1/2, scale 1. Inspected all six
+seven-board side-by-side catalogue parts and eleven two-board page sheets,
+then individual Factory full frames. Library's stacks, Subway's tiled station
+and Ruins' sanctuary establish a place immediately at either scale. Factory
+was the weakest remaining native board: flat brown slabs, a sparse grid in
+empty dark corridors, and a few isolated cogs. Its page assembly robots help,
+but large bare brown faces and blank spaces remain. Cavern was the closest
+alternative, but already has convincing rock silhouettes and page curtains.
+Foundry, Frost, Ruins and Ice Cave were excluded as requested.
+Baseline: ffe87fa6a3d9dbcc991ddf046457fe0a47f1f492.
+
+**Changed (Draw only):** broad recessed clerestory banks, thick mullions,
+structural piers and sawtooth roof silhouettes give the assembly floor a hall.
+The cached terrain pass adds one coherent broad masonry course pattern only
+to previously untextured DIRT. The existing ORE rivets/seams, page ledge edges,
+safety paint, brick backdrop, random windows, robots, products, lamps, cogs,
+vents, gauges and all original painters remain. No second material pattern
+lies over the original ORE texture. All additions use existing Palette roles;
+Palette.js and its colours are unchanged.
+
+A few large cable drums on cradles, each with a small controller, occupy
+supported safe bays. Their spokes turn slowly and controller lamps cycle from
+`drawMachines`; reduced motion holds both still. One drum per corridor, four
+maximum. Full footprints/motion envelopes exclude original decor, exit, hatch
+approach, pits, hazards and every original page production station (at both
+scales, so the placement cache is resolution-independent). Level 8 fits three,
+48 fits two; crowded 28 deliberately fits none. Placements use a world-keyed
+WeakMap invalidated by terrain identity/version; live paint checks current air.
+No drawing RNG, world writes, per-frame full-board scans, actor/umbrella change,
+new copy, dependency or simulation change. Sim.js, sfx.js and season.js untouched.
+
+**Review/tool:** audit frames retained in
+/tmp/xmas-dressing/biome5-audit/res{1,2}/. Baseline assets retained in
+/tmp/xmas-dressing/biome5-8/before/public/. Inspected rounds one and two;
+rejected faint window frames, six small panes per bank, and dotted mortar.
+Final uses four broader panes, stronger palette-bound frames and continuous
+mortar courses. `node tools/mill-art.js OUT` reproduces twelve complete
+before-left/after-right boards, levels 8/28/48, ticks 350/900, and historical
+ordinary/Christmas staged scenes. Inspected final full sheets and all six
+individual complete page pairs, with no crop or extra scaling:
+
+- /tmp/xmas-dressing/biome5-8/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome5-8/final/full-res2-sheet.png
+- /tmp/xmas-dressing/biome5-8/final/pinned-res1-sheet.png
+- /tmp/xmas-dressing/biome5-8/final/pinned-res2-sheet.png
+
+New architecture and terrain read at 1x; existing teal machinery, bright
+colony, umbrellas and hazard tells remain clear on the page. Visual assessment
+used the real raster renderer; gradients keep its documented middle-stop
+approximation. No live QML inspection.
+
+**Pins deliberately advanced:** original golden JSON is retained. New
+mill-pins.json independently pins complete predecessor/successor frames;
+mill-scenes.json lists explicit historical transitions. Four removable C19
+hooks recover the byte-identical complete predecessor. Earlier C18 review and
+source restoration helpers strip this later round before their original
+assertions; the successor chain advances only the exact listed scenes. The
+new all-biome audit independently compares against the baseline git renderer.
+The legacy C6 cast sample uses a four-byte stride over RGB and includes scenery;
+its page Factory sample transition is recorded explicitly. Proper two-background
+RGB masks independently prove opaque actors, umbrellas and hazard tells keep
+their complete-frame colours. SHA-256 prefixes (full values in the fixtures):
+- full `8/350/1`: `00d33502` → `3ced712d`.
+- full `8/900/1`: `c02254b7` → `35b0d9ba`.
+- full `28/350/1`: `a77c4dac` → `4ed01916`.
+- full `28/900/1`: `a350c70a` → `c5d14c1a`.
+- full `48/350/1`: `245e1d05` → `ff0bfcba`.
+- full `48/900/1`: `f5533c14` → `abe35cc3`.
+- full `8/350/2`: `3fe829e0` → `c66be194`.
+- full `8/900/2`: `241a40f2` → `f315604c`.
+- full `28/350/2`: `fb25d0e2` → `f4a4c666`.
+- full `28/900/2`: `79841938` → `c985974b`.
+- full `48/350/2`: `1ec8fb16` → `8f1180de`.
+- full `48/900/2`: `06289db3` → `88c109d6`.
+- `aggregates/350,900`: `8c6d3baa` → `64d438ae`.
+- `disabled/350,900`: `7d7e3e56` → `24f62210`.
+- `aggregates/120,350`: `2ff3f718` → `8c506e6b`.
+- `disabled/120,350`: `c31fb0a2` → `1d39dcbc`.
+- `newyear/none/8/1`: `69493728` → `b29af03f`.
+- `newyear/none/8/2`: `d62898d7` → `24155780`.
+- `newyear/christmas/8/1`: `14832889` → `dd8a2a8f`.
+- `newyear/christmas/8/2`: `8f59ec36` → `79187532`.
+- `c6cast/Factory/2`: `21194afe` → `c6b622be`.
+- `c6full/Factory/1/120`: `241eb1d6` → `44c86088`.
+- `c6full/Factory/1/400`: `593d4905` → `01d66c86`.
+- `c6full/Factory/2/120`: `5be633b0` → `6b605f4d`.
+- `c6full/Factory/2/400`: `d7ecc99c` → `9fa0eecb`.
+- `exitNative`: `c1c6cdcf` → `7fb69321`.
+- `office`: `e30eb9a6` → `562ae9b4`.
+
+**Validation:** baseline `npm run check`: **1840/1840**, exit **0**, 162.39 s.
+The first sandboxed launcher hit Node child-process EPERM; the escalated retry
+passed normally. Checked `test/mill-art.test.js` was free with `test -e` before
+creating it. Ten new tests cover reviewed pins and visible full-frame changes,
+all-biome exact scope and source recovery, palette/grid/context/frozen-world
+purity, DIRT-only static material, supported and reserved cache placements,
+current-air/reduced-motion animation with a bounded terrain-read budget,
+opaque colony/umbrella pixels, reproducible review and scene transitions,
+varied layouts and every production station, and opaque press/saw pixels in
+charge/fire/cool poses. Digests and bounded loops only, no raw-buffer deepEqual.
+Focused pass: **10/10**; two initial fixture mistakes (palette level and two
+hazardless layouts in the hazard mask test) were corrected, using real Factory
+palette 48 and actual press/saw layouts 8/68. Full results follow below.
+
+First full gate: **1848/1850**, two failures. The new read-budget test needed
+a typed-array proxy method binding; corrected the test without changing art.
+The C14 ordinary Factory ledger needed its three explicit scenery transitions.
+Kept its original before and reviewed-C14 assertions against the C19-stripped
+renderer, and separately checks the current scene against the successor:
+
+- `c14full/8/2/120`: `a3483264` → `ff5dc7f5`.
+- `c14full/8/2/350`: `1a642af3` → `079cd2a7`.
+- `c14full/8/2/900`: `61f4b7d3` → `ce3100dd`.
+
+The historical review sheets also include the complete ordinary tick-120
+Factory board at both scales. The final artwork remains unchanged from round
+two. Check1 logs/exit are retained; this failed gate was not accepted.
+
+Final focused regression: **18/18**, exit **0**. Final `npm run check`:
+**1850/1850**, exit **0**, 163.47 s. `npm run crap -- --changed --threshold 30`:
+exit **0**, fresh coverage **1850/1850**, 301.78 s. Highest new renderer score
+**9.0** (millSpots, 92.3% coverage); other new renderer functions **1–8**, all
+100% covered. Changed drawTerrain **29**, drawMachines **24**. New review/scene
+and successor helpers remain under 30. Stamps: Draw **f721b166**, build
+**4efda3eb**. Shared FIFO lock and six-file concurrency retained. Runtime source
+and stamps stayed frozen through final gates; afterward only this log and a
+whitespace-only blank test line were tidied. No test assertions changed after
+the green gates. Explicit exits and logs are retained in
+/tmp/xmas-dressing/biome5-8/{final-check,crap}.{log,exit}.
+
+**Performance:** matched back-to-back `npm run fps -- 8 28 48 --season none`,
+exact baseline public assets against unchanged final art, under one shared
+lock. All three levels, before and after: **60 median / 60 p5 FPS, 17 ms
+worst frame, 0% long tasks**. CPU **10/10/9% → 10/10/9%**. Both runs and the
+pair exited **0**. No measured frame-rate or CPU regression. Complete
+before-fps.log, after-fps.log and their exit files, plus fps-pair.exit, are
+retained beside the gate logs. No rendering/source edits during measurements.
+
+**Next:** owner review of Factory's complete native/page boards, especially
+the balance of broad clerestories and the original teal production lines.
+No known unresolved test, art or performance issue. Native Omarchy/QML was
+not inspected; visual review used the raster renderer described above.
+No merge, push, deploy, production request, port 8787 change, sibling write
+or Omarchy write.
