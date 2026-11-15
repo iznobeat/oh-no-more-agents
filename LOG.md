@@ -12488,3 +12488,102 @@ ends on the first line of Auld Lang Syne (traditional) in the fanfare's
 voice, with three rockets whistling down into bangs over it. `finale` now
 reads a `FINALES` table by season name (Christmas: Jingle Bells, 468).
 **Test:** sfx (fifteen notes and three rockets, three bangs).
+
+## C8 — 2026-11-15 · The colony puts its back into the work
+
+**Chose:** build, bash and dig, after rendering and inspecting all thirteen
+skills/actions at native and page resolution, both facings, twelve consecutive
+frames. The native builder held one brick pose; the basher toggled two arms
+with no visible tool; the digger barely moved. Page tools existed, but the
+pick landed halfway between Sim's cuts and the builder carried a fresh brick
+while its separate palm was already tamping the old one.
+
+**Changed (Draw only):** shared whole-pixel work key poses at both resolutions:
+a braced contact, weight settling, recovery and a lifted anticipation before the
+next cut. Pick and spade travel through clear arcs; the builder releases its
+brick, withdraws an empty hand, fetches and lowers the next. Contact is timer
+zero, matching Sim's unchanged six/six/seven-tick intervals. Heads, shoulders,
+shirt fronts and boots follow the work pose together. Native tools have solid
+pixel silhouettes; page handles, cuffs, steel edges, brick faces and shoes use
+half pixels. Two local dirt/dust beats accompany contact; the existing page
+material clods remain. Reduced motion holds the new pose and tools still and
+omits the added dust. Existing palette colours only, no new world state, RNG,
+text or simulation writes. Umbrella parries retain the complete original
+sprite; no umbrella paint is removed. Specials, underwater kit and res-3
+share art keep their established poses. Sim.js, sfx.js and North Pole code
+are untouched; no sibling writes.
+
+**Looked at:** `tools/skill-strips.js` retains every action, both facings and
+twelve consecutive ticks at res 1/2. Timer fixtures wrap at the real skill
+interval; mine is the existing charge-planting action. Separate explosion,
+splat and homecoming rows are included. Also retains natural full-board
+before-left/after-right work scenes discovered by bounded simulation scans.
+Baseline is 0cc98ea614e6a2752eeafe3bb10a47f8cb0a7b7b. Inspected both all-action
+sheets in `/tmp/xmas-dressing/anim-0/`, then iterations anim-1 through anim-5.
+Rejected the initial missing native tool pass, corrected the mirrored handle's
+half-pixel rounding, and made tailoring follow the new body rather than leaving
+old cuffs/shoes behind. Final inspected side-by-side strips (before left,
+after right, both facings):
+
+- `/tmp/xmas-dressing/anim-5/build-compare-res1.png`
+- `/tmp/xmas-dressing/anim-5/bash-compare-res1.png`
+- `/tmp/xmas-dressing/anim-5/dig-compare-res1.png`
+- `/tmp/xmas-dressing/anim-5/build-compare-res2.png`
+- `/tmp/xmas-dressing/anim-5/bash-compare-res2.png`
+- `/tmp/xmas-dressing/anim-5/dig-compare-res2.png`
+
+Also inspected all six final `build-full-res1.png`, `build-full-res2.png`,
+`bash-full-res1.png`, `bash-full-res2.png`, `dig-full-res1.png`,
+`dig-full-res2.png` in `/tmp/xmas-dressing/anim-6/`. Its sprite strips are
+identical to anim-5; its natural-scene discovery excludes active parries.
+
+**Pins deliberately moved:** exact comparisons remain; no old renderer was
+replaced. Each changed individual frame has explicit before/after hashes in
+`test/fixtures/colony-work-pins.json`, and tests assert the historical hash too.
+All move because these frames contain one of the three reviewed working poses:
+
+- agents.test: combined native/unspecified build/dig-containing pose pin,
+  3a7f5b47… → ee81abc8…. Its fine-mask test now passes the actual world's
+  work motion and world to the fine painter, still checking every fine pixel
+  lies inside the coarse silhouette.
+- christmas-round3: ordinary full boards at ticks 350/900, both resolutions,
+  df780321… → a923747e… (live work in the aggregate).
+- christmas-round4 and christmas-round5: ordinary full boards at ticks
+  120/350, both resolutions, 1f77de56… → e97d87d3… (same shared aggregate).
+- christmas-round6 full frames: Subway/1/120, Subway/1/400, Subway/2/120,
+  Subway/2/400; Data Center/1/120, Data Center/1/400, Data Center/2/120,
+  Data Center/2/400; Frost/1/120, Frost/1/400, Frost/2/120, Frost/2/400.
+  The twelve unchanged-world frames now contain the new work silhouettes.
+- christmas-round6 cast mask: Data Center/2 (the working agent's opaque pixels).
+- newyear full frames: none/3/1, none/3/2, none/12/1, none/12/2, none/18/1,
+  none/18/2; christmas/3/1, christmas/3/2, christmas/12/1, christmas/12/2,
+  christmas/18/1, christmas/18/2. These retain their season and terrain pixels
+  while the live worker changes. Every other old-renderer comparison remains.
+- umbrella-office: native/default/share actor aggregate after arrivals,
+  44940033… → 00472f6a… for native/default workers; the historical hash is
+  separately pinned, and res-3 art itself is unchanged.
+
+**Validation:** baseline full check 1,740/1,740; final full check and CRAP
+coverage both 1,749/1,749, exit 0. Nine new tests cover unique native/page
+poses, timer periods/contact, still reduced motion, palette/grid/bounds,
+read-only worlds and RNG, exclusions, complete umbrella-parry preservation,
+all ten unselected actions' exact sprite digests, and retained review output.
+Focused re-pin regression 76/76. Buffers are compared by digest or bounded
+bytes, never raw-buffer deepEqual. `npm run crap -- --changed --threshold 30`
+exit 0: largest changed function agentDrawMotion 16.0, drawAgentBody 14.0,
+new art helpers at most 6.0, review helpers at most 11.0; all new helpers
+have 100% function coverage. Stamps refreshed. Shared lock and unchanged
+six-file concurrency. One check launcher ended with SIGTERM before producing
+a result (no guard event); the complete rerun passed in 136 seconds, coverage
+in 251 seconds. Logs: `/tmp/xmas-dressing/anim-before-check.log`,
+`anim-final-check.log`, `anim-crap.log`, `anim-new-final.log`.
+
+**Performance:** `npm run fps -- 8 12 18`: before and final after, 60 median /
+60 p5 on all three, worst 17/17/17 ms and no long tasks. CPU before 17/14/16%,
+final after 10/9/10%; the baseline overlapped its check and the final run was
+idle, so no controlled CPU speedup is claimed. Final logs:
+`/tmp/xmas-dressing/anim-before-fps.log` and `anim-final-fps.log`.
+
+**Next:** review more crowded live work sites; no known unresolved art/test
+issue. Visual review used the real renderer rather than a live QML panel.
+No merge, push, deploy, production request, port 8787 change or Omarchy write.

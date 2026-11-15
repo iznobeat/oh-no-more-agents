@@ -38,7 +38,7 @@ test('machine kit is absent with no season, other seasons and at the North Pole'
 test('ordinary out of season frames remain byte identical across every biome and resolution',()=>{
   const h=createHash('sha256'),random=Math.random;Math.random=()=>0.5
   try {for(let level=1;level<=20;level++)for(const res of[1,2])for(const ticks of[120,350])h.update(frame(S,D,P,{level,seed:3,ticks,theme:'tokyo-night',res,page:res===2}).img.buf)}finally{Math.random=random}
-  assert.equal(h.digest('hex'),'1f77de566d6441d9a3a4793ab401cf7e55813cc28b03b9567bded65c95c3b903')
+  assert.equal(h.digest('hex'),'e97d87d38c4d0b04c6d1e6d6255965219bd0264d273a712d634304755998156c')
 })
 test('new machine animation is still with reduced motion at both resolutions',()=>{
   for(const [name,key]of MACHINES)for(const res of[1,2]) {

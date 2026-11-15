@@ -30,13 +30,14 @@ test('twenty biome stands use only supported air outside the exit, in every pale
   }
  }}finally{Math.random=random}
 })
-test('native, default and share actors keep every original pixel after arrivals',()=>{
+test('native/default work poses and unchanged share actors match reviewed arrival pins',()=>{
  const a=createHash('sha256'),b=createHash('sha256')
  for(let level=1;level<=20;level++){
   const w=arrivalWorld(level);w.iceAt=null  // Frost's ponds (LOG 462) came after the office; compare the office alone
   for(const res of[undefined,1,3]){w.res=res;for(const[draw,sum]of[[D,a],[OLD,b]]){const img=canvas(400*(res||1),248*(res||1));draw.drawActors(img.ctx,w,P.build(themeOf('tokyo-night').theme,level),{intro:false,feed:false});sum.update(img.buf)}}
  }
- assert.equal(a.digest('hex'),b.digest('hex'))
+ assert.equal(a.digest('hex'),'00472f6ae670d05a7d1cf9d14fa78c7290675684d30e4bb14f9d352a685918f4')
+ assert.equal(b.digest('hex'),'44940033400759c68548aaab3304eebd1bbceb0cbdff353a3bbf588416d61e57')
 })
 test('saved count fills five slots then a capped tidy pile, using the actual arrival colours',()=>{
  const w=arrivalWorld(13);w.homeOrder=[9,2,14,7,8,0,3,11,4,6];const all=[]

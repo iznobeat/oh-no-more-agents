@@ -13,6 +13,7 @@ const source=fs.readFileSync('public/agents/season.js','utf8'),api=season(source
 const D=load('Draw.js'),S=load('Sim.js'),base='dd5138c91fe8ca616141abe025ce4799f9598652'
 const oldD=renderer(execFileSync('git',['show',`${base}:public/agents/Draw.js`],{maxBuffer:4e6}).toString())
 const oldSource=execFileSync('git',['show',`${base}:public/agents/season.js`],{maxBuffer:4e6}).toString()
+const workPins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-work-pins.json',import.meta.url),'utf8'))
 const hash=b=>createHash('sha256').update(b).digest('hex')
 function calls(w) {
   const out=[],ctx={save(){},restore(){},fillRect(...r){assert.ok(out.length<2000);out.push([...r,this.fillStyle,this.globalAlpha])}}
@@ -32,7 +33,9 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
     const a=season(oldSource,`?season=${mode}`),b=season(source,`?season=${mode}`)
     for(let level=1;level<=S.BIOMES.length;level++)for(const res of[1,2]) {
       const wa=christmasWorld(level,a),wb=christmasWorld(level,b)
-      assert.equal(hash(christmasFrame(oldD,a,wa,res).buf),hash(christmasFrame(D,b,wb,res).buf),`${mode} ${level} ${res}`)
+      const pin=workPins.newyear[`${mode}/${level}/${res}`],before=hash(christmasFrame(oldD,a,wa,res).buf)
+      if(pin)assert.equal(before,pin.before,'historical '+`${mode} ${level} ${res}`)
+      assert.equal(hash(christmasFrame(D,b,wb,res).buf),pin?pin.after:before,`${mode} ${level} ${res}`)
       if(level===1 || level===21){wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30;assert.equal(hash(christmasFrame(oldD,a,wa,res).buf),hash(christmasFrame(D,b,wb,res).buf))}
     }
   }
