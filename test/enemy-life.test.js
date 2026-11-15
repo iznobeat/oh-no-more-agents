@@ -32,9 +32,17 @@ test('preparations use actual aim timers; idle, stagger and guard flex have fixe
  for(const tick of[0,10,20,30]){poseEnemies(w,{phase:'down',tick});frames.push(image(D,w,w.enemies[0],pal))}assert.equal(new Set(frames).size,1)
  for(const res of[1,3]){w.res=res;en.state='aim';assert.deepEqual(D.pageEnemyPose(w,en),{x:0,y:0})}
 })
-test('native and share enemy/defeat frames retain their previous pixels',()=>{
+test('native and share enemy/defeat frames retain historical or reviewed C12 pixels',()=>{
  const old=renderer(execFileSync('git',['show','9133313:public/agents/Draw.js'],{encoding:'utf8'})),w=enemySpecimen(),pal=P.build(themeOf('tokyo-night').theme,13)
- for(const res of[undefined,1,3])for(const phase of['idle','aim','down'])for(const tick of[0,6,12,20,30,40]){w.res=res;poseEnemies(w,{phase,tick});for(const en of w.enemies)assert.equal(image(D,w,en,pal),image(old,w,en,pal))}
+ const pins=JSON.parse(fs.readFileSync(new URL('./fixtures/foe-motion-pins.json',import.meta.url),'utf8')).enemyLife
+ for(const res of[undefined,1,3])for(const phase of['idle','aim','down'])for(const tick of[0,6,12,20,30,40]){
+  w.res=res;poseEnemies(w,{phase,tick})
+  for(const en of w.enemies){
+   const key=`${res||'default'}/${phase}/${tick}/${en.id}`,pin=pins[key],before=image(old,w,en,pal)
+   if(pin)assert.equal(before,pin.before,key+' historical')
+   assert.equal(image(D,w,en,pal),pin?pin.after:before,key)
+  }
+ }
 })
 test('drawing alongside live enemy simulation leaves complete world digests unchanged',()=>{
  const a=S.generate(13,0,3),b=S.generate(13,0,3),pal=P.build(themeOf('tokyo-night').theme,13);a.res=b.res=2;let seed=45

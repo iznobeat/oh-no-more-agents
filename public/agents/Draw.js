@@ -8574,21 +8574,49 @@ function drawHzSpores(ctx, w, pal, h, geo) {
 }
 
 // --- ice cave -----------------------------------------------------------
+// The clamp loosens, then gravity accelerates through the last quarter of
+// charge. Contact and chips begin exactly on Sim's first lethal fire tick.
+function iciclePose(w, h, g) {
+  var fine = w.res === 2 ? 0.5 : 1
+  if (g.live) return { drop: g.tall - 10, shake: 0, length: 8 }
+  if (g.cool) return { drop: 0, shake: 0, length: 2 + Math.floor((1 - g.cool) * 6) }
+  var shake = 0
+  if (g.winding && g.progress > 0.65 && g.progress <= 0.75 && !w.reducedMotion) shake = [0, 1, 0, -1][Math.floor(h.t / 2) % 4] * fine
+  var fall = g.winding ? Math.max(0, (g.progress - 0.75) * 4) : 0
+  var drop = g.winding ? Math.floor(g.progress * 2) : 0
+  if (fall > 0) drop = Math.round((2 + (g.tall - 12) * fall * fall) / fine) * fine
+  return { drop: drop, shake: shake, length: 8 }
+}
 function drawHzIcicle(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, t = geo.t, show = geo.show,
-    hot = geo.hot
-  // Hanging, until it isn't.
+  var pose = iciclePose(w, h, geo)
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 2)
-  var drop2 = live ? tall - 10 : (winding ? Math.round(geo.progress * 2) : 0)
-  ctx.fillStyle = show ? hot : pal.rig
+  ctx.fillRect(geo.x0, geo.y0, geo.wide, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rig
   for (var ic = 0; ic < 3; ic++) {
-    var icx = x0 + 2 + ic * Math.max(3, Math.round((wide - 4) / 3))
-    hzTri(ctx, icx + (winding ? Math.floor(t / 2) % 2 : 0), y0 + 2 + drop2, 2, 8, 1)
+    var x = geo.x0 + 2 + ic * Math.max(3, Math.round((geo.wide - 4) / 3))
+    hzTri(ctx, x + pose.shake, geo.y0 + 2 + pose.drop, 2, pose.length, 1)
+    if (geo.winding) {
+      // A widening dark fracture and a bright lip stay visible between tremors.
+      ctx.fillStyle = pal.rigDark
+      ctx.fillRect(x - 1, geo.y0 + 2, 3, 1 + Math.floor(geo.progress * 2))
+      ctx.fillStyle = geo.hot
+      ctx.fillRect(x - 2, geo.y0 + 1, 4, 1)
+    }
   }
-  hzPressure(ctx, w, pal, h, geo, geo.cx, y0 + 4, pal.decorLit)
+  if (geo.live && h.t < 10) drawIcicleChips(ctx, w, pal, h, geo)
+  hzPressure(ctx, w, pal, h, geo, geo.cx, geo.y0 + 4, pal.decorLit)
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.decorLit)
+}
+function drawIcicleChips(ctx, w, pal, h, g) {
+  var age = w.reducedMotion ? 2 : Math.min(8, h.t)
+  ctx.fillStyle = pal.decorLit
+  for (var i = 0; i < 4; i++) {
+    var side = i % 2 ? 1 : -1
+    var x = g.cx + side * (2 + age + Math.floor(i / 2) * 2)
+    var y = g.y1 - 2 - Math.max(0, 4 - Math.abs(age - 3)) + Math.floor(i / 2)
+    ctx.fillRect(x, y, 2, 1)
+    if (w.res === 2) ctx.fillRect(x + side * 0.5, y - 0.5, 0.5, 0.5)
+  }
 }
 
 function drawHzFrostjet(ctx, w, pal, h, geo) {
@@ -8790,20 +8818,46 @@ function drawHzShredder(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, geo.cx, y1 - 5, pal.rig)
 }
 
+// Cock to one side, drive down, sweep through, then fold back to the rail.
+// The motor's 18 charge/fire ticks are Sim's; this has no independent clock.
+function servoPose(w, h, g) {
+  var p = g.winding ? g.progress : 0
+  var drive = Math.max(0, (p - 0.75) * 4)
+  var x = -3 * p, y = 7 + (g.tall - 9) * drive * drive, width = 8 * p
+  if (g.live) {
+    p = w.reducedMotion ? 0.5 : Math.min(1, h.t / 17)
+    x = -3 + 6 * p; y = g.tall - 2; width = 8
+  }
+  if (g.cool) { x = 3 * g.cool; y = 7 + (g.tall - 9) * g.cool; width = 8 * g.cool }
+  var grid = w.res === 2 ? 2 : 1
+  return { x: Math.round(x * grid) / grid, y: Math.round(y * grid) / grid, width: Math.round(width * grid / 2) * 2 / grid }
+}
 function drawHzServo(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, show = geo.show, hot = geo.hot
-  // An arm on a rail that swings down and sweeps.
-  var swing2 = hzStroke(geo, 10, 6) / 10
+  var pose = servoPose(w, h, geo), cx = geo.cx, y0 = geo.y0
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 3)
+  ctx.fillRect(geo.x0, y0, geo.wide, 3)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(cx - 2, y0 + 3, 4, Math.round(4 + swing2 * (tall - 8)))
-  ctx.fillStyle = show ? hot : pal.warn
-  var armY = y0 + 3 + Math.round(4 + swing2 * (tall - 8))
-  ctx.fillRect(cx - Math.round(wide / 2 * swing2) - 1, armY, Math.round(wide * swing2) + 2, 2)
+  var endX = cx + pose.x, endY = y0 + pose.y
+  var elbowX = cx - pose.x, elbowY = y0 + 5
+  drawServoLink(ctx, cx, y0 + 3, elbowX, elbowY)
+  drawServoLink(ctx, elbowX, elbowY, endX, endY)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  ctx.fillRect(endX - pose.width / 2 - 1, endY, pose.width + 2, 2)
+  if (geo.show || geo.cool) {
+    ctx.fillRect(elbowX - 1, elbowY, 2, 2)
+    if (w.res === 2) {
+      ctx.fillStyle = pal.rigDark
+      ctx.fillRect(elbowX - 0.5, elbowY + 0.5, 1, 1)
+      ctx.fillRect(endX - pose.width / 2, endY, pose.width, 0.5)
+    }
+  }
   hzLamp(ctx, pal, h, geo, cx - 2, y0 + 1)
-  hzImpact(ctx, pal, h, geo, cx, armY, pal.warn)
+  hzImpact(ctx, pal, h, geo, endX, endY, pal.warn)
+}
+function drawServoLink(ctx, x0, y0, x1, y1) {
+  var steps = Math.max(1, Math.ceil(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0))))
+  for (var i = 0; i < steps; i++) ctx.fillRect(Math.round(x0 + (x1 - x0) * i / steps) - 2,
+    Math.round(y0 + (y1 - y0) * i / steps), 4, 1)
 }
 
 function drawHzDefault(ctx, w, pal, h, geo) {
@@ -12890,9 +12944,7 @@ function drawSniper(ctx, w, pal, en, ox, oy, dir, m) {
     ctx.fillStyle = "#b9a59a"
     ctx.fillRect(dir > 0 ? ox + 9 : ox + 1, oy + 10, 2, 1)
     rifleX = dir > 0 ? ox + 10 : ox - 12
-    ctx.fillStyle = "#171920"
-    ctx.fillRect(rifleX, oy + 11, 12, 2)
-    ctx.fillRect(dir > 0 ? rifleX + 1 : rifleX + 10, oy + 9, 3, 2)
+    drawSniperLoad(ctx, w, en, ox, oy, dir, rifleX)
   } else {
     ctx.fillStyle = "#25252b"
     ctx.fillRect(ox + 2, oy + 2, 5, 4)            // narrow hood
@@ -12908,17 +12960,58 @@ function drawSniper(ctx, w, pal, en, ox, oy, dir, m) {
   }
   ctx.fillStyle = redLit
   ctx.fillRect(dir > 0 ? rifleX + 2 : rifleX + 11, oy + (posted ? 9 : 7), 1, 1)
-  if ((w.res || 1) >= 2) drawSniperFine(ctx, ox, oy, dir, rifleX, posted)
+  if ((w.res || 1) >= 2) drawSniperFine(ctx, ox, oy, dir, rifleX, posted, posted ? sniperLoad(w, en).rise : 0)
   var mx = dir > 0 ? rifleX + (posted ? 12 : 10) : rifleX - 1
-  var my = oy + (posted ? 12 : 9)
+  var my = oy + (posted ? 12 + sniperLoad(w, en).rise : 9)
   drawEnemyTell(ctx, en, mx, my, dir, 36)
   if ((w.res || 1) >= 2) drawCastAim(ctx, en, mx, my, dir, 36)
   drawEnemySight(ctx, w, en, mx, my)
   drawEnemyDischarge(ctx, en, mx, my, dir, false)
-  if (en.state === "reload" && !en.shotFor) {
+}
+
+// The hood stays anchored for seasonal riders. Only the rifle and elbows move.
+function sniperLoad(w, en) {
+  if (en.throttled > 0 || w.reducedMotion || w.res === 3) return { rise: 0, pull: 0, hand: 0 }
+  var t = en.timer || 0, rise = 0, pull = 0, hand = 0
+  if (en.state === "aim") rise = [2, 1, 0][Math.min(2, Math.floor(t / 6))]
+  if (en.state === "reload") {
+    rise = [0, 2, 2, 1, 0][Math.min(4, Math.floor(t / 8))]
+    pull = [0, 1, 3, 3, 1, 0][Math.min(5, Math.floor(t / 5))]
+    hand = [0, 3, 5, 3, 0][Math.min(4, Math.floor(t / 8))]
+  }
+  if (w.res === 2 && en.state === "aim" && t < 12) rise -= (t % 6 >= 3 ? 0.5 : 0)
+  return { rise: rise, pull: pull, hand: hand }
+}
+function drawSniperLoad(ctx, w, en, ox, oy, dir, rifleX) {
+  var pose = sniperLoad(w, en), y = oy + pose.rise
+  ctx.fillStyle = "#171920"
+  ctx.fillRect(rifleX, y + 11, 12, 2)
+  ctx.fillRect(dir > 0 ? rifleX + 1 : rifleX + 10, y + 9, 3, 2)
+  if (w.res === 3) {
+    if (en.state === "reload" && !en.shotFor) {
+      ctx.fillStyle = "#b9a59a"
+      var bolt = (en.timer >> 3) % 2
+      ctx.fillRect(dir > 0 ? rifleX + 2 - bolt : rifleX + 8 + bolt, oy + 13, 2, 1)
+    }
+    return
+  }
+  if (en.state !== "aim" && en.state !== "reload") return
+  // A planted forearm, with the other elbow lifting clear to work the bolt.
+  ctx.fillStyle = "#55406f"
+  ctx.fillRect(dir > 0 ? ox + 4 : ox + 3, oy + 12 - pose.hand, 3, pose.hand + 2)
+  if (pose.hand > 0) {
+    ctx.fillRect(dir > 0 ? ox + 4 : ox + 1, oy + 12 - pose.hand, 5, 2)
     ctx.fillStyle = "#b9a59a"
-    var bolt = (en.timer >> 3) % 2
-    ctx.fillRect(dir > 0 ? rifleX + 2 - bolt : rifleX + 8 + bolt, oy + 13, 2, 1)
+    ctx.fillRect(dir > 0 ? ox + 7 : ox + 1, oy + 11 - pose.hand, 2, 2)
+  }
+  ctx.fillStyle = "#b9a59a"
+  ctx.fillRect(dir > 0 ? rifleX + 2 - pose.pull : rifleX + 8 + pose.pull, y + 13 - pose.hand, 2, 1)
+  ctx.fillRect(dir > 0 ? rifleX + 6 : rifleX + 4, y + 13, 2, 1)
+  if (pose.pull > 0) {
+    ctx.fillStyle = "#16161b"
+    ctx.fillRect(dir > 0 ? rifleX : rifleX + 8, y + 11, 4, 1)
+    ctx.fillStyle = "#6b6874"
+    ctx.fillRect(dir > 0 ? rifleX - pose.pull : rifleX + 11, y + 10, pose.pull + 1, 1)
   }
 }
 
@@ -13010,8 +13103,8 @@ function drawOperatorFine(ctx, w, ox, oy, dir, press) {
 
 // The sniper at res 2: a scope on the rifle with a lens glint, a darker rim
 // to the hood, and when it is lying down a ragged fringe of camouflage.
-function drawSniperFine(ctx, ox, oy, dir, rifleX, posted) {
-  var sy = oy + (posted ? 10 : 7)
+function drawSniperFine(ctx, ox, oy, dir, rifleX, posted, rise) {
+  var sy = oy + (posted ? 10 + rise : 7)
   ctx.fillStyle = "#2c2f3a"
   ctx.fillRect(dir > 0 ? rifleX + 4 : rifleX + 5, sy, 3, 1)       // scope
   ctx.fillStyle = "#9fd6ff"
@@ -22042,7 +22135,7 @@ function drawChristmasTree(ctx, w, boxes) {
 function drawCastEnemyKit(ctx, w, en, x, y, d) {
   if (en.boss || en.kind === "bouncer") return
   if (en.kind === "gun" && !w.submerged) drawCastGuard(ctx, x, y, d)
-  else if (en.kind === "sniper") drawCastMarksman(ctx, en, x, y, d)
+  else if (en.kind === "sniper") drawCastMarksman(ctx, en, x, y, d, w)
   else if (en.kind === "operator") drawCastRadio(ctx, en, x, y, d)
   else if (en.kind === "drone") drawCastDrone(ctx, en, x, y, d)
   else if (en.kind === "xeno") drawCastXeno(ctx, en, x, y, d, xenoHead(w, en).dy)
@@ -22098,10 +22191,10 @@ function drawCastAim(ctx, en, x, y, d, span) {
   ctx.fillRect(x - 0.5, y - 0.5, 1, 1)
 }
 
-function drawCastMarksman(ctx, en, x, y, d) {
+function drawCastMarksman(ctx, en, x, y, d, w) {
   var prone = en.state === "camp" || en.state === "aim" || en.state === "reload"
   var rx = d > 0 ? x + (prone ? 10 : 6) : x - (prone ? 12 : 7)
-  var sy = y + (prone ? 10 : 7), lens = d > 0 ? rx + 7 : rx + 4
+  var sy = y + (prone ? 10 + sniperLoad(w, en).rise : 7), lens = d > 0 ? rx + 7 : rx + 4
   ctx.fillStyle = "#856796"
   if (prone) {
     ctx.fillStyle = "#55406f"

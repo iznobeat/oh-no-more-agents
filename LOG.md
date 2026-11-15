@@ -13032,3 +13032,120 @@ shadow line in the beard at res 2).
 **Test:** northpole (the special at every Pole level that has one, specials
 elsewhere still varied; hat and beard at the Pole only, on the Package
 Manager only). The native North Pole pin re-captured (level 42 has him).
+
+## C12 — 2026-11-15 · Cock, drop, sweep
+
+**Chose:** the prone sniper's aim/reload, Ice Cave icicles and the Spaceship
+servo, after looking at every enemy state and every hazard's idle, charge,
+fire and recovery sheets at res 1/2. The sniper held the same prone shape and
+only toggled a tiny bolt hand. Icicles teleported from the ceiling to the bottom
+of the strike zone. The servo's supposed swing was a straight telescoping bar.
+Other enemy marches, brawls, staggers and defeats already read more clearly.
+
+**Changed (Draw only):** the sniper raises and settles its rifle over the first
+twelve of Sim's 36 aim ticks, then holds its sight picture. On the existing
+80-tick reload it lifts a bent elbow, pulls the bolt, exposes the chamber,
+returns the hand and settles; abandoned aims start beyond that preparatory
+window. Scope detail, sight line and discharge follow the weapon. The hood,
+coat identity and every seasonal head rider retain their original anchors.
+Icicles show a widening fracture and brief held tremor, accelerate through the
+last quarter of their 32-tick charge and contact exactly on fire tick zero.
+Four small chips follow the impact, then the muted hanging tips regrow through
+the existing twelve-tick recovery cue. The servo cocks its two linked arms to
+one side, drives down through the last quarter of its 18-tick charge, reaches
+the end of its strike zone at fire zero, sweeps across the 18 fire ticks and
+folds back during recovery. Original rails, blade/pod/rifle/hood language and
+palette colours remain. Native whole pixels carry the movement; res 2 adds
+half-pixel rifle settling, joints, falling tips and ice-chip edges. Share
+res 3 retains its historical sniper pixels.
+
+New secondary poses stop under reduced motion; gameplay charge progress remains
+readable. No Sim.js, sfx.js, North Pole painter, umbrella, timing, world state,
+RNG, text, dependency or sibling changes. Every other hostile/hazard retains
+exact fixture pixels. A full-board audit swaps back only the six existing
+reviewed painter entry points and recovers the complete baseline across all
+21 biomes, both resolutions and ticks 120/350/400.
+
+**Tool and review:** `tools/foe-strips.js BASE OUT` renders consecutive enemy
+walk/aim/reload/brawl/hit/death and posted/controller/flight/hunt fixtures, plus
+every hazard's complete charge, fire and recovery clocks. Cross-product enemy
+poses are explicitly stress fixtures; non-shooters also have their real operate,
+fly, hunt and sated views. Idle is sampled for twelve ticks; always-live fields
+get 32 consecutive fire frames. Manifest records every timer. Long-range hazard
+strips have 128-pixel cells. Compact side-by-side eight-key comparisons retain
+both facings, with complete staged ordinary/Christmas/New Year boards at actual
+native/page size. A shared read-only base world avoids generating a level per
+sprite frame; the tool's CI smoke selects two enemies/two hazards and exercises
+the same writers in seconds, rather than adding a 30-second catalog test.
+
+Baseline is b2cfda639e17a142b4e8b280af26df5267a74bc9. Inspected the complete
+native/page overview catalog in `/tmp/xmas-dressing/foes-0/`, its six consecutive
+red-team state contact sheets at native resolution, and individual consecutive
+strips. Compared drafts in foes-1, strengthened the sniper's initially faint
+elbow pose, and corrected the page-only scope overlay. The final timing review
+rejected a draft that reached the strike zone a few fire ticks late; stopped
+that gate, aligned contact with fire zero, and re-ran validation. Final inspected
+before-left/after-right strips, both facings:
+
+- `/tmp/xmas-dressing/foes-3/sniper-compare-res1.png`
+- `/tmp/xmas-dressing/foes-3/sniper-compare-res2.png`
+- `/tmp/xmas-dressing/foes-3/icicle-compare-res1.png`
+- `/tmp/xmas-dressing/foes-3/icicle-compare-res2.png`
+- `/tmp/xmas-dressing/foes-3/servo-compare-res1.png`
+- `/tmp/xmas-dressing/foes-3/servo-compare-res2.png`
+
+Also inspected final consecutive icicle/servo cycles and sniper aim/reload at
+both scales, plus the ordinary/Christmas/New Year full-board comparisons there.
+These boards are explicitly staged art fixtures, not simulated rescues or a live
+QML panel.
+
+**Pins:** deliberately moved twelve `enemy-life.test.js` native sniper specimens:
+`{default,1}/aim/{0,6,12,20,30,40}/202`. Tick 40 has entered reload (timer 4).
+Each now checks both the historical digest and its reviewed replacement in
+`test/fixtures/foe-motion-pins.json`; no comparison was weakened. For both
+resolutions, old → new SHA-256 prefixes are:
+
+- tick 0: `aaf6d445` → `88aa3d74` — lowered rifle and visible support palm.
+- tick 6: `e6a1c9fc` → `c35c9339` — rifle part-way through its settle.
+- tick 12: `e6a1c9fc` → `b6f3534b` — settled rifle with planted support arm.
+- tick 20: `ba7a199e` → `90180648` — held sight picture and support arm.
+- tick 30: `ba7a199e` → `90180648` — same held pose late in aim.
+- tick 40: `e4c7ef5d` → `c05e901c` — early reload hand/support pose.
+
+The first full gate caught those historical native pins; audited each and
+passed the 14 focused foe/enemy-life tests after the explicit re-pin. Existing
+exact seasonal/full-scene and share-resolution pins remain unchanged. New
+cycle digests record baseline/reviewed icicle/servo and sniper aim/reload/camp
+at both resolutions/facings; the camp corpus remains exact. A preliminary
+seasonal audit reused one mutable fixture and falsely flagged Cloud/Christmas/
+res 2: the baseline renderer makes the same change on its second draw.
+Independent worlds remove it, so no pin moved for it. Corrected audit:
+`/tmp/xmas-dressing/foes-2/scope-audit.log`, an empty moves ledger.
+
+**Validation:** baseline full check **1778/1778**; final full check
+**1787/1787**, exit 0 (182.35 seconds). Nine new tests cover exact sequences,
+visible native changes, true charge/fire boundary contact, recovery expiry,
+reduced motion, purity/RNG/grid/bounded paint, full-frame scope, every excluded
+foe/hazard, seasonal hat anchors and the reusable review tool. Digests/byte
+counts only, no raw-buffer deepEqual. Full check and changed-function CRAP use
+the shared test lock with unchanged six-file concurrency; no tree edits during
+the final gates. Stamps refreshed. `npm run crap -- --changed --threshold 30` exited 0, including a second
+**1787/1787** coverage run (351.72 seconds). Changed renderer scores: sniper
+19, rifle helper 17, marksman kit 15, enemy kit 11, icicle pose 11, sniper pose
+11, sniper fine 7, icicle painter 6, servo pose 6, chips 5.1, servo painter 5,
+link helper 2; highest new tool score 14. All below 30. Draw line coverage
+99.66%; changed painters except chips have 100% reported coverage in the
+CRAP report (chips 83.3%).
+
+**Performance:** `npm run fps -- 8 12 18` before → final after: levels 8/12/18
+all retain **60 median / 60 p5**, with **0% long tasks**. Worst frames
+17/17/33 ms → 17/17/17 ms; CPU 27/24/29% → 17/12/12%. Baseline overlapped
+other heavy test work; final measurement ran after the gates, so this is not
+a controlled CPU speedup claim. Logs: foes-0/before-fps.log,
+foes-3/after-fps.log, foes-0/before-check-complete.log, foes-3/final-check.log and
+foes-3/crap.log, all under `/tmp/xmas-dressing/`.
+
+**Next:** watch the tell and recoil joins in crowded native colonies. No known
+unresolved art/test issue; review uses real Canvas rendering and staged boards,
+not a live Omarchy/QML session. No merge, push, deploy, production request,
+port 8787 change or Omarchy write.

@@ -1,0 +1,109 @@
+{
+  "base": "b2cfda639e17a142b4e8b280af26df5267a74bc9",
+  "before": {
+    "icicle/1/-1": "6403b0636c7c379fa6f82cfe232734b027eb660fbdaa1858d6205299f5def564",
+    "servo/1/-1": "5d72972c399cb5d4b92ae666fb4f940bb06f5a2cf67dab6fe4bbc00d47823539",
+    "sniper-aim/1/-1": "940af57935b81853d8874accec41df65fb1fdc4b5af6782574ac1725488386f4",
+    "sniper-reload/1/-1": "ef5f6bee43d02d857a83b0de35ed27db82b4338aa49611e6f576cf2b38beefc6",
+    "sniper-camp/1/-1": "2861ea31a6cc8e4c76db94bbfe252b27f400e354f818a89a161e8375359483e3",
+    "icicle/1/1": "6403b0636c7c379fa6f82cfe232734b027eb660fbdaa1858d6205299f5def564",
+    "servo/1/1": "5d72972c399cb5d4b92ae666fb4f940bb06f5a2cf67dab6fe4bbc00d47823539",
+    "sniper-aim/1/1": "1859393116bc0179dd819da763e371dd97ca5e431545300ce2dcc87177ab1e3c",
+    "sniper-reload/1/1": "d098fc6b20f21a3af24b287ba675484dafc8ba127feb980ba70f75e1f252fa09",
+    "sniper-camp/1/1": "55944807e7cf78770e439d947858ae9af33570e521fb5d6769bb2b9d508e3a61",
+    "icicle/2/-1": "8fcbdd3c380c1d4fea5cd4b9a740309e0102a8a7e91e022f214fd13c9fb4d898",
+    "servo/2/-1": "ec7e65c3683b05e67aae3312992b3d6a3eff5def6c4671cb1dfc1ef1169205d6",
+    "sniper-aim/2/-1": "67115872e2eebf9388d3b0e86015a067c3c26631062dafee5e71751266610b4b",
+    "sniper-reload/2/-1": "6951ec44ecbd570dc684e81eae72b456a20073a3963dd7be28f8dbc07147cd90",
+    "sniper-camp/2/-1": "577385674f5e1d8186a4adec368376c73d01990404ce27eb6d1068be7877b8ec",
+    "icicle/2/1": "8fcbdd3c380c1d4fea5cd4b9a740309e0102a8a7e91e022f214fd13c9fb4d898",
+    "servo/2/1": "ec7e65c3683b05e67aae3312992b3d6a3eff5def6c4671cb1dfc1ef1169205d6",
+    "sniper-aim/2/1": "5a1a49d5f84309dcf4a781b2a44d544466d570041f33ee8d510aa1e418e701c1",
+    "sniper-reload/2/1": "d42ad63c416a64f7a5032668891add398c3003d084082e16d4b55babda61bb1f",
+    "sniper-camp/2/1": "3b119f02bfcb69b5f06e338f30d9a5e64a0c4d288dd7432ec0d81cd7fa691e30"
+  },
+  "after": {
+    "icicle/1/-1": "926a315f5dfcd5401929094d3a4a18be6493b0c1f266557c6523d9cb0d042809",
+    "servo/1/-1": "e5170b41a872381e8c585da44a85c2fe05e3b676f04cdab98b38c3c63b652635",
+    "sniper-aim/1/-1": "cc35369dead062be7cf6707257f79c2caeed5604030717e1bee4f5252030f472",
+    "sniper-reload/1/-1": "96a8f9dd7778c19239655d62dd4eb05cae1954450f01edd14260db8cdfa362fb",
+    "sniper-camp/1/-1": "2861ea31a6cc8e4c76db94bbfe252b27f400e354f818a89a161e8375359483e3",
+    "icicle/1/1": "926a315f5dfcd5401929094d3a4a18be6493b0c1f266557c6523d9cb0d042809",
+    "servo/1/1": "e5170b41a872381e8c585da44a85c2fe05e3b676f04cdab98b38c3c63b652635",
+    "sniper-aim/1/1": "ce18720bd75fc0ffdac48a163644cfaa1d86cede9a7c279809bfbc6f470bd9ea",
+    "sniper-reload/1/1": "28533d01c65e478d085e0594b571d5139f303057d3aa401a887c01e7b3b90c95",
+    "sniper-camp/1/1": "55944807e7cf78770e439d947858ae9af33570e521fb5d6769bb2b9d508e3a61",
+    "icicle/2/-1": "99f9a31206de0757aa5e9ca74cc9a47bd1a03ebe806393ac87e6bbd3bdaabe17",
+    "servo/2/-1": "72c30e4c71c40d5f03597f3d4a4846d75cd5c804a75be46aac33ef88415c63a6",
+    "sniper-aim/2/-1": "cca6c5710389ee3277c6891ac8c750e84a28a2f077dff548ec8d888d23351d54",
+    "sniper-reload/2/-1": "3c7589c8db6b894b04d2567b9f835c605acaf95a06d39be824a1f342f126ff5f",
+    "sniper-camp/2/-1": "577385674f5e1d8186a4adec368376c73d01990404ce27eb6d1068be7877b8ec",
+    "icicle/2/1": "99f9a31206de0757aa5e9ca74cc9a47bd1a03ebe806393ac87e6bbd3bdaabe17",
+    "servo/2/1": "72c30e4c71c40d5f03597f3d4a4846d75cd5c804a75be46aac33ef88415c63a6",
+    "sniper-aim/2/1": "85ce6c7212c9ed4fbaff3db63ff93050b3dd3dde4ad104838be3705fe3e46daf",
+    "sniper-reload/2/1": "b030da8eea0d9cd986fcb32a9a258c37b32cb4a2f3258b0ada26fc6e554993b0",
+    "sniper-camp/2/1": "3b119f02bfcb69b5f06e338f30d9a5e64a0c4d288dd7432ec0d81cd7fa691e30"
+  },
+  "enemyLife": {
+    "default/aim/0/202": {
+      "before": "aaf6d445675fac6da3d4755a5308aec0de663d5a46567f40f42544df8725de1c",
+      "after": "88aa3d74e0f89f37d7e305972526b3c36d6fdd755f1596ff0349c3c245c90b21",
+      "reason": "sniper aim, timer 0: reviewed native rifle/support/bolt pose"
+    },
+    "default/aim/6/202": {
+      "before": "e6a1c9fcf25525cf6997402845217897b51e12aed58f4bed33108cc3105fd2ad",
+      "after": "c35c9339ef9843480b25648d4f5eef07b869afdf187124074a4c53f96ede32ad",
+      "reason": "sniper aim, timer 6: reviewed native rifle/support/bolt pose"
+    },
+    "default/aim/12/202": {
+      "before": "e6a1c9fcf25525cf6997402845217897b51e12aed58f4bed33108cc3105fd2ad",
+      "after": "b6f3534bb9fb13896cae0d985d0845db4a5c88fcebe10c0b4b0dd671a3398985",
+      "reason": "sniper aim, timer 12: reviewed native rifle/support/bolt pose"
+    },
+    "default/aim/20/202": {
+      "before": "ba7a199e9f9c2774daf897858e3c6daa37734fcef9deaab899c33c99d51f65d6",
+      "after": "90180648c9398b6298e15952a21023f28da3e8c08036f69f6db18619f01df3ab",
+      "reason": "sniper aim, timer 20: reviewed native rifle/support/bolt pose"
+    },
+    "default/aim/30/202": {
+      "before": "ba7a199e9f9c2774daf897858e3c6daa37734fcef9deaab899c33c99d51f65d6",
+      "after": "90180648c9398b6298e15952a21023f28da3e8c08036f69f6db18619f01df3ab",
+      "reason": "sniper aim, timer 30: reviewed native rifle/support/bolt pose"
+    },
+    "default/aim/40/202": {
+      "before": "e4c7ef5d6924ba5c43a6fc8957ba1736af4660349d4a40339aa94c817f99d7d9",
+      "after": "c05e901c52c2020d155ba455ebddaaec8bd2b596768d14538ced3403c31b4486",
+      "reason": "sniper reload, timer 4: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/0/202": {
+      "before": "aaf6d445675fac6da3d4755a5308aec0de663d5a46567f40f42544df8725de1c",
+      "after": "88aa3d74e0f89f37d7e305972526b3c36d6fdd755f1596ff0349c3c245c90b21",
+      "reason": "sniper aim, timer 0: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/6/202": {
+      "before": "e6a1c9fcf25525cf6997402845217897b51e12aed58f4bed33108cc3105fd2ad",
+      "after": "c35c9339ef9843480b25648d4f5eef07b869afdf187124074a4c53f96ede32ad",
+      "reason": "sniper aim, timer 6: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/12/202": {
+      "before": "e6a1c9fcf25525cf6997402845217897b51e12aed58f4bed33108cc3105fd2ad",
+      "after": "b6f3534bb9fb13896cae0d985d0845db4a5c88fcebe10c0b4b0dd671a3398985",
+      "reason": "sniper aim, timer 12: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/20/202": {
+      "before": "ba7a199e9f9c2774daf897858e3c6daa37734fcef9deaab899c33c99d51f65d6",
+      "after": "90180648c9398b6298e15952a21023f28da3e8c08036f69f6db18619f01df3ab",
+      "reason": "sniper aim, timer 20: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/30/202": {
+      "before": "ba7a199e9f9c2774daf897858e3c6daa37734fcef9deaab899c33c99d51f65d6",
+      "after": "90180648c9398b6298e15952a21023f28da3e8c08036f69f6db18619f01df3ab",
+      "reason": "sniper aim, timer 30: reviewed native rifle/support/bolt pose"
+    },
+    "1/aim/40/202": {
+      "before": "e4c7ef5d6924ba5c43a6fc8957ba1736af4660349d4a40339aa94c817f99d7d9",
+      "after": "c05e901c52c2020d155ba455ebddaaec8bd2b596768d14538ced3403c31b4486",
+      "reason": "sniper reload, timer 4: reviewed native rifle/support/bolt pose"
+    }
+  }
+}
