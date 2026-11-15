@@ -8991,7 +8991,7 @@ var IDLE_GESTURES = {
   yawn: drawIdleYawn, drum: drawIdleDrum, tie: drawIdleTie, stretch: drawIdleStretch
 }
 function drawIdleGesture(ctx, w, pal, ag, ox, oy, dir, robe, drop, idle) {
-  if (!idle) return
+  if (!idle || colonyBalance(w,ag)) return
   var gesture = IDLE_GESTURES[idle.pose]
   if (gesture) gesture(ctx, w, pal, ox, oy + drop, dir, robe, idle.phase)
 }
@@ -9088,6 +9088,7 @@ function drawIdleTie(ctx, w, pal, ox, oy, dir, robe, phase) {
 }
 
 function drawAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, skin, st, bodyDrop, walkLead, squash, idle) {
+  if (drawColonyBalanceBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawColonyActionBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawColonyWorkBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawPageAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, st, bodyDrop, idle)) return
@@ -9236,7 +9237,7 @@ function drawUmbrella(ctx, w, pal, ag, ox, oy, st) {
   // actually holding somebody up. The centre lifts as the tips drop and back
   // again, which is what a canopy taking a load does, and the phase is off
   // the agent's own id so a sky full of them is not one animation repeated.
-  var puff = Math.sin(w.ticks * 0.13 + ag.id * 1.7)
+  var puff = w.reducedMotion ? 0 : Math.sin(w.ticks * 0.13 + ag.id * 1.7)
   var flex = puff > 0.3 ? 1 : (puff < -0.3 ? -1 : 0)
 
   // Whose umbrella it is. Keyed off the agent's id so it never changes hand
@@ -11109,6 +11110,7 @@ var FINE_POSES = {
   bomb: drawFineBomb, ceil: drawFineStride
 }
 function drawAgentFine(ctx, pal, ag, ox, oy, dir, drop, lead, squash, robe, w) {
+  if (w && colonyBalance(w, ag)) return drawColonyBalanceFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && colonyAction(w, ag)) return drawColonyActionFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && colonyWorking(w, ag)) return drawColonyWorkFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && libraryShelfPose(w, ag)) {
@@ -11168,7 +11170,7 @@ function drawTraitDetail(ctx, w, pal, ag, ox, oy, dir, drop, lead, idle) {
   var head = traitHeadOffset(w, ag)
   var lift = w.submerged && !idle && ag.state === "walk" ? Math.round(Math.sin(ag.anim * 0.22) * 1.2) : 0
   var p = { ctx: ctx, pal: pal, ag: ag, x: ox, y: oy + drop + lift, dir: dir,
-    drop: drop, lead: idle ? 0 : lead, hands: (!idle || !idle.pose) && !pageArmsBusy(w, ag),
+    drop: drop, lead: idle ? 0 : lead, hands: (!idle || !idle.pose) && !pageArmsBusy(w, ag) && !colonyBalance(w,ag),
     hx: head.x, hy: head.y - (idle && idle.pose === "glance" ? 1 : 0), wet: w.submerged }
   look.draw(p)
 }
@@ -14448,7 +14450,7 @@ function agentDrawMotion(w, ag, st, idle) {
 
   var m = pageAgentMotion(w, ag, st, idle, { lead: walkLead, squash: squash, drop: bodyDrop })
   if (!idle && skating(w, ag)) { m.lead = SKATE_GAIT[(ag.anim >> 3) % 4]; m.drop = 0 }
-  return colonyActionMotion(w, ag, colonyWorkMotion(w, ag, m))
+  return colonyBalanceMotion(w, ag, colonyActionMotion(w, ag, colonyWorkMotion(w, ag, m)))
 }
 // On the ice the stride is held: a long push one leg, a long push the other.
 var SKATE_GAIT = [1, 1, -1, -1]
@@ -26253,4 +26255,108 @@ function drawColonyClimbGrip(ctx,w,pal,ag,x,y,d) {
   blit(ctx,x,y,d,7,r[0],1,1);blit(ctx,x,y,d,7,r[1],1,1)
   ctx.fillStyle=pal.shirt
   blitFine(ctx,x,y,d,6.5,r[0]+1,1,0.5);blitFine(ctx,x,y,d,6.5,r[1]+1,1,0.5)
+}
+
+// Colony balance and planting: whole-pixel keys shared by panel and page.
+// mineCool is the existing post-plant clock; no predicted cuts or draw state.
+var COLONY_PLANT = [[3,14,0],[3,13,0],[2,12,1],[1,10,1],[0,9,0],[0,10,0]]
+var COLONY_HANG = [[-2,0,10],[-1,1,11],[0,2,12],[1,1,12],[2,0,11],[1,1,10],[0,2,9],[-1,1,9]]
+var COLONY_BRACE = [[0,0],[0,1],[1,2],[1,1],[0,0],[0,-1],[1,-2],[1,-1]]
+function colonyBalance(w,ag) {
+  if((w.res||1)>2 || ag.special || w.submerged || ag.brollyFor>0)return ''
+  if(ag.state==='walk' && pageMineAge(ag)>=0)return 'mine'
+  if(ag.state==='fall' && ag.floater && ag.fall>2)return 'float'
+  if(ag.state==='block') {
+    var idle=agentIdle(w,ag)
+    if(w.reducedMotion || !idle || !idle.pose)return 'block'
+  }
+  return ''
+}
+function colonyBalanceRow(w,ag,kind) {
+  if(kind==='mine')return COLONY_PLANT[w.reducedMotion?4:pageMineAge(ag)]
+  var beat=w.reducedMotion?0:((ag.anim||0)>>1)%8
+  return kind==='float'?COLONY_HANG[beat]:COLONY_BRACE[beat]
+}
+function colonyBalanceMotion(w,ag,m) {
+  var kind=colonyBalance(w,ag)
+  if(!kind)return m
+  m.lead=0;m.squash=0
+  m.drop=kind==='float'?0:colonyBalanceRow(w,ag,kind)[0]
+  return m
+}
+function drawColonyBalanceBody(ctx,w,pal,ag,x,y,d,robe) {
+  var kind=colonyBalance(w,ag)
+  if(!kind)return false
+  var r=colonyBalanceRow(w,ag,kind)
+  ctx.save();ctx.fillStyle=robe
+  if(kind==='mine')drawColonyPlant(ctx,w,pal,ag,x,y,d,robe,r)
+  else if(kind==='float')drawColonyHang(ctx,w,pal,x,y,d,robe,r)
+  else drawColonyBrace(ctx,w,pal,x,y,d,robe,r)
+  ctx.restore();return true
+}
+function drawColonyPlant(ctx,w,pal,ag,x,y,d,robe,r) {
+  var drop=r[0],hand=r[1]
+  blit(ctx,x,y,d,1,7+drop,6,6-drop)
+  blit(ctx,x,y,d,0,12,3,4);blit(ctx,x,y,d,5,13,3,3)
+  // Empty free hand presses the already planted charge, then withdraws.
+  blit(ctx,x,y,d,-1,8+drop,2,Math.max(2,hand-7-drop))
+  blit(ctx,x,y,d,0,hand,4,1)
+  blit(ctx,x,y,d,6,8+drop,2,2)
+  ctx.fillStyle=pal.skin;blit(ctx,x,y,d,3,hand+1,2,1)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,0,15,3,1);blit(ctx,x,y,d,5,15,3,1)
+  if(!w.reducedMotion && pageMineAge(ag)<2) {
+    ctx.fillStyle=pal.dust;blit(ctx,x,y,d,-4-pageMineAge(ag),15,1,1)
+  }
+  if(w.res!==2)return
+  ctx.fillStyle=pal.shirt;blitFine(ctx,x,y,d,2,hand+0.5,1,0.5)
+  ctx.fillStyle=pal.lapel;blitFine(ctx,x,y,d,0.5,12.5,1.5,0.5)
+}
+function drawColonyHang(ctx,w,pal,x,y,d,robe,r) {
+  blit(ctx,x,y,d,1,7,6,6)
+  // One hand stays on the original umbrella grip. Only the free arm balances.
+  blit(ctx,x,y,d,0,r[2]-2,1,3)
+  blit(ctx,x,y,d,6,7,2,3)
+  blit(ctx,x,y,d,2+r[0],13,2,3-r[1])
+  blit(ctx,x,y,d,4+r[0],12+r[1],2,3-r[1])
+  ctx.fillStyle=pal.skin;blit(ctx,x,y,d,0,r[2]+1,1,1)
+  if(w.res===2)blitFine(ctx,x,y,d,7.5,7.5,1.5,1)
+  else drawColonyHangGrip(ctx,pal,x,y,d,robe)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,2+r[0],15-r[1],2,1);blit(ctx,x,y,d,4+r[0],14,2,1)
+  if(w.res!==2)return
+  ctx.fillStyle=pal.shirt;blitFine(ctx,x,y,d,0,r[2]+0.5,1,0.5)
+  ctx.fillStyle=pal.lapel;blitFine(ctx,x,y,d,4+r[0],12+r[1],1,0.5)
+}
+function drawColonyBrace(ctx,w,pal,x,y,d,robe,r) {
+  var drop=r[0],push=r[1]
+  blit(ctx,x,y,d,1,7+drop,6,6-drop)
+  blit(ctx,x,y,d,-1,13,4,2);blit(ctx,x,y,d,5,13,4,2)
+  blit(ctx,x,y,d,-1,14,2,2);blit(ctx,x,y,d,7,14,2,2)
+  blit(ctx,x,y,d,-2,8+drop,3,2);blit(ctx,x,y,d,7,8+drop,3,2)
+  blit(ctx,x,y,d,-3,7+push,1,Math.max(3,3-push));blit(ctx,x,y,d,10,7-push,1,Math.max(3,3+push))
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,-4,6+push,2,2);blit(ctx,x,y,d,10,6-push,2,2)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,-1,15,3,1);blit(ctx,x,y,d,7,15,3,1)
+  if(w.res!==2)return
+  ctx.fillStyle=pal.shirt
+  blitFine(ctx,x,y,d,-3,8+push,1,0.5);blitFine(ctx,x,y,d,10,8-push,1,0.5)
+  ctx.fillStyle=pal.lapel
+  blitFine(ctx,x,y,d,0,13,1.5,0.5);blitFine(ctx,x,y,d,6.5,13,1.5,0.5)
+}
+function drawColonyBalanceFine(ctx,w,pal,ag,x,y,d,drop) {
+  var look=traitHeadOffset(w,ag)
+  drawFineHead(ctx,pal,ag,x+d*look.x,y,d,drop+look.y)
+  drawFineSuit(ctx,pal,x,y,d,7+drop)
+}
+
+// The panel grip goes around the head, leaving hat, shades and nose intact.
+function drawColonyHangGrip(ctx,pal,x,y,d,robe) {
+  var grip=d>0?8:-1
+  ctx.fillStyle=pal.umbrellaStem
+  blit(ctx,x,y,1,Math.min(4,grip),-1,Math.abs(grip-4)+1,1)
+  blit(ctx,x,y,1,grip,-1,1,4)
+  ctx.fillStyle=robe;blit(ctx,x,y,d,7,4,1,5)
+  ctx.fillStyle=pal.skin;blit(ctx,x,y,d,7,3,2,1)
 }

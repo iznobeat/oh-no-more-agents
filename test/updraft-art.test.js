@@ -1,3 +1,4 @@
+import zlib from 'node:zlib'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -10,6 +11,15 @@ import {renderer} from '../tools/gag-art.js'
 import {updraftScene,updraftAdvance,updraftBox,updraftFrame,updraftStrips,UPDRAFT_CASES,UPDRAFT_OFFSETS} from '../tools/updraft-art.js'
 const S=load('Sim.js'),D=load('Draw.js'),P=load('Palette.js'),hash=x=>createHash('sha256').update(x).digest('hex')
 const OLD=renderer(execFileSync('git',['show','9ef1b2d:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
+const balancePins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-balance-pins.json',import.meta.url),'utf8'))
+function stripPixels(file){
+ const png=fs.readFileSync(file),width=png.readUInt32BE(16),height=png.readUInt32BE(20)
+ assert.equal(png.toString('ascii',37,41),'IDAT')
+ const raw=zlib.inflateSync(png.subarray(41,41+png.readUInt32BE(33)))
+ assert.equal(raw.length,(width*3+1)*height)
+ for(let y=0;y<height;y++)assert.equal(raw[y*(width*3+1)],0,'review writer uses unfiltered RGB')
+ return hash(raw)
+}
 function marks(fn){
  const ctx=canvas(400,248).ctx,calls=[];ctx.fillStyle='#123456';ctx.globalAlpha=0.35
  ctx.fillRect=(...r)=>{assert.ok(calls.length<2000);assert.ok(r.every(Number.isFinite)&&r[2]>0&&r[3]>0);assert.ok(r.every(n=>Number.isInteger(n*2)));assert.ok(ctx.globalAlpha<=0.35+1e-9);calls.push([...r,ctx.fillStyle,ctx.globalAlpha])}
@@ -85,6 +95,7 @@ test('early hazard tells, strike cores, agents and umbrellas retain their indepe
    // The late cloud-belly forks are intentional hazard polish; the lethal
    // strike, early tell and all agent/umbrella pixels remain independent.
    if(kind==='hazard'&&phase==='charge'&&t===45)assert.notEqual(hash(x.buf),hash(y.buf),'late warning gains its new local forks')
+   else if(kind==='agent'){const pin=balancePins.updraft[String(reduced)];assert.equal(hash(y.buf),pin.before);assert.equal(hash(x.buf),pin.after)}
    else assert.equal(hash(x.buf),hash(y.buf))
   }
  }
@@ -118,6 +129,7 @@ test('review reruns refresh both stamped sheets, retain natural lift frames and 
   const b=updraftStrips(dir,options);assert.equal(hash(fs.readFileSync(file)),expected);assert.equal(hash(fs.readFileSync(path.join(dir,'contact-sheet.png'))),expected)
   assert.equal(b.drawSHA256,hash(fs.readFileSync(new URL('../public/agents/Draw.js',import.meta.url))));assert.match(fs.readFileSync(path.join(dir,'index.html'),'utf8'),new RegExp(b.contactSheet))
   assert.deepEqual(a.records[0].offsets,UPDRAFT_OFFSETS);assert.ok(a.records[0].frames[0].inDraft&&a.records[0].frames[0].floater);assert.equal(a.records[0].frames[0].state,'fall')
-  assert.equal(hash(fs.readFileSync(path.join(dir,'60-3-before-res1.png'))),hash(fs.readFileSync(path.join(dir,'60-3-after-res1.png'))))
+  assert.equal(stripPixels(path.join(dir,'60-3-before-res1.png')),balancePins.updraftStrip.before)
+  assert.equal(stripPixels(path.join(dir,'60-3-after-res1.png')),balancePins.updraftStrip.after)
  }finally{fs.rmSync(dir,{recursive:true,force:true})}
 })

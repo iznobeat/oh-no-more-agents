@@ -101,7 +101,7 @@ test("reviewed native poses match the pinned res 1 and unspecified res frames", 
       D.drawAgent(img.ctx, w, pal, fineSample(state, dir, phase, mode), {})
       hash.update(img.buf)
     }
-  assert.equal(hash.digest("hex"), "76f5fc4cca041a81d0b444276d9455425f944ce6430daa0ec3884a34a9ad7eb5")
+  assert.equal(hash.digest("hex"), "685578268ecddff21caaac25b25cf8515bf886cc891cc45674bc36a81e66edf8")
 })
 
 for (const state of FINE_STATES) {

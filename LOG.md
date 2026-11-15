@@ -12755,3 +12755,130 @@ today; Draw.js alone 166 → 215 KB. Gradual art growth, today's share ~10 KB.
 - The lazy per-biome art split proposed at 244 remains the big lever.
 Also looked at 295 (69% home, the lowest level): the red team's guard and
 operator hold its middle floor; difficulty by design, not a stall.
+## C10 — 2026-11-15 · Plant, hold, hang on
+
+**Chose:** mine planting, block and float, after re-rendering all thirteen
+C9 strips at res 1/2 and inspecting the seven eligible actions. Native planting
+looked like ordinary walking, the blocker held one stiff arm pose, and the
+floater hung rigidly under its canopy. Walk, fall, explosion and arrival read
+better; the six C8/C9 improvements are unchanged.
+
+**Changed (Draw only):** planting presses the already planted charge, withdraws
+an empty free hand and rises out of a braced crouch across the existing six-tick
+`mineCool` window. Two local dust pixels mark contact; no second charge is
+invented. Blockers spread and plant their boots, bend their knees and alternate
+outward palms with the weight shift, on sixteen existing `ag.anim` ticks. Their
+occasional tap/watch/fold gestures remain. Floaters trail and recover their knees
+and feet through eight keys, balancing with the free arm; the umbrella hand
+stays attached. The native grip routes around the hat and face, keeping every
+original canopy pixel and the shades clear. Whole-pixel silhouettes work at both
+scales; page cuffs, knees and shirt fronts refine them on half pixels.
+Trait pocket/clothing tells remain; busy hands do not paint an old gesture over
+the new work. New motion holds still under reduced motion, new dust disappears,
+and the native canopy now also stops flexing. No new colours, text, world state,
+RNG or Sim timing. Specials, divers, parries and res-3 keep their living poses.
+Sim.js, sfx.js and North Pole drawing code are untouched; no sibling writes.
+
+**Looked at:** baseline d7135de4e8e14ba4d93370d6604d4a3966e7e16e.
+`tools/skill-strips.js` now retains compact strips and complete staged boards for
+this round too. It also includes the existing blast in the explosion fixture:
+the previous strip showed only the thrown hat. Inspected all-action sheets in
+`/tmp/xmas-dressing/anim3-0/`, individual remaining-action strips, then anim3-1
+through anim3-4. Closed a gap under a raised blocker forearm, changed over-tucked
+float legs to a trailing cycle, restored trait tells caught by the old tests,
+and routed the native grip outside the head. Final inspected compact before-top /
+after-bottom strips (both facings, sixteen consecutive ticks):
+
+- `/tmp/xmas-dressing/anim3-4/mine-compact-res1.png`
+- `/tmp/xmas-dressing/anim3-4/mine-compact-res2.png`
+- `/tmp/xmas-dressing/anim3-4/block-compact-res1.png`
+- `/tmp/xmas-dressing/anim3-4/block-compact-res2.png`
+- `/tmp/xmas-dressing/anim3-4/float-compact-res1.png`
+- `/tmp/xmas-dressing/anim3-4/float-compact-res2.png`
+
+Also inspected all six matching `mine/block/float-compare-res1/res2.png`
+before-left/after-right strips in anim3-4. Inspected all twelve `balance-full-{0,2,4,6,10,14}-res{1,2}.png` boards
+in anim3-2, the refined `balance-full-4-res1.png` / `balance-full-4-res2.png`
+in anim3-4, and the natural Cloud float strips in anim3-5. The staged
+boards are art fixtures, not claimed simulated rescues. Original and new
+explosion strips were inspected separately; explosion art itself is unchanged.
+
+**Pins deliberately moved:** exact comparisons stay exact. The new
+`test/fixtures/colony-balance-pins.json` records historical/reviewed hashes per
+sprite frame, every moved scene and aggregate, WHO scenes and natural floats.
+152 sprite frames change: mine ticks 0–5, block and float ticks 0–15, each at
+res 1/2 and dir -1/+1. Mine ticks 6–15 retain their original hashes. C8/C9's
+unselected-action tests now assert these explicit transitions and their original
+historical hashes; all ten other action strips retain every C9 pixel.
+
+- agents native/unspecified pose aggregate: 76f5fc4c… → 68557826… for native
+  floating legs/grip.
+- christmas-round2 native North Pole 21/42 at tick 240: 79bca9fc… → b54c44bd…
+  for shared colony poses; no North Pole code changed.
+- christmas-round3 ordinary tick-350/900 aggregate at both resolutions:
+  aa72f8a7… → 0644914d… for live balance poses.
+- christmas-round4 and christmas-round5 ordinary tick-120/350 aggregates at
+  both resolutions: 7bb0cef0… → e6652116… for the same shared colony poses.
+- christmas-round6 full frames: Factory, Clock Tower, Building Site, Spaceship,
+  Mail Room, Desert, Foundry, The Cloud and Ruins, each at res 1/2 and ticks
+  120/400 (all four combinations for each named biome). Each contains a
+  reviewed blocker or floater. Existing unrelated worker pins are retained.
+- christmas-round6 opaque cast masks: Clock Tower/2, Mail Room/1, Mail Room/2,
+  Foundry/2. The changed limbs/grip alter the mask and its opaque pixels;
+  historical pixels under the exact new mask are still separately pinned.
+- newyear full frames: levels 2,4,7,8,11,14,15,16,17,20, each for none/christmas
+  and res 1/2 (all four combinations at each level), for live shared balance
+  poses. Season and terrain drawing remain unchanged.
+- exit-welcome native arrival-world aggregate, all 20 biomes and ages 0/4/10/15:
+  8eeb2941… → 55cb7717… for other live balance poses in those arrival worlds; the
+  saved agent's own action strip remains unchanged.
+- umbrella-office native/default/share actor aggregate: 012959c5… → 3c463ae7…,
+  for native balance poses. The independent historical pin and share art stay.
+- updraft-art level-100/seed-3 open-canopy agent, ordinary and reduced motion:
+  aa0f4b1b… → 0324c5ba… and 8a064b48… → 278d2185…. All eight phase/tell
+  combinations assert the exact original and new agent hashes; original early
+  tells and strike pixels still compare directly. Level-60/seed-3 native strip
+  before/after hashes are pinned independently, for its natural floating legs
+  and grip. These compare inflated RGB scanline digests, independent of PNG
+  compression, which differed between the standalone and npm runtimes.
+- WHO level 20, tick 200: default and res 1, labels false/true (all four
+  combinations), for the native float. Both historical and reviewed hashes
+  include original text calls. Cosmetic randomness in that fixture is now
+  fixed at 0.25 so cross-run hashes are reproducible; every other reference
+  comparison remains. Res-3 and WHO-off page comparisons are unchanged.
+- idle's old three tick-only hand-breath poses are replaced deliberately:
+  fixed anim holds exactly one quiet pose, and advancing anim produces exactly
+  seven distinct brace keys at both resolutions/facings/ids. All original
+  fidget visibility, schedule, determinism and purity assertions remain;
+  individual brace pixels are separately pinned above.
+
+**Validation:** baseline full check 1,759/1,759; final full check and CRAP
+coverage 1,768/1,768, all exit 0. Nine new tests cover visible exact key poses,
+Sim clocks and periods, reduced motion, original palette/grid, bounded calls,
+context restoration, no world writes/RNG, exclusions, complete original umbrella
+paint, opaque head/shades clearance, all ten unselected actions and review
+artifacts. Existing trait and fidget contracts were preserved or deliberately
+re-pinned as detailed above. Buffers compare by digest or bounded bytes, never
+raw-buffer deepEqual. `npm run crap -- --changed --threshold 30` exit 0:
+changed drawUmbrella 24.0, agentDrawMotion/drawAgentBody 16.0, new colonyBalance
+15.0, other new art helpers at most 6.0, review balanceBoards 13.0. All new art
+helpers have 100% function coverage. Stamps refreshed. Shared heavy-run lock,
+unchanged six-file concurrency, no tree edits during gates. Persistent user
+services avoided a launcher SIGTERM while the baseline waited behind another
+worktree's smoke. Final check 186 seconds, coverage 291 seconds. Logs:
+`/tmp/xmas-dressing/anim3-before-check.log`, `anim3-commit-check.log`,
+`anim3-crap.log`, `anim3-focused-final.log`, `anim3-who.log`,
+`anim3-updraft-final.log`. The earlier focused-final log has the WHO fixture's
+now-fixed unseeded-particle failure; its separate final rerun and both full gates
+pass.
+
+**Performance:** `npm run fps -- 8 12 18`: before and final after, 60 median /
+60 p5 on all three. Worst frames 17/17/50 ms → 33/17/50 ms; long tasks
+0/0/1% → 0/0/0%. CPU 11/11/24% → 27/24/25%; the final run overlapped
+the full check, so no controlled CPU comparison is claimed. Logs:
+`/tmp/xmas-dressing/anim3-before-fps.log` and `anim3-reviewed-fps.log`.
+
+**Next:** watch crowded live native colonies and transitions back to walking.
+No known unresolved art/test issue; visual review used the real renderer and
+natural/staged fixtures, not a live QML panel. No merge, push, deploy, production
+request, port 8787 change or Omarchy write.

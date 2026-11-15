@@ -22,7 +22,7 @@ test('native arrival actors retain the original pixels in all 20 biomes, includi
   const w=arrivalWorld(level,3,1),at=w.ticks,a=arrival(w),cache={}
   for(const age of[0,4,10,15]){w.ticks=at+age;a.fade=age;h.update(welcomeFrame(D,w,cache).buf)}
  }
- assert.equal(h.digest('hex'),'8eeb29417ddd7c9f5ad014c005d16c730b85ef188b29f92e8deb06cde70be41c')
+ assert.equal(h.digest('hex'),'55cb771726b9e9b4edae48aa886e9a9aee8219aa1fa05f9f864256b3e17c1d68')
 })
 test('only real recent arrivals trigger; a crowd shares the strongest pulse and gone bodies cannot stick it on',()=>{
  const w=arrivalWorld(),a=arrival(w)
