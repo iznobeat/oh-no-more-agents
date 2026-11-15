@@ -9,12 +9,15 @@ import {load,canvas,crop,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {arrivalWorld} from '../tools/exit-welcome.js'
 import {officeFrame,officeBox,officeReview,OFFICE_SEASONS} from '../tools/umbrella-office.js'
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const S=load('Sim.js'),D=load('Draw.js'),P=load('Palette.js'),OLD=renderer(execFileSync('git',['show','2b12360:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()),hash=x=>createHash('sha256').update(x).digest('hex')
 // Isolate the stand from today's scenery. The historical renderer above
 // remains the independent native/share byte-preservation reference.
 const WITHOUT_OFFICE=renderer(fs.readFileSync(new URL('../public/agents/Draw.js',import.meta.url),'utf8').replace(/function drawUmbrellaOffice\([^)]*\)\s*\{/, '$& return;'))
 const pal=P.build(themeOf('tokyo-night').theme,1)
 function marks(w){const ctx=canvas(400,248).ctx,calls=[];ctx.fillStyle='#123456';ctx.globalAlpha=.35;ctx.fillRect=(...r)=>{assert.ok(calls.length<128,'bounded paint budget');assert.ok(r.every(Number.isFinite)&&r[2]>0&&r[3]>0);assert.ok(r.every(n=>Number.isInteger(n*2)));calls.push([...r,ctx.fillStyle,ctx.globalAlpha])};D.drawUmbrellaOffice(ctx,w,pal);assert.equal(ctx.fillStyle,'#123456');assert.equal(ctx.globalAlpha,.35);return calls}
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test('twenty biome stands use only supported air outside the exit, in every palette and season',()=>{
  const random=Math.random
  try{for(let level=1;level<=20;level++){
@@ -31,12 +34,14 @@ test('twenty biome stands use only supported air outside the exit, in every pale
  }}finally{Math.random=random}
 })
 test('native/default work poses and unchanged share actors match reviewed arrival pins',()=>{
- const a=createHash('sha256'),b=createHash('sha256')
+ const a=createHash('sha256'),b=createHash('sha256'),c=createHash('sha256')
  for(let level=1;level<=20;level++){
   const w=arrivalWorld(level);w.iceAt=null  // Frost's ponds (LOG 462) came after the office; compare the office alone
-  for(const res of[undefined,1,3]){w.res=res;for(const[draw,sum]of[[D,a],[OLD,b]]){const img=canvas(400*(res||1),248*(res||1));draw.drawActors(img.ctx,w,P.build(themeOf('tokyo-night').theme,level),{intro:false,feed:false});sum.update(img.buf)}}
+  for(const res of[undefined,1,3]){w.res=res;for(const[draw,sum]of[[D,a],[OLD,b],[foeBefore,c]]){const img=canvas(400*(res||1),248*(res||1));draw.drawActors(img.ctx,w,P.build(themeOf('tokyo-night').theme,level),{intro:false,feed:false});sum.update(img.buf)}}
  }
- assert.equal(a.digest('hex'),'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
+ assert.equal(c.digest('hex'),'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
+ assert.equal(foePins.office.before,'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
+ assert.equal(a.digest('hex'),foePins.office.after)
  assert.equal(b.digest('hex'),'44940033400759c68548aaab3304eebd1bbceb0cbdff353a3bbf588416d61e57')
 })
 test('saved count fills five slots then a capped tidy pile, using the actual arrival colours',()=>{

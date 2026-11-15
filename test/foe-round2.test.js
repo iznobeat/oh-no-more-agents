@@ -6,10 +6,11 @@ import {createHash} from 'node:crypto'
 import {load,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {hazardFrame,hazardFixture,hazardSequence,enemyFixture,KINDS,STATES,ROUND_TWO} from '../tools/foe-strips.js'
-import {restoreFoeRoundTwo} from '../tools/foe-reference.js'
+import {restoreFoeRoundTwo,restoreFoeRoundThree} from '../tools/foe-reference.js'
 const base='f252faa2c0f8d22dec66208580177bfccaf29036'
 const beforeSource=execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
 const source=fs.readFileSync('public/agents/Draw.js','utf8')
+const c13Current=renderer(restoreFoeRoundThree(source,beforeSource))
 const old=renderer(beforeSource),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const specs=S.HAZARDS.filter(s=>ROUND_TWO.includes(s.id))
@@ -97,7 +98,7 @@ test('C13 complete-board scope audit recovers the baseline with only the three p
 test('C13 all excluded hazards and every enemy keep exact pixels including seasonal riders',()=>{
  for(const res of [1,2]){
   for(const spec of S.HAZARDS.filter(s=>!ROUND_TWO.includes(s.id)))for(const phase of ['idle','charge','fire','rest'])
-   assert.equal(hash(hazardFrame(D,spec,phase,3,res).buf),hash(hazardFrame(old,spec,phase,3,res).buf),`${spec.id}/${phase}/${res}`)
+   assert.equal(hash(hazardFrame(c13Current,spec,phase,3,res).buf),hash(hazardFrame(old,spec,phase,3,res).buf),`${spec.id}/${phase}/${res}`)
   for(const kind of KINDS)for(const state of STATES)for(const mode of ['santa','party'])for(const dir of [-1,1]){
    const paint=D=>{const {w,en}=enemyFixture(kind,state,4,dir);w.res=res;w.season={redHats:mode};const img=canvas(400*res,248*res);D.drawEnemy(img.ctx,w,{},en,{});return hash(img.buf)}
    assert.equal(paint(D),paint(old),`${kind}/${state}/${mode}/${dir}/${res}`)

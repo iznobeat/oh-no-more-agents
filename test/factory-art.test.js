@@ -1,9 +1,11 @@
+import fs from 'node:fs'
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
 import { loadCore } from "../tools/load-core.js"
 import { canvas, themeOf, THEMES } from "../tools/render.js"
 
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js")
 const levels = [8, 28, 48, 68]
 const MAX_CALLS = 20000
@@ -49,6 +51,8 @@ function footprint(c, visit) {
   for (let y = c[1]; y < c[1] + c[3]; y += 0.5)
     for (let x = c[0]; x < c[0] + c[2]; x += 0.5) visit(x, y)
 }
+
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
 
 test("assembly art is page-only and absent from the other eighteen biomes", () => {
   for (let level = 1; level <= S.BIOMES.length; level++) for (const res of [undefined, 1, 2]) {
@@ -204,20 +208,23 @@ test("original Factory backdrop, materials, decor, cogs, belts, motes, shutter, 
     [[undefined, 1], "1dd2ada3b21eb08b9cca374b2c5af87af512cfdda7ba44db880d0760d45bef41"],
     [[2], "1649b28c78a59d0894f95dcc9767d4d4290dfe6d9892692d1ca8dc41d5cbf395"]
   ]) {
+    for(const [R,label]of [[foeBefore,"before"],[D,"after"]]){
     const hash = createHash("sha256")
     for (const name of Object.keys(THEMES)) for (const level of [8, 28, 48])
       for (const res of resolutions) for (const ticks of [0, 77, 240]) {
         const { w, pal } = sample(level, name); w.res = res; w.ticks = ticks
         const img = canvas(400, 248, themeOf(name).background)
-        D.drawBackdrop(img.ctx, w, pal); D.drawTerrainMaterials(img.ctx, w, pal)
-        D.drawFactoryPlates(img.ctx, w, pal); D.drawDecor(img.ctx, w, pal)
-        D.drawFactoryMachines(img.ctx, w, pal); D.drawBelts(img.ctx, w, pal)
-        D.drawAmbience(img.ctx, w, pal); D.drawDrips(img.ctx, w, pal)
-        D.drawExitBack(img.ctx, w, pal); D.drawEnemyHatch(img.ctx, w, pal, {})
-        for (const h of w.hazards) D.drawHazard(img.ctx, w, pal, h, {})
+        R.drawBackdrop(img.ctx, w, pal); R.drawTerrainMaterials(img.ctx, w, pal)
+        R.drawFactoryPlates(img.ctx, w, pal); R.drawDecor(img.ctx, w, pal)
+        R.drawFactoryMachines(img.ctx, w, pal); R.drawBelts(img.ctx, w, pal)
+        R.drawAmbience(img.ctx, w, pal); R.drawDrips(img.ctx, w, pal)
+        R.drawExitBack(img.ctx, w, pal); R.drawEnemyHatch(img.ctx, w, pal, {})
+        for (const h of w.hazards) R.drawHazard(img.ctx, w, pal, h, {})
         hash.update(img.buf)
       }
-    assert.equal(hash.digest("hex"), expected)
+    assert.equal(foePins.factory[resolutions.at(-1)].before,expected)
+    assert.equal(hash.digest("hex"), label==="before"?expected:foePins.factory[resolutions.at(-1)].after)
+    }
   }
 })
 

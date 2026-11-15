@@ -7,6 +7,7 @@ import {load,canvas,themeOf} from '../tools/render.js'
 import {renderer,season} from '../tools/gag-art.js'
 import {christmasFrame} from '../tools/christmas-art.js'
 import {ALL_MACHINES,reviewWorld} from '../tools/christmas-round5-art.js'
+import {foeRoundThreeBefore} from '../tools/foe-reference.js'
 const D=load('Draw.js'),P=load('Palette.js')
 const base=renderer(execFileSync('git',['show','c8b27d0632e84e91e240f580d8028596b1fd63e9:public/agents/Draw.js'],{maxBuffer:4e6}).toString())
 const api=season(fs.readFileSync('public/agents/season.js','utf8'),'?season=christmas')
@@ -20,6 +21,8 @@ function additions(w) {
   if(w.biome==='Skyscraper')for(const l of w.lifts)if(!l.stairs)D.drawChristmasLiftCar(img.ctx,w,l)
   return digest(img.buf)
 }
+const foeBefore=foeRoundThreeBefore(),foePins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8'))
+
 test('round six changes survive complete native and page frames in all fifteen requested biomes',()=>{
   assert.equal(changed.length,15)
   for(const [name,key]of changed)for(const res of[1,2]) {
@@ -36,7 +39,10 @@ test('every ordinary full frame remains byte-identical out of season',()=>{
       w.ticks=ticks
       const pin=workPins.c6full[`${name}/${res}/${ticks}`],before=digest(christmasFrame(base,api,w,res).buf)
       if(pin)assert.equal(before,pin.before,name+' historical pin')
-      assert.equal(digest(christmasFrame(D,api,w,res).buf),pin?pin.after:before,name)
+      const historical=digest(christmasFrame(foeBefore,api,w,res).buf),review=foePins.c6full[`${name}/${res}/${ticks}`]
+      assert.equal(historical,pin?pin.after:before,name+' before C14')
+      if(review)assert.equal(historical,review.before)
+      assert.equal(digest(christmasFrame(D,api,w,res).buf),review?review.after:historical,name)
     }
   }
 })
