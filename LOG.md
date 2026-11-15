@@ -12235,3 +12235,66 @@ heart on 14 of 20. Still under reduced motion.
 **Test:** northpole (placement, spacing, cache, one vs two, the heart
 rises, reduced motion, no world writes, only at the Pole). The native
 North Pole pin re-captured for the sprigs.
+## C5 — 2026-11-15 · Each machine gets its own Christmas
+
+**Changed (Draw only, Christmas season):** eight ordinary biomes now dress
+with their own machinery. Factory belts carry red/green parcels with gold
+ribbon and bows, moving at the tread rate, checking surviving support and
+keeping packages apart. Subway carriages carry a five-bulb roof chase and a
+wreath on the front end; both follow the real car and page body bob. Harbour
+ferries carry a seven-light mast festoon following their moored/water geometry.
+Data Center rack edges carry a red/green LED chase alongside the original rack
+lights. Clock Tower gates wear a wreath beside the cassette, clear of the dial
+and closing tell. Rooftop zipline bulbs follow the actual cable and rider sag.
+Building Site hooks carry a little striped, starred tree on a short tie beside
+the original hook. Spaceship pads have red/green stars rising between the
+energiser coils, leaving the original cyan transport cue intact.
+
+One fixture-pass hook, eight small painters, shared bulbs/wreath/parcel/tree
+art. All gated on `w.season.name === "christmas"`; no new text, world writes,
+RNG, Sim or season changes. Native and page art share whole-pixel silhouettes;
+page bulbs, parcels and tree stars have half-pixel highlights. New tick motion
+holds still under reduced motion. Current terrain, original scenery silhouettes,
+hazard zones, mission subjects and portal are excluded. The colony is drawn
+afterwards; opaque cast/umbrella pixels are checked against a renderer without
+the hook. The North Pole elf/mistletoe area is untouched.
+
+**Looked at:** `christmas-art.js --base main --out /tmp/xmas-dressing/r5-0`
+for the baseline, then r5-1 through r5-6 during refinement (all 21 biomes,
+native/page). Inspected the baseline native Factory frame and successive
+machine crops at both scales. The first masks suppressed too much, so reused
+the existing tighter surviving-scenery reservations; moved gate wreaths beside
+the cassette, trees beside the hook and stars between pad coils. Rejected the
+cramped Library book-tree attempt. Increased the short zipline's bulb density,
+made rack-edge lights continuous, and fixed overlapping belt parcels.
+
+`tools/christmas-round5-art.js` retains baseline-left full boards and machine
+crops. It finds actual machinery-bearing layouts: Factory 8, Subway 18,
+Harbour 19, Data Center 12, Clock Tower 36, Rooftops 37, Building Site 15 and
+Spaceship 7, seed 3, tick 400. Gates/ziplines do not exist on the first Clock
+Tower/Rooftop levels. Final inspected before/after sheets:
+`/tmp/xmas-dressing/r5-6/machines-full-res1-sheet.png`,
+`/tmp/xmas-dressing/r5-6/machines-full-res2-sheet.png`,
+`/tmp/xmas-dressing/r5-6/machines-crop-res1-sheet.png`,
+`/tmp/xmas-dressing/r5-6/machines-crop-res2-sheet.png`.
+Also inspected the final individual native Factory and Data Center frames in
+r5-5 and the prior full native/page sheets in r5-4/r5-5. No browser visual
+session or production request was needed.
+
+**Validation:** baseline `npm run check` 1,708/1,708. Nine new tests: visible
+native/page kit, season/Pole opt-out, complete ordinary out-of-season baseline
+digests at both resolutions/ticks, read-only worlds, still reduced motion,
+tick animation, safety/current-terrain exclusions, exact opaque cast pixels,
+review artifacts, machinery-following coordinates and parcel separation.
+Focused 9/9; final full check and coverage 1,717/1,717, both exit 0.
+`npm run crap -- --changed --threshold 30` exit 0: changed fixture dispatcher
+22.0; new art helpers at most 9.0, review functions at most 9.0. Shared test
+lock and unchanged six-file concurrency; no small scope around the full suite.
+Stamps refreshed. `npm run fps -- 8 12 14 --season christmas`: before and after
+60 fps / p5 60 on all three; worst 17/17/33 ms before, 17/17/17 ms after.
+CPU before 18/24/24%, after 10/9/9%; baseline ran alongside the baseline check,
+so this is evidence of no FPS regression, not a controlled speedup claim.
+
+**Next:** review moving machinery across more December colonies; tight or
+hazard-adjacent spaces intentionally suppress individual decorations. No
+merge, push, deploy, sibling writes or port 8787 changes.
