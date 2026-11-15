@@ -98,6 +98,7 @@
     ctx.save()
     var actors = snowActors(w)
     drawProps(ctx, w, actors)
+    if (s.snow) drawSettled(ctx, w, actors)
     if (s.snow) drawSnow(ctx, w, s.snow, actors)
     if (s.gift && w.exit) drawGift(ctx, w, actors)
     ctx.restore()
@@ -149,6 +150,62 @@
     }
     ctx.restore()
   }
+  // Snow that settles. Every open top gathers a lip of fresh snow as the level
+  // goes on, a pixel every SETTLE_EVERY ticks up to SETTLE_MAX; a walker
+  // tramples it to a packed grey crust and it fills back in behind them, so
+  // the colony's road shows as a path through the white. The tops are the
+  // layout's and are kept with the trampling on w.seasonDrift (the season's
+  // own field, like seasonSeen), redone when the terrain changes. Not at the
+  // North Pole, which has deep caps of its own; still under reduced motion.
+  var SETTLE_EVERY = 360, SETTLE_MAX = 3
+  var SNOW_FRESH = "#eef4fb", SNOW_SHADE = "#c9d8ea", SNOW_PACKED = "#aab7c8"
+  function settled(w) {
+    var d = w.seasonDrift
+    if (d && d.version === w.terrainVersion) return d
+    var tops = [], k = w.k
+    for (var y = k.SKY + 1; y < k.ROWS - 1; y++)
+      for (var x = 0; x < k.COLS; x++)
+        if (cell(w, x, y) && cell(w, x, y - 1) === k.EMPTY && settleClear(w, x, y)) tops.push(y * k.COLS + x)
+    w.seasonDrift = { version: w.terrainVersion, tops: tops, trod: d ? d.trod : {} }
+    return w.seasonDrift
+  }
+  function settleClear(w, x, y) {
+    var c = w.k.CELL, e = w.exit, top = y * c - SETTLE_MAX
+    if (seasonDanger(w, x * c, top, c, SETTLE_MAX + 1)) return false
+    return !(e && overlap(x * c, top, c, SETTLE_MAX + 1, {x:e.x*c-4,y:e.y*c-4,width:e.w*c+8,height:e.h*c+8}))
+  }
+  function trample(w, d) {
+    var cols = w.k.COLS
+    for (var i = 0; i < w.agents.length; i++) {
+      var ag = w.agents[i]
+      if (ag.gone || ag.state !== "walk") continue
+      var under = (Math.floor(ag.y) + 1) * cols + Math.floor(ag.x)
+      d.trod[under] = d.trod[under - 1] = d.trod[under + 1] = w.ticks
+    }
+  }
+  function settledDepth(w, d, i) {
+    if (w.reducedMotion) return 2
+    var fine = (w.res || 1) >= 2 ? 2 : 1, since = d.trod[i] === undefined ? 0 : d.trod[i]
+    return Math.min(SETTLE_MAX, Math.floor((w.ticks - since) * fine / SETTLE_EVERY) / fine)
+  }
+  function drawSettled(ctx, w, actors) {
+    if (w.biome === "North Pole") return
+    var d = settled(w), c = w.k.CELL, cols = w.k.COLS
+    if (!w.reducedMotion) trample(w, d)
+    for (var n = 0; n < d.tops.length; n++) {
+      var i = d.tops[n], x = (i % cols) * c, y = Math.floor(i / cols) * c, depth = settledDepth(w, d, i)
+      if (actorOver(x, y - SETTLE_MAX, c, SETTLE_MAX + 1, actors)) continue
+      if (depth === 0 && d.trod[i] !== undefined) { ctx.fillStyle = SNOW_PACKED; ctx.fillRect(x, y, c, (w.res || 1) >= 2 ? 0.5 : 1); continue }
+      if (depth === 0) continue
+      ctx.fillStyle = SNOW_SHADE; ctx.fillRect(x, y - depth, c, depth + 1)
+      ctx.fillStyle = SNOW_FRESH; ctx.fillRect(x, y - depth, c, depth)
+    }
+  }
+  function actorOver(x, y, width, height, actors) {
+    for (var i = 0; i < actors.length; i++) if (overlap(x, y, width, height, actors[i])) return true
+    return false
+  }
+
   // Wrapping lives on the jambs and lintel. The portal, threshold and any
   // arriving face remain visible; a bow and folded ribbon sell the gift.
   function drawGift(ctx, w, actors) {
@@ -321,5 +378,5 @@
     return false
   }
 
-  window.AgentSeason = { name: name, pick: pick, tint: tint, dress: dress, paint: paint, SEASONS: SEASONS }
+  window.AgentSeason = { name: name, pick: pick, tint: tint, dress: dress, paint: paint, SEASONS: SEASONS, settled: settled, settledDepth: settledDepth }
 })()

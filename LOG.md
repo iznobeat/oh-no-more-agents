@@ -12098,3 +12098,22 @@ ponds still stand out against it; native pin re-captured once for both.
 **Before:** gate 1697/1697, CRAP green; `npm run smoke -- --level 21 --season
 christmas` passed (21–27).
 **After:** `npm run verify -- --previous e8b3d449` passed.
+
+## 460 — 2026-11-15 · Snow that settles, and the colony's trodden path
+
+**Changed (season.js, Christmas only):** the falling snow now settles. Every
+open top in every biome but the North Pole gathers a lip of fresh snow as a
+level goes on (a pixel every 360 ticks, about twelve seconds, up to three;
+half-pixel steps at page resolution). A walker tramples it to a packed grey
+crust under and either side of its feet, and it fills back in behind them,
+so the road the colony takes shows as a path through the white. Clear of
+hazard zones and the door, and never painted over an agent. The tops are the
+layout's, kept on `w.seasonDrift` (the season's own field, like
+`seasonSeen`) and redone when the terrain changes. Reduced motion: a still
+two-pixel layer, no trampling.
+**Looked at:** levels 1, 3, 5 and 12 played 700–1100 ticks with the season
+on, at page resolution: ledges read white at full frame; the jungle's bottom
+floor, where the colony walks, stays trodden.
+**Test:** season-settle (tops and clearance, growth and its cap, half
+steps, reduced motion, cache; trampling and refill, never over an agent, not
+at the Pole).
