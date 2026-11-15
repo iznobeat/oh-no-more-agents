@@ -4701,6 +4701,7 @@ function drawLevelResults(ctx, w, pal) {
   var y = reportTop(w, rows).y + Math.max(0, 10 - w.doneTicks) * 2
   drawTransitionPlate(ctx, w, pal, cx - 136, y, 62 + extra)
   drawChristmasReport(ctx,w,cx-136,y,272,62+extra)
+  drawNewyearReport(ctx,w,cx-136,y,272,62+extra)
   ctx.fillStyle = pal.decorLit
   drawTransitionText(ctx, reportHeading(w), cx, y + 8, 1)
   ctx.fillStyle = pal.label
@@ -4781,6 +4782,7 @@ function drawPageLevelResults(ctx, w, pal) {
   var cx = Math.round(w.k.COLS * w.k.CELL / 2), l = pageReportLayout(w, pal), y = l.y
   drawTransitionPlate(ctx, w, pal, cx - l.width / 2, y, l.height, l.width)
   drawChristmasReport(ctx,w,cx-l.width/2,y,l.width,l.height)
+  drawNewyearReport(ctx,w,cx-l.width/2,y,l.width,l.height)
   ctx.fillStyle = pal.label
   drawTransitionText(ctx, reportHeading(w), cx, y + (l.vignetteHeight ? 5 : 9), 1.5)
   ctx.fillStyle = pal.label
@@ -11738,6 +11740,7 @@ function drawEnemy(ctx, w, pal, en, opts) {
   if ((w.res || 1) >= 2) drawCastEnemyKit(ctx, w, en, ox, oy, en.dir)
   drawPageEnemyFidget(ctx, w, en, ox, oy)
   drawChristmasEnemy(ctx, w, en, ox, oy)
+  drawNewyearEnemy(ctx, w, en, ox, oy)
   drawEnemyQuip(ctx, w, pal, en, ox, oy)
   if (opts && opts.labels) drawEnemyLabel(ctx, w, en, ox, oy)
   ctx.globalAlpha = 1
@@ -11848,6 +11851,7 @@ function drawModeratorCrown(ctx, w, ox, oy, dir, tilt) {
   blit(ctx, ox, oy, dir, 3, -4, 1, 4)
   blit(ctx, ox, oy, dir, 6, -2 + tilt, 1, 2)
   if (christmasRedTeam(w)) drawChristmasHolly(ctx, w, ox, oy, dir, tilt)
+  if (newyearRedTeam(w)) drawNewyearRibbon(ctx, w, ox, oy, dir, tilt)
   ctx.fillStyle = "#ff5268"
   blit(ctx, ox, oy, dir, 3, -1, 1, 1)
   if ((w.res || 1) >= 2) {
@@ -12058,6 +12062,7 @@ function drawBouncer(ctx, w, pal, en, ox, oy, dir, m) {
   }
   if (hurt >= 0 && hurt < 6) drawBouncerFlash(ctx, bx, by, dir, hurt)
   if (christmasRedTeam(w)) drawSantaHat(ctx, w, en, bx + (gag ? gag.hx : 0), by + (gag ? gag.hy : 0) - 1, dir, 0)
+  if (newyearRedTeam(w)) drawNewyearHat(ctx, w, en, bx + (gag ? gag.hx : 0), by + (gag ? gag.hy : 0) - 1, dir, 0)
   drawBouncerPips(ctx, en, ox, oy)
 }
 
@@ -14337,7 +14342,7 @@ var PEP_GLOW = 18
 function drawAgentGlitter(ctx, w, ag, ox, oy) {
   if (ag.agi || (ag.pepAt !== undefined && w.ticks - ag.pepAt >= 0 && w.ticks - ag.pepAt < PEP_GLOW)) drawAgiSparkle(ctx, w, ag, ox, oy)
   if (w.milestone && ag.state !== "saved") drawPartyHat(ctx, w.milestone.kind, ag, ox, oy)
-  else if (w.season && w.season.hats && w.season.hats !== "santa" && ag.state !== "saved") drawPartyHat(ctx, w.season.hats, ag, ox, oy)
+  else if (w.season && w.season.hats && w.season.hats !== "santa" && w.season.hats !== "party" && ag.state !== "saved") drawPartyHat(ctx, w.season.hats, ag, ox, oy)
   if (w.bet === ag.id && ag.state !== "saved") drawBetCoin(ctx, w, ox, oy)
 }
 
@@ -14573,9 +14578,10 @@ function drawAgentHead(ctx, w, pal, ag, ox, oy, dir, hair, skin, st, bodyDrop) {
     collarPixel(ctx, ox, oy, dir, 3, 6 + bodyDrop + collarLift, 2, 4)
   }
 
-  if (w.season && w.season.hats === "santa" && !w.milestone && st !== "saved") {
+  if (w.season && (w.season.hats === "santa" || w.season.hats === "party") && !w.milestone && st !== "saved") {
     var hatLook = traitHeadOffset(w, ag)
-    drawSantaHat(ctx, w, ag, ox + dir * hatLook.x, oy, dir, bodyDrop + (w.submerged ? collarLift : hatLook.y))
+    var seasonHat = w.season.hats === "party" ? drawNewyearHat : drawSantaHat
+    seasonHat(ctx, w, ag, ox + dir * hatLook.x, oy, dir, bodyDrop + (w.submerged ? collarLift : hatLook.y))
   }
 
 }
@@ -25454,7 +25460,7 @@ function drawChristmasHome(ctx,w,x,y) {
 // Report-only hooks, never the shared intro/standup plate. Flakes stay in the
 // side margins, leaving every existing report glyph and badge unobscured.
 function drawChristmasReport(ctx,w,x,y,width,height) {
-  if (!christmasReport(w)) return
+  if (!christmasReport(w) || (w.season && w.season.name === "newyear")) return
   ctx.save()
   var t=w.reducedMotion ? 0 : w.ticks, colours=["#d95864","#f5cf78","#71b897","#8ac9e4"]
   ctx.fillStyle="#50876a";ctx.fillRect(x+7,y-1,width-14,1)
@@ -25983,4 +25989,47 @@ function drawChristmasTubeLetter(ctx,w,route,age) {
   var ink={clear:function(){return true},fillStyle:"",fillRect:function(a,b,c,d){ctx.fillStyle=this.fillStyle;ctx.fillRect(a,b,c,d)}}
   // Cargo strapped outside the passenger capsule, never across its window.
   drawChristmasLetter(ink,w,x,y)
+}
+
+// The seasonal cone uses Santa's head coordinates, including look, gait and recoil.
+function drawNewyearHat(ctx,w,ag,ox,oy,dir,drop) {
+  var pixel=(w.res||1)>=2 ? blitFine : blit,colour=PARTY[(ag.id||0)%PARTY.length]
+  ctx.save()
+  ctx.fillStyle="#253047";pixel(ctx,ox,oy,dir,0,-1+drop,8,1)
+  ctx.fillStyle=colour
+  pixel(ctx,ox,oy,dir,1,-3+drop,6,2);pixel(ctx,ox,oy,dir,2,-5+drop,4,2);pixel(ctx,ox,oy,dir,3,-7+drop,2,2)
+  ctx.fillStyle="#fff3c5"
+  pixel(ctx,ox,oy,dir,1,-2+drop,6,1);pixel(ctx,ox,oy,dir,2,-4+drop,4,1)
+  pixel(ctx,ox,oy,dir,3,-8+drop,2,2)
+  if((w.res||1)>=2){ctx.fillStyle="#ffffff";pixel(ctx,ox,oy,dir,2,-5+drop,0.5,3)}
+  ctx.restore()
+}
+function newyearRedTeam(w) {return !!(w.season && w.season.redHats==="party")}
+function drawNewyearEnemy(ctx,w,en,x,y) {
+  if(!newyearRedTeam(w) || en.boss || en.kind==="bouncer")return
+  if(en.kind==="drone") {drawNewyearHat(ctx,w,en,x+2,y+6,en.dir,0);return}
+  if(en.kind==="xeno") {drawNewyearHat(ctx,w,en,x+en.dir*7,y+7+xenoHead(w,en).dy,en.dir,0);return}
+  var posted=en.kind==="sniper" && ["camp","aim","reload"].indexOf(en.state)>=0
+  drawNewyearHat(ctx,w,en,x+(posted ? (en.dir>0 ? 6 : -2) : 0),y,en.dir,posted ? 10 : en.kind==="operator" || w.submerged ? 2 : 0)
+}
+function drawNewyearReport(ctx,w,x,y,width,height) {
+  if(!w.season || w.season.name!=="newyear")return
+  w.season.reportBox={x:x-4,y:y-7,width:width+8,height:(height||100)+11}
+  ctx.save()
+  ctx.fillStyle="#ffd85c";ctx.fillRect(x+7,y-1,width-14,1)
+  for(var i=0;i<Math.floor((width-18)/9);i++) {
+    var bx=x+9+i*9
+    ctx.fillStyle=PARTY[i%5]
+    ctx.fillRect(bx,y-5,2,3);ctx.fillRect(bx+1,y-3,3,1);ctx.fillRect(bx+3,y-3,1,3)
+    ctx.fillRect(bx+1,y-1,3,1);ctx.fillRect(bx,y-1,1,2)
+  }
+  ctx.restore()
+}
+
+function drawNewyearRibbon(ctx,w,x,y,dir,tilt) {
+  var pixel=(w.res||1)>=2 ? blitFine : blit
+  ctx.save();ctx.fillStyle="#ff648e"
+  pixel(ctx,x,y,dir,7,-2+tilt,3,1);pixel(ctx,x,y,dir,9,-1+tilt,1,3)
+  ctx.fillStyle="#ffd85c";pixel(ctx,x,y,dir,8,1+tilt,2,1)
+  ctx.restore()
 }

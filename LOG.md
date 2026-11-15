@@ -12392,3 +12392,70 @@ Rooftops); C6 made them read and dressed the other eleven ordinary biomes.
 **Before:** gate 1728/1728, CRAP green; `npm run smoke -- --level 12
 --season christmas` passed (12–18). **After:** `npm run verify --
 --previous 61b939a2` passed.
+
+## C7 — 2026-11-15 · New Year's Eve: rockets, cones and homecoming confetti
+
+**Changed (cosmetic web season):** `newyear` runs 31 December–1 January,
+including the year wrap, with `?season=newyear` for previews. Christmas still
+ends on 26 December. No new copy or palette tint. Two to five staggered rockets
+rise on spark trails and break into coloured rings that expand, fall and fade;
+more home means more rockets. Sky-band bursts avoid the hero/notice strip and
+hatches; lower bursts choose cached clear-air pockets, refreshed after terrain
+changes. Every spark rechecks current air, scenery, hazard tells, portal,
+colony/umbrella, enemy and mission reservations. Native sparks are chunky;
+page trails include half pixels. Reduced motion holds bright bursts still.
+
+Striped party cones and pom-poms follow the exact Santa hat head origins,
+including trait looks, bob, underwater motion, recoil and both facings. The red
+team joins in; bouncers use their moving head anchor, drones/xenos their head
+origins, and the Moderator keeps its crown with a curled party ribbon beside it.
+No original terrain, scenery, umbrella or palette colours are replaced.
+
+Each increase in home count launches a short tumbling confetti burst beside the
+exit, with 80 flecks instead of 36 for the final homecoming. At most six recent
+bursts are retained and expire after 80 ticks. The final burst can continue
+outside the report: its exact plate/shadow/streamer bounds exclude every fleck.
+Report-top curled streamers replace Christmas lights, including at the North
+Pole. Curls sit above the rim so the existing heading remains clear. All state
+writes are confined to `season*` fields; Sim.js and sfx.js are untouched.
+
+**Looked at:** five art iterations, rejecting faint/clipped early fireworks,
+moving bursts into open pockets, biasing confetti away from the board edge,
+and raising the report curls clear of its heading. `tools/newyear-art.js`
+retains baseline-left/current-right full frames across all 21 biomes at res 1/2,
+five-row page parts, crops, both-facing red-team poses, rocket/arrival/final-
+arrival/report scenes. Inspected full native boards, every page part and both
+crop sheets in `/tmp/xmas-dressing/ny-4/`; final full-board sheets in `ny-5`
+have identical PNG digests. Also inspected final
+`/tmp/xmas-dressing/ny-5/celebrations-res1-sheet.png` and
+`/tmp/xmas-dressing/ny-5/celebrations-res2-sheet.png`, plus the red-team sheet
+in `ny-3`. Full sheets: `/tmp/xmas-dressing/ny-4/full-res1-sheet.png` and
+`/tmp/xmas-dressing/ny-4/full-res2-sheet.png`. No production requests or
+interactive browser session were needed.
+
+**Validation:** baseline full check 1,728/1,728. Ten new tests bring full check
+and coverage to 1,738/1,738, exit 0. Tests cover calendar boundaries/previews,
+exact Christmas and out-of-season pixel digests in every biome at both
+resolutions (plus report controls), motion/density/fine alignment, current air
+and protected actors/umbrellas/enemies/missions/portal, expiry/final arrivals,
+report exclusion, full simulation digests, head kit and review artifacts.
+Pixel assertions compare digests, never raw-buffer deepEqual. Focused 10/10.
+`npm run crap -- --changed --threshold 30` exit 0: changed drawBouncer and
+review details 22.0, drawAgentHead 21.0; new seasonal helpers at most 15.0,
+including the season IIFE audit. Stamps refreshed. Shared heavy-run lock and
+unchanged six-file concurrency. An earlier coverage process ended with SIGTERM;
+the complete rerun passed. Logs: `/tmp/xmas-dressing/ny-before-check.log`,
+`ny-final-check.log`, `ny-focused.log`, `ny-crap.log`.
+
+`npm run fps -- 5 12 18 --season none` versus `--season newyear`: 60 median /
+60 p5 on all three before and after, no long tasks; worst 17/17/33 ms before,
+17/17/17 ms after. Final paired logs are
+`/tmp/xmas-dressing/ny-fps-final-none.log` and `ny-fps-final-newyear.log`.
+CPU was 11/10/15% versus 17/15/17%; the pair overlapped coverage, so this is
+FPS evidence rather than a controlled CPU comparison. The earlier pair also
+held 60/60 throughout. `docs/checking.md` documents both seasons and review.
+
+**Next:** review more live New Year colonies, especially crowded portals and
+narrow layouts. Safety masks intentionally suppress individual sparks/flecks;
+no known test or FPS issue remains. No merge, push, deploy, sibling writes or
+port 8787 changes.
