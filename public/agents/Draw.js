@@ -9088,6 +9088,7 @@ function drawIdleTie(ctx, w, pal, ox, oy, dir, robe, phase) {
 }
 
 function drawAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, skin, st, bodyDrop, walkLead, squash, idle) {
+  if (colonyShortFall(w,ag)) return drawColonyShortFall(ctx,w,pal,ag,ox,oy,dir,robe)
   if (drawColonyBalanceBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawColonyActionBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawColonyWorkBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
@@ -9474,7 +9475,9 @@ function drawAgentWalk(ctx, ag, ox, oy, dir, robe, skin, walkLead, squash, bodyD
   walkLead = traitStride(w, ag, walkLead)
   var walkTop = 7 + Math.max(bodyDrop, -1)
   pixel(ctx, ox, oy, dir, 1, walkTop, 6, 13 - walkTop)
-  if (squash) {
+  if (colonyWalking(w,ag) && walking && !squash) {
+    drawColonyStep(ctx,w,pal,ag,ox,oy,dir,robe,walkLead,false)
+  } else if (squash) {
     pixel(ctx, ox, oy, dir, 1, 13, 2, 3)            // knees out, taking it
     pixel(ctx, ox, oy, dir, 5, 13, 2, 3)
   } else {
@@ -9669,6 +9672,7 @@ function drawVictory(ctx, w, ag, ox, oy, dir, robe, skin, st) {
 // so the head goes with it) — the fade alone read as an agent switched off
 // rather than one that made it.
 function drawAgentHome(ctx, w, pal, ag, ox, oy, dir, robe, skin) {
+  if(colonyNativeHome(w,ag))return drawColonyNativeHome(ctx,w,pal,ag,ox,oy,dir,robe)
   ctx.fillStyle = robe
   blit(ctx, ox, oy, dir, 1, 7, 6, 6)
   blit(ctx, ox, oy, dir, 2, 13, 2, 3)
@@ -11110,6 +11114,11 @@ var FINE_POSES = {
   bomb: drawFineBomb, ceil: drawFineStride
 }
 function drawAgentFine(ctx, pal, ag, ox, oy, dir, drop, lead, squash, robe, w) {
+  if (colonyShortFall(w,ag)) {
+    drawFineHead(ctx,pal,ag,ox,oy,dir,drop)
+    drawFineSuit(ctx,pal,ox,oy,dir,7)
+    return
+  }
   if (w && colonyBalance(w, ag)) return drawColonyBalanceFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && colonyAction(w, ag)) return drawColonyActionFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && colonyWorking(w, ag)) return drawColonyWorkFine(ctx,w,pal,ag,ox,oy,dir,drop)
@@ -22434,8 +22443,11 @@ function drawPageWalk(ctx, w, pal, ag, x, y, d, robe, skin, lead, drop) {
   var gait = pageGait(ag), stride = traitStride(w, ag, lead), look = agentTraitLook(w, ag)
   ctx.fillStyle = robe
   blitFine(ctx,x,y,d,1,7+drop,6,6-drop)
-  blitFine(ctx,x,y,d,2+stride,13,2,3-gait[2])
-  blitFine(ctx,x,y,d,4-stride,13,2,3-gait[3])
+  if(colonyWalking(w,ag))drawColonyStep(ctx,w,pal,ag,x,y,d,robe,stride,false)
+  else {
+    blitFine(ctx,x,y,d,2+stride,13,2,3-gait[2])
+    blitFine(ctx,x,y,d,4-stride,13,2,3-gait[3])
+  }
   if (look && look.arms) return
   if (pageArmsBusy(w, ag)) return
   var mine = pageMineAge(ag)
@@ -22457,6 +22469,7 @@ function drawPageWalk(ctx, w, pal, ag, x, y, d, robe, skin, lead, drop) {
 }
 function drawPageWalkShoes(ctx, w, pal, ag, x, y, d, lead) {
   var gait=pageGait(ag),stride=traitStride(w,ag,lead)
+  if(colonyWalking(w,ag))return drawColonyStep(ctx,w,pal,ag,x,y,d,pal.robe,stride,true)
   drawFineShoes(ctx,pal,x,y,d,2+stride,15.5-gait[2],4-stride,15.5-gait[3],2)
 }
 function drawPageTie(ctx, w, pal, ag, x, y, d, top) {
@@ -22798,6 +22811,7 @@ function drawGagPhone(ctx,w,pal,x,y,d,robe,t) {
 }
 
 function agentHomeLift(w,ag) {
+  if(colonyNativeHome(w,ag))return w.reducedMotion?0:COLONY_HOME_HOP[Math.min(14,Math.max(0,ag.fade||0))]
   if (homeArrivalKind(w,ag)==="skip") return HOME_SKIP_HOP[ag.fade%8]
   if (pageMotionAgent(w,ag)) return AGENT_HOME_LIFT[ag.fade%8]
   return ag.fade+(ag.fade<7?Math.round(Math.sin(ag.fade/7*Math.PI)*2):0)
@@ -26359,4 +26373,83 @@ function drawColonyHangGrip(ctx,pal,x,y,d,robe) {
   blit(ctx,x,y,1,grip,-1,1,4)
   ctx.fillStyle=robe;blit(ctx,x,y,d,7,4,1,5)
   ctx.fillStyle=pal.skin;blit(ctx,x,y,d,7,3,2,1)
+}
+
+// Ordinary steps keep the established head, crown, trait and coat clocks.
+// Only the swinging boot leaves the floor; no new bob for its riders.
+function colonyWalking(w,ag) {
+  return !!w && (w.res||1)<=2 && ag.state==='walk' && !ag.special && !w.submerged &&
+    !(ag.brollyFor>0) && pageMineAge(ag)<0 && !skating(w,ag) && !walkGag(w,ag)
+}
+function colonyStepFeet(w,ag) {
+  var gait=pageGait(ag),grid=w.res===2?2:1,reach=w.res===2?2.5:2
+  return w.reducedMotion?[0,0]:[Math.round(gait[2]*reach*grid)/grid,Math.round(gait[3]*reach*grid)/grid]
+}
+function drawColonyStep(ctx,w,pal,ag,x,y,d,robe,stride,fine) {
+  var feet=colonyStepFeet(w,ag),pixel=w.res===2?blitFine:blit,ink=ctx.fillStyle
+  if(fine) {
+    var left=2+stride+(feet[0]?1:0),right=4-stride+(feet[1]?1:0)
+    ctx.fillStyle=pal.eye
+    blitFine(ctx,x,y,d,left,15-feet[0],2,0.5);blitFine(ctx,x,y,d,right,15-feet[1],2,0.5)
+    drawFineShoes(ctx,pal,x,y,d,left,15.5-feet[0],right,15.5-feet[1],2)
+  } else for(var i=0;i<2;i++) {
+    var leg=i?4-stride:2+stride,lift=feet[i]
+    ctx.fillStyle=robe
+    pixel(ctx,x,y,d,leg,13,2,3-lift)
+    // A bent knee leads the lifted toe, then unfolds into contact.
+    if(lift)pixel(ctx,x,y,d,leg+1,14-lift,2,1)
+    if(w.res===2) {
+      ctx.fillStyle=pal.lapel;blitFine(ctx,x,y,d,leg,13,0.5,1)
+    } else {
+      ctx.fillStyle=pal.eye;blit(ctx,x,y,d,leg+(lift?1:0),15-lift,2,1)
+    }
+  }
+  ctx.fillStyle=ink
+}
+function colonyShortFall(w,ag) {
+  return !!w && (w.res||1)<=2 && !ag.special && !w.submerged && !(ag.brollyFor>0) &&
+    ag.state==='fall' && !ag.floater && ag.fall>=0 && ag.fall<=FALL_FLAIL
+}
+// Raised elbows balance a short drop; boots tuck then reach for the floor.
+var COLONY_DROP = [[8,8,0,1],[7,8,1,2],[6,7,2,2],[5,6,2,1],
+  [5,5,1,0],[6,5,0,1],[7,6,1,2],[8,7,1,1]]
+function drawColonyShortFall(ctx,w,pal,ag,x,y,d,robe) {
+  var r=COLONY_DROP[w.reducedMotion?4:((ag.anim||0)>>1)%8]
+  ctx.save();ctx.fillStyle=robe
+  blit(ctx,x,y,d,1,7,6,6)
+  blit(ctx,x,y,d,-1,r[0],2,Math.max(1,10-r[0]))
+  blit(ctx,x,y,d,7,r[1],2,Math.max(1,10-r[1]))
+  blit(ctx,x,y,d,1,13-r[2],2,3);blit(ctx,x,y,d,5,13-r[3],2,3)
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,-2,r[0]-1,2,1);blit(ctx,x,y,d,8,r[1]-1,2,1)
+  ctx.fillStyle=pal.eye
+  blit(ctx,x,y,d,1,15-r[2],2,1);blit(ctx,x,y,d,5,15-r[3],2,1)
+  if(w.res===2) {
+    ctx.fillStyle=pal.shirt
+    blitFine(ctx,x,y,d,-1,r[0],0.5,1);blitFine(ctx,x,y,d,8.5,r[1],0.5,1)
+    ctx.fillStyle=pal.lapel
+    blitFine(ctx,x,y,d,1,12.5-r[2],1.5,0.5);blitFine(ctx,x,y,d,5,12.5-r[3],1.5,0.5)
+  }
+  ctx.restore()
+}
+function colonyNativeHome(w,ag) {
+  return !!w && (w.res||1)===1 && !w.submerged && !ag.special && !(ag.brollyFor>0) && ag.state==='saved'
+}
+var COLONY_HOME_HOP=[0,0,1,2,2,1,0,0,0,0,0,0,0,0,0]
+var COLONY_HOME_HAND=[8,6,3,1,1,2,1,2]
+function drawColonyNativeHome(ctx,w,pal,ag,x,y,d,robe) {
+  var age=w.reducedMotion?6:Math.max(0,ag.fade||0),hand=COLONY_HOME_HAND[Math.min(7,age)]
+  ctx.save();ctx.fillStyle=robe
+  blit(ctx,x,y,d,1,7,6,6)
+  blit(ctx,x,y,d,2,13,2,age>1&&age<6?2:3);blit(ctx,x,y,d,4,13,2,3)
+  blit(ctx,x,y,d,-1,hand+2,2,Math.max(1,8-hand))
+  blit(ctx,x,y,d,6,8,2,3)
+  ctx.fillStyle=pal.skin
+  blit(ctx,x,y,d,-1,hand,1,2);blit(ctx,x,y,d,7,11,1,1)
+  ctx.fillStyle=pal.exitLight
+  for(var sp=0;sp<4;sp++) {
+    var ang=sp*Math.PI/2+age*0.3+ag.id,r=3+age
+    ctx.fillRect(Math.round(x+4+Math.cos(ang)*r),Math.round(y+6+Math.sin(ang)*r*0.7),1,1)
+  }
+  ctx.restore()
 }

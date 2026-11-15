@@ -15,6 +15,7 @@ export function fixture(name,t,dir=1){
  if(['build','bash','dig'].includes(name))ag.timer=t%(name==='dig'?7:6)
  if(name==='float')Object.assign(ag,{state:'fall',floater:true,fall:3+t/8})
  if(name==='fall')Object.assign(ag,{floater:false,fall:5+t/8})
+ if(name==='shortfall')Object.assign(ag,{state:'fall',floater:false,fall:0.5+t/8})
  if(name==='mine')Object.assign(ag,{state:'walk',mineCool:150-t})
  if(name==='bomb')ag.fuse=30-t
  if(name==='saved')ag.fade=t
@@ -86,7 +87,7 @@ export function liveBoards(base,out){
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const base=process.argv[2]||'HEAD',out=process.argv[3]||'/tmp/xmas-dressing/anim-0'
- run(base,out);liveBoards(base,out);actionBoards(base,out);balanceBoards(base,out)
+ run(base,out);liveBoards(base,out);actionBoards(base,out);balanceBoards(base,out);remainingBoards(base,out)
 }
 
 // A quiet, complete board with the three reviewed actions, not enlarged crops.
@@ -136,6 +137,37 @@ export function balanceBoards(base,out) {
     copyPixels(pair,img,j*400*res,0)
    }
    writePNG(path.join(out,`balance-full-${t}-res${res}.png`),pair)
+  }
+ }
+}
+
+
+// Round four includes a genuinely short drop, before the windmill threshold.
+export function remainingBoards(base,out) {
+ const old=renderer(execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()),now=load('Draw.js')
+ fs.mkdirSync(out,{recursive:true})
+ for(const res of [1,2]) {
+  for(const name of ['walk','shortfall','fall','explode','saved']) {
+   const width=name==='explode'?64:24,left=name==='explode'?0:16
+   const strip=canvas(16*width*res,4*52*res,'#1a1b26')
+   for(const [j,D]of [old,now].entries())for(const [k,dir]of [1,-1].entries())for(let t=0;t<16;t++)
+    copyPixels(strip,crop(frame(D,name,t,res,dir),left*res,0,width*res,52*res),t*width*res,(j*2+k)*52*res)
+   writePNG(path.join(out,`${name}-compact-res${res}.png`),strip)
+  }
+  for(const t of [0,2,4,6,10,14]) {
+   const {w}=fixture('walk',t);w.res=res;w.agents=[]
+   for(let y=20;y<=31;y++)for(let x=25;x<=76;x++)w.terrain[y*w.k.COLS+x]=y===31?w.k.DIRT:w.k.EMPTY
+   for(const [i,name]of ['walk','shortfall','saved'].entries()) {
+    const {ag}=fixture(name,t);ag.x=34+i*16;if(name==='shortfall')ag.y=28
+    w.agents.push(ag)
+   }
+   const pal=P.build(themeOf('tokyo-night').theme,1),pair=canvas(800*res,248*res)
+   for(const [j,D]of [old,now].entries()) {
+    const img=canvas(400*res,248*res)
+    D.drawTerrain(img.ctx,w,pal);D.drawActors(img.ctx,w,pal,{})
+    copyPixels(pair,img,j*400*res,0)
+   }
+   writePNG(path.join(out,`remaining-full-${t}-res${res}.png`),pair)
   }
  }
 }

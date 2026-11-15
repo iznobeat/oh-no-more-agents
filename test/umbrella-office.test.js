@@ -36,7 +36,7 @@ test('native/default work poses and unchanged share actors match reviewed arriva
   const w=arrivalWorld(level);w.iceAt=null  // Frost's ponds (LOG 462) came after the office; compare the office alone
   for(const res of[undefined,1,3]){w.res=res;for(const[draw,sum]of[[D,a],[OLD,b]]){const img=canvas(400*(res||1),248*(res||1));draw.drawActors(img.ctx,w,P.build(themeOf('tokyo-night').theme,level),{intro:false,feed:false});sum.update(img.buf)}}
  }
- assert.equal(a.digest('hex'),'3c463ae785292a33c38843959b19f87e095c8b3d064695b27d9142321647d33c')
+ assert.equal(a.digest('hex'),'e5692e5adc3c5a8e86b88d3fd1839057e3ee313c0c01628417878a0d37a33010')
  assert.equal(b.digest('hex'),'44940033400759c68548aaab3304eebd1bbceb0cbdff353a3bbf588416d61e57')
 })
 test('saved count fills five slots then a capped tidy pile, using the actual arrival colours',()=>{

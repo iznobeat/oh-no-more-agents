@@ -17,7 +17,14 @@ test('native, default, share and WHO-off rendering retain pixels and native text
  // match the pre-WHO renderer byte for byte.
  // Tick 200: inside a hero's introduction (HERO_FACT_TICKS), as the old
  // renderer drew its fact all level.
- for(const level of[1,10,12,20]){const w=scene(level,200);for(const res of[undefined,1,2,3])for(const labels of[false,true]){if(res===2&&labels)continue;w.res=res;const pin=balancePins.who[`${level}/${res??'default'}/${labels}`];if(pin)assert.equal(pixels(OLD,w,labels),pin.before);assert.equal(pixels(D,w,labels),pin?pin.after:res===2?pagePlain(w):pixels(OLD,w,labels))}}
+ const last=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).who
+ for(const level of[1,10,12,20]){const w=scene(level,200);for(const res of[undefined,1,2,3])for(const labels of[false,true]){
+  if(res===2&&labels)continue;w.res=res
+  const key=`${level}/${res??'default'}/${labels}`,pin=balancePins.who[key],final=last[key],historical=pixels(OLD,w,labels)
+  if(pin)assert.equal(historical,pin.before)
+  if(final){assert.equal(historical,final.historical);assert.equal(pin?pin.after:historical,final.before)}
+  assert.equal(pixels(D,w,labels),final?final.after:res===2?pagePlain(w):historical,key)
+ }}
 })
 test('all twenty biomes and five themes use finite crisp glyphs without changing world or caller options',()=>{
  let visible=0

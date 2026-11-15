@@ -36,7 +36,12 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
       const pin=workPins.newyear[`${mode}/${level}/${res}`],before=hash(christmasFrame(oldD,a,wa,res).buf)
       if(pin)assert.equal(before,pin.before,'historical '+`${mode} ${level} ${res}`)
       assert.equal(hash(christmasFrame(D,b,wb,res).buf),pin?pin.after:before,`${mode} ${level} ${res}`)
-      if(level===1 || level===21){wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30;assert.equal(hash(christmasFrame(oldD,a,wa,res).buf),hash(christmasFrame(D,b,wb,res).buf))}
+      if(level===1 || level===21){
+        wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30
+        const report=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).reports[`${mode}/${level}/${res}`]
+        assert.equal(hash(christmasFrame(oldD,a,wa,res).buf),report.before)
+        assert.equal(hash(christmasFrame(D,b,wb,res).buf),report.after)
+      }
     }
   }
 })

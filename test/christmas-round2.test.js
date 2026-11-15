@@ -71,7 +71,7 @@ test("caps ride the guard march and the bouncer's nod and neck motion; crowns re
 test("North Pole native frames pin the reviewed snow texture (re-pinned for the elves, LOG 455, the ponds, 457, the snow, C3, and scarves/gift hatch, C4)",()=>{
  const random=Math.random,h=createHash("sha256");Math.random=()=>0.5
  try{for(const level of[21,42])h.update(frame(S,D,P,{level,seed:3,ticks:240,res:1,theme:"tokyo-night"}).img.buf)}finally{Math.random=random}
- assert.equal(h.digest("hex"),"b54c44bd58adaf4783bfb54f30cf9f85da88dcb329243e7e3b3fb3ecfc862e69")
+ assert.equal(h.digest("hex"),"3c613bcb2e1f23b976b79c33b67bc7fe62f778540d11a8d37eeeb61e09a096b9")
 })
 
 test("village windows switch occasionally, smoke moves, glints sparkle and reduced motion holds every new pixel",()=>{
