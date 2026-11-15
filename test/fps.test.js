@@ -15,6 +15,7 @@ test("arguments: levels, seconds, speed, json; the busy levels by default", () =
   assert.deepEqual(parseArgs(["8", "9", "--seconds", "3", "--speed", "2", "--json"]), { levels: [8, 9], seconds: 3, speed: 2, json: true })
   assert.deepEqual(parseArgs([]).levels, [8, 9, 10, 12, 18])
   assert.deepEqual(parseArgs(["--seconds", "4"]).levels, [8, 9, 10, 12, 18], "a flag's value is not a level")
+  assert.equal(parseArgs(["5", "--season", "christmas"]).season, "christmas", "a season to dress on")
 })
 
 const chromium = (() => { try { execSync("command -v chromium", { stdio: "ignore" }); return true } catch { return false } })()

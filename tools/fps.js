@@ -9,6 +9,7 @@
 //   npm run fps -- 8 9 --json
 //   npm run fps -- 324 --seed 3 --from-tick 450 --seconds 10 --speed 2
 //   npm run fps -- 324 --root /tmp/before/public --seed 3 --from-tick 450
+//   npm run fps -- 5 12 --season christmas      with a season dressed on
 //
 // Reports per level: median fps, the 5th-percentile fps (the stutter), the
 // longest frame, how much of each second went to tasks over 50ms (long), and
@@ -30,6 +31,7 @@ export function parseArgs(argv) {
   for (const [flag, key] of [["--seed", "seed"], ["--from-tick", "fromTick"]])
     if (argv.includes(flag)) out[key] = opt(flag)
   if (argv.includes("--root")) out.root = path.resolve(argv[argv.indexOf("--root") + 1])
+  if (argv.includes("--season")) out.season = argv[argv.indexOf("--season") + 1]
   return out
 }
 
@@ -73,7 +75,7 @@ export async function measure(b, base, level, seconds, speed, options = {}) {
   await sleep(800)
   await b.cmd("Runtime.evaluate", { expression: `localStorage.setItem("oh-no-more-agents", JSON.stringify({ version: 1, level: ${level}, speedIndex: ${speed} }))` })
   const url = new URL(base)
-  url.search = new URLSearchParams({ level, seed: options.seed ?? 3, season: "none" }).toString()
+  url.search = new URLSearchParams({ level, seed: options.seed ?? 3, season: options.season || "none" }).toString()
   await b.cmd("Page.navigate", { url: url.href })
   await sleep(2500)                 // past the intro, into the level
   if (options.fromTick) await waitForTick(b, level, options.fromTick)

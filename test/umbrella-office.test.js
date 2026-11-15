@@ -33,7 +33,7 @@ test('twenty biome stands use only supported air outside the exit, in every pale
 test('native, default and share actors keep every original pixel after arrivals',()=>{
  const a=createHash('sha256'),b=createHash('sha256')
  for(let level=1;level<=20;level++){
-  const w=arrivalWorld(level)
+  const w=arrivalWorld(level);w.iceAt=null  // Frost's ponds (LOG 462) came after the office; compare the office alone
   for(const res of[undefined,1,3]){w.res=res;for(const[draw,sum]of[[D,a],[OLD,b]]){const img=canvas(400*(res||1),248*(res||1));draw.drawActors(img.ctx,w,P.build(themeOf('tokyo-night').theme,level),{intro:false,feed:false});sum.update(img.buf)}}
  }
  assert.equal(a.digest('hex'),b.digest('hex'))

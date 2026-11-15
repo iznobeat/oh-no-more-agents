@@ -300,6 +300,9 @@ else. Draw throws up a burst of snow on a long landing (`drawPowderBursts`).
 Measured over 800 Frost plays: umbrellas spent 8.4 → 2.9 a level, splats
 13 → 5, levels ~3% shorter, home 94.5 → 94.3% (noise). Tried before it and
 reverted: thin ice over chasms (iteration 54) — it closed a route.
+- **Frozen ponds** too (`placePonds`, as at the North Pole): up to three,
+  skated at `ICE_GLIDE`. Drawn live (`drawFrozenPonds`), over the crust the
+  page pass lays on every floor; the ice takes no footprints (`notePrint`).
 
 ## The Cavern
 

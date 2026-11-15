@@ -67,7 +67,8 @@ test("rain crowns an open umbrella and runs off a tip, in open air only", () => 
 })
 
 test("snow settles on a hat the longer the agent has walked in it, and rides the bob", () => {
-  const { w, pal } = world(3), ag = w.agents.find(a => !a.gone && a.state === "walk")
+  // Off the ice: a skater holds its stride and has no bob (LOG 462).
+  const { w, pal } = world(3), ag = w.agents.find(a => !a.gone && a.state === "walk" && !S.onIce(w, a))
   assert.equal(w.biome, "Frost"); w.agents = [ag]
   const cap = anim => { ag.anim = anim; return marks(ctx => D.drawWeatherTouch(ctx, w, pal)).filter(c => c[4] === D.SNOW_CAP) }
   assert.equal(cap(100).length, 0, "fresh out: no snow yet")

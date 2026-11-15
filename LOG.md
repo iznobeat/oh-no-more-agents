@@ -12177,3 +12177,24 @@ completed in 649 seconds. Stamps refreshed. Both gates passed before commit. No 
 
 **Next:** inspect the year-round scarves alongside the parallel seasonal
 settled-snow/footprint work after integration.
+
+## 462 — 2026-11-15 · Frost skates too; a season on the frame-rate tool
+
+**Changed (Sim):** Frost gets the North Pole's frozen ponds (`placePonds` as
+its mechanism-table entry; its own stream, the rest of each level as it
+was): 33 on the first nineteen Frost levels, so level 3 is the first place a
+player skates. The ice takes no footprints (`notePrint`).
+**Changed (Draw):** Frost's ponds are drawn in the live layer
+(`drawFrozenPonds` from `drawNorthPondLife`), because Frost's page crust is
+laid over every floor late in its terrain pass; the Pole's stay cached.
+**Changed (tools):** `npm run fps -- 5 12 --season christmas` dresses a
+season on. Measured 5, 12, 18 from tick 500, with and without the season and
+its settled snow (460): 60 fps, p5 60, cpu 10–13% either way.
+**Measured:** Frost 3–243 (8 levels × 16 colonies): 93% home with ponds,
+92% without.
+**Tests:** northpole (Frost has ponds; drawn live over the crust; no print
+on the ice). weather-touch's hat test picks a walker off the ice (a skater
+has no bob). Four whole-biome pins re-captured for Frost's ice
+(christmas-round3, christmas-round4, exit-welcome); each passes with Frost's
+ponds switched off, so nothing else moved. umbrella-office compares the
+office alone (`iceAt` cleared), as it compares against a frozen renderer.

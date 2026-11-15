@@ -1633,6 +1633,7 @@ var BIOME_MECHANISMS = {
   "Harbour": placeFerries,
   "The Cloud": cloudLining,
   "North Pole": placeGifts,
+  "Frost": placePonds,
   "Clock Tower": placeGates
 }
 
@@ -3554,7 +3555,7 @@ function openGift(w, g, ag) {
   w.lastEvent = "secret santa " + skill
 }
 
-// Frozen ponds: the North Pole's second mechanism. A stretch of some corridor
+// Frozen ponds: the North Pole's second mechanism, and Frost's too. A stretch of some corridor
 // floors is a pond frozen hard, and whoever walks onto it skates: across it at
 // a glide whichever way they are going, so the colony bunches up and spreads
 // out again on the far bank, and a crossing timed for walking pace is taken
@@ -7117,7 +7118,7 @@ function notePrint(w, ag) {
   var cx = Math.floor(ag.x)
   if (cx === ag.printX) return
   ag.printX = cx
-  if (!solid(w, cx, Math.floor(ag.y) + 1)) return
+  if (!solid(w, cx, Math.floor(ag.y) + 1) || (w.iceAt && onIce(w, ag))) return   // ice takes no print
   w.prints.push({ x: ag.x, y: Math.floor(ag.y), dir: ag.dir, t: w.ticks, odd: (ag.printN = (ag.printN || 0) + 1) % 2 })
   if (w.prints.length > PRINT_CAP) w.prints.shift()
 }

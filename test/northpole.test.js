@@ -239,7 +239,10 @@ test("frozen ponds: on open floors clear of everything, never under the door, an
     }
   }
   assert.ok(total >= 15, "most levels have a pond: " + total)
-  assert.equal(S.generate(1, 0, 3).iceAt, null, "nowhere else")
+  assert.equal(S.generate(1, 0, 3).iceAt, null, "nowhere else but Frost")
+  let frost = 0
+  for (const level of [3, 23, 43, 103, 143]) frost += S.generate(level, 0, 3).ponds.length
+  assert.ok(frost >= 5, "Frost skates too: " + frost)
   const w = S.generate(42, 0, 3), p = w.ponds[0]
   const ag = Object.assign(S.spawn(w), { x: p.x0 + 2.5, y: p.y, state: "walk", dir: -1 })
   const off = Object.assign({}, ag, { x: p.x0 - 3.5 })
@@ -285,4 +288,16 @@ test("frozen ponds drawn: ice at both resolutions, skaters on blades, a glint th
   w.reducedMotion = false
   w.iceAt = null
   assert.equal(shot(10, [skater]), blank, "no ponds, nothing")
+})
+
+test("Frost's ponds go on over its crust, and the ice takes no footprints", () => {
+  const w = S.generate(3, 0, 3), p = w.ponds[0], pal = P.build(theme, 3)
+  for (let i = 0; i < 400; i++) S.step(w)
+  for (const pr of w.prints) assert.ok(!(pr.y === p.y && pr.x >= p.x0 && pr.x < p.x1 && w.iceAt[pr.y * w.k.COLS + Math.floor(pr.x)]), "no print on the ice")
+  w.res = 2; w.agents = []
+  const img = canvas(800, 496, "#000000")
+  img.ctx.setTransform(2, 0, 0, 2, 0, 0)
+  D.drawNorthPondLife(img.ctx, w)
+  const i = (((p.y + 1) * 4 + 1) * 2 * 800 + ((p.x0 + 2) * 4 + 1) * 2) * 3
+  assert.deepEqual([...img.buf.slice(i, i + 3)], [0x8c, 0xc4, 0xe6], "ice drawn live in Frost")
 })

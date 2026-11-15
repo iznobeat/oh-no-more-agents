@@ -24948,6 +24948,13 @@ function drawPondIce(ctx, w, x, y) {
   if ((x * 7 + y) % 6 === 2) { ctx.fillStyle = NP_POND_SKIN; ctx.fillRect(px + 1, py + 2, 2, 1) }      // a crack-line, seen through
   if ((w.res || 1) >= 2 && (x * 3 + y) % 5 === 1) { ctx.fillStyle = NP_POND_DEEP; ctx.fillRect(px + 0.5, py + 1, 1.5, 0.5) }
 }
+function drawFrozenPonds(ctx, w) {
+  var ponds = w.ponds || []
+  for (var i = 0; i < ponds.length; i++)
+    for (var x = ponds[i].x0; x < ponds[i].x1; x++)
+      if (w.terrain[(ponds[i].y + 1) * w.k.COLS + x] !== w.k.EMPTY) drawPondIce(ctx, w, x, ponds[i].y + 1)
+  drawPondBanks(ctx, w)
+}
 function drawPondBanks(ctx, w) {
   var ponds = w.ponds || [], C = w.k.CELL
   ctx.fillStyle = NP_SNOW
@@ -24969,6 +24976,9 @@ var POND_GLINT_EVERY = 150
 function drawNorthPondLife(ctx, w) {
   if (!w.iceAt || !w.ponds.length) return
   var C = w.k.CELL
+  // Frost's crust is laid over every floor late in its terrain pass, so its
+  // ponds go on here, over it; the Pole's are in the cached pass.
+  if (w.biome !== "North Pole") drawFrozenPonds(ctx, w)
   if (!w.reducedMotion) for (var i = 0; i < w.ponds.length; i++) drawPondGlint(ctx, w, w.ponds[i], i, C)
   for (var a = 0; a < w.agents.length; a++) if (skating(w, w.agents[a])) drawSkates(ctx, w, w.agents[a], C)
 }
