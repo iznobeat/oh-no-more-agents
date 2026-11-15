@@ -1,3 +1,4 @@
+import {millSourceBefore} from '../tools/mill-art.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {cryoSourceBefore,cryoSheets} from '../tools/cryo-art.js'
 import {cryoScenes} from '../tools/cryo-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const source=millSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','d23489275d26fb1c4e64e953923f7a967bba9081:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const pins=JSON.parse(fs.readFileSync('test/fixtures/cryo-pins.json','utf8'))
 const layers=['drawCryoVault','drawCryoFacets','drawCryoGarden','drawCryoLife']

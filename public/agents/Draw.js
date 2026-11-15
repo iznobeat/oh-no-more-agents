@@ -204,6 +204,7 @@ function drawTerrain(ctx, w, pal) {
   if (iceCavePage(w)) drawGlacierBackdrop(ctx, w)
   if (spaceshipPage(w)) drawSpaceshipBackdrop(ctx, w, pal)
   if (ruinsPage(w)) drawRuinsTemple(ctx, w, pal)
+  drawMillHall(ctx, w, pal)
   drawAssemblyBackdrop(ctx, w)
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
@@ -251,6 +252,7 @@ function drawTerrain(ctx, w, pal) {
   drawIronworksBrick(ctx, w, pal)
   drawAntiqueStone(ctx, w, pal)
   drawCryoFacets(ctx, w, pal)
+  drawMillBlocks(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -273,6 +275,7 @@ function drawTerrain(ctx, w, pal) {
   drawAlpineFirs(ctx, w, pal)
   drawAntiqueGarden(ctx, w, pal)
   drawCryoGarden(ctx, w, pal)
+  drawMillDrums(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2367,6 +2370,7 @@ function drawMachines(ctx, w, pal) {
   drawAlpineLife(ctx, w, pal)
   drawAntiqueLife(ctx, w, pal)
   drawCryoLife(ctx, w, pal)
+  drawMillLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -27243,4 +27247,127 @@ function drawCryoDrift(ctx,w,pal,b,t) {
 function cryoSupport(w,x,y) {
   for(var dx=0;dx<20;dx+=4)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
   return true
+}
+
+// C19: the Factory's brass assembly hall. Large clerestories and recessed
+// structural bays sit behind every original fitting. Bare DIRT alone gets
+// masonry; existing ORE rivets, page edges and production lines stay intact.
+function drawMillHall(ctx,w,pal) {
+  if(w.biome!=="Factory")return
+  ctx.save()
+  var C=w.k.CELL,width=w.k.COLS*C,top=w.k.SKY*C
+  // A low sawtooth roof in the sky band, behind the old hatch and HUD.
+  for(var roof=12;roof<width;roof+=82) {
+    ctx.fillStyle=pal.backLit
+    for(var step=0;step<8;step++)ctx.fillRect(roof+step*7,top-3-step*2,7,3+step*2)
+    ctx.fillStyle=pal.backDim;ctx.fillRect(roof+55,top-18,5,18)
+  }
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var bay=0;bay<3;bay++)drawMillWindow(ctx,pal,22+bay*127+(row%2)*12,y-39,row+bay)
+  }
+  ctx.restore()
+}
+function drawMillWindow(ctx,pal,x,y,seed) {
+  // One broad bank, with a stepped arch and thick iron mullions. The old
+  // random windows and page gantry still paint over this distant wall.
+  ctx.fillStyle=pal.dirtShade
+  ctx.fillRect(x,y+4,88,31);ctx.fillRect(x+5,y+1,78,3);ctx.fillRect(x+12,y-1,64,2)
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x+3,y+5,82,27)
+  ctx.fillStyle=pal.back
+  for(var pane=0;pane<4;pane++) {
+    var xx=x+5+pane*20
+    ctx.fillRect(xx,y+7,17,10);ctx.fillRect(xx,y+20,17,10)
+    if((pane+seed)%4===0){ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.65;ctx.fillRect(xx,y+7,17,10);ctx.globalAlpha=1;ctx.fillStyle=pal.back}
+  }
+  ctx.fillStyle=pal.dirtShade;ctx.fillRect(x-3,y+34,94,2)
+  ctx.fillRect(x-7,y-4,3,40);ctx.fillRect(x+92,y-4,3,40)
+  ctx.fillStyle=pal.back
+  ctx.fillRect(x-10,y-5,12,3);ctx.fillRect(x+89,y-5,12,3)
+  ctx.fillRect(x-9,y+31,10,5);ctx.fillRect(x+90,y+31,10,5)
+}
+function drawMillBlocks(ctx,w,pal) {
+  if(w.biome!=="Factory")return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  // Sparse broad masonry courses on previously blank brown faces. Stay off
+  // open tops and side pixels so their old ledge lips and safety paint survive.
+  ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.65
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=1;x<k.COLS-1;x++) {
+    var i=y*k.COLS+x
+    if(w.terrain[i]!==k.DIRT || w.terrain[i-k.COLS]!==k.DIRT)continue
+    if(y%2===0)ctx.fillRect(x*C,y*C+C-1,C,1)
+    if((x+Math.floor(y/2)%2*3)%6===0)ctx.fillRect(x*C+1,y*C,1,C-1)
+  }
+  ctx.restore()
+}
+var MILL_CACHE=new WeakMap()
+function millSpots(w) {
+  var old=MILL_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=millReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var x=24+(w.level*7+row*31)%43;x<w.k.COLS*C-32;x++) {
+      if(!millSupport(w,x,y) || !alpineClear(w,x-2,y-23,29,23,boxes))continue
+      spots.push({x:x,y:y,seed:x+row*19});break
+    }
+    if(spots.length===4)break
+  }
+  MILL_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function millReserved(w) {
+  var boxes=abyssReserved(w),C=w.k.CELL
+  if(w.hatch)boxes.push({x:w.hatch.x*C-16,y:0,width:32,height:64})
+  // Keep every page robot, package, controller and lamp completely exposed.
+  for(var row=0;row<w.corridors.length;row++) {
+    var bays=assemblyBays(w,row)
+    for(var n=0;n<bays.length;n++)boxes.push({x:bays[n].x-3,y:bays[n].y-28,width:bays[n].width+6,height:28})
+  }
+  return boxes
+}
+function millSupport(w,x,y) {
+  for(var dx=0;dx<26;dx++)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
+  return true
+}
+function drawMillDrums(ctx,w,pal) {
+  if(w.biome!=="Factory")return
+  ctx.save()
+  var spots=millSpots(w)
+  for(var i=0;i<spots.length;i++)drawMillDrum(ctx,pal,spots[i])
+  ctx.restore()
+}
+function drawMillDrum(ctx,pal,b) {
+  var x=b.x,y=b.y
+  // Cable drum on a cradle: a broad silhouette, distinct from the loose cogs.
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x,y-3,25,3)
+  ctx.fillRect(x+2,y-7,3,4);ctx.fillRect(x+15,y-7,3,4)
+  ctx.fillRect(x+3,y-18,13,14);ctx.fillRect(x+1,y-15,17,8)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+4,y-17,11,12);ctx.fillRect(x+2,y-14,15,6)
+  ctx.fillStyle=pal.dirtShade;ctx.fillRect(x+5,y-15,9,8)
+  ctx.fillStyle=pal.decorLit;ctx.fillRect(x+5,y-17,8,1);ctx.fillRect(x+3,y-14,1,6)
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x+21,y-13,4,10)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+21,y-13,4,1)
+}
+function drawMillLife(ctx,w,pal) {
+  if(w.biome!=="Factory")return
+  ctx.save()
+  var spots=millSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    if(!alpineClear(w,b.x-2,b.y-23,29,23,[]))continue
+    drawMillSpokes(ctx,pal,b,Math.floor(t/15)+b.seed)
+  }
+  ctx.restore()
+}
+function drawMillSpokes(ctx,pal,b,t) {
+  var x=b.x+9,y=b.y-11,tilt=t%4
+  ctx.fillStyle=pal.decor
+  if(tilt%2===0){ctx.fillRect(x-4,y,9,1);ctx.fillRect(x,y-4,1,9)}
+  else for(var n=-3;n<=3;n++){ctx.fillRect(x+n,y+n,1,1);ctx.fillRect(x+n,y-n,1,1)}
+  ctx.fillStyle=pal.decorLit;ctx.fillRect(x,y,2,2)
+  ctx.fillStyle=tilt<2?pal.decorLit:pal.decorDim;ctx.fillRect(b.x+22,b.y-11,2,2)
+  // A short loose cable end winds around the drum; never crosses its reserve.
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(b.x+17,b.y-9,3,1);ctx.fillRect(b.x+19,b.y-9,1,4+tilt)
 }

@@ -1,3 +1,5 @@
+import {millSourceBefore} from '../tools/mill-art.js'
+import {millSuccessor} from '../tools/mill-reference.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -113,12 +115,12 @@ test('C14 every excluded hazard and hostile state retains exact pixels with seas
 })
 
 test('C14 changed ordinary full frames retain their exact before and after scene ledger',()=>{
- const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8')),random=Math.random
+ const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round3-scenes.json','utf8')),random=Math.random,c14=renderer(millSourceBefore(source))
  try {Math.random=()=>0.5
  for(const [key,pin]of Object.entries(pins.scenes)){
   const [level,res,ticks]=key.split('/').map(Number)
   const draw=R=>hash(frame(S,R,P,{level,res,ticks,seed:3,theme:'tokyo-night',page:res===2}).img.buf)
-  assert.equal(draw(old),pin.before,key+' historical');assert.equal(draw(D),pin.after,key+' reviewed')
+  assert.equal(draw(old),pin.before,key+' historical');assert.equal(draw(c14),pin.after,key+' reviewed C14');assert.equal(draw(D),millSuccessor(pin.after),key+' reviewed C19')
  }
  }finally{Math.random=random}
 })

@@ -1,3 +1,4 @@
+import {millSourceBefore} from './mill-art.js'
 // C18 complete-frame review: before left, after right, out of season.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -7,10 +8,10 @@ import {load,frame,stack,side,writePNG} from './render.js'
 import {renderer,season} from './gag-art.js'
 import {christmasWorld,christmasFrame} from './christmas-art.js'
 import {reviewWorld} from './christmas-round5-art.js'
-export function cryoSourceBefore(source){return source.replace(/^  drawCryo(?:Vault|Facets|Garden|Life)\(ctx, w, pal\)\n/gm,'')}
+export function cryoSourceBefore(source){return millSourceBefore(source).replace(/^  drawCryo(?:Vault|Facets|Garden|Life)\(ctx, w, pal\)\n/gm,'')}
 export function cryoSheets(out){
  fs.mkdirSync(out,{recursive:true})
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=renderer(cryoSourceBefore(source)),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
+ const source=millSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=renderer(cryoSourceBefore(source)),D=renderer(source),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
  Math.random=()=>0.5
  try{for(const res of[1,2]){
   const rows=[]
