@@ -12392,3 +12392,13 @@ Rooftops); C6 made them read and dressed the other eleven ordinary biomes.
 **Before:** gate 1728/1728, CRAP green; `npm run smoke -- --level 12
 --season christmas` passed (12–18). **After:** `npm run verify --
 --previous 61b939a2` passed.
+
+## 468 — 2026-11-15 · Jingle Bells for a won level in the season
+
+**Changed (sfx):** in the Christmas season a won level (half home or more)
+ends on the first line of Jingle Bells (Pierpont, 1857: public domain) in
+the fanfare's square voice, with a shimmer of sleigh bells over it; a lost
+level, and every level out of season, keeps its fanfare (`finale`, one call
+in `observe`).
+**Test:** sfx (eleven notes for the fanfare's four, the bells; lost and
+out-of-season ends unchanged).

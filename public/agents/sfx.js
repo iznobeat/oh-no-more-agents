@@ -181,13 +181,29 @@
       noise(0.5, 0.08, "highpass", 6000)
     },
     unwrap: function () { noise(0.09, 0.45, "highpass", 3200); tone("triangle", 1047, 1047, 0.07, 0.3, 0.08); tone("triangle", 1568, 1568, 0.12, 0.3, 0.15) },
+    // The level won in the Christmas season: the first line of Jingle Bells
+    // (James Lord Pierpont, 1857), with sleigh bells over it.
+    jingleBells: function () {
+      var at = 0
+      for (var i = 0; i < JINGLE.length; i++) { tone("square", JINGLE[i][0], JINGLE[i][0], JINGLE[i][1] * 0.9, 0.3, at); at += JINGLE[i][1] }
+      noise(at, 0.06, "highpass", 6500)
+    },
     fanfare: function (good) {
       var notes = good ? [523, 659, 784, 1047] : [392, 330, 262, 196]
       for (var i = 0; i < notes.length; i++) tone("square", notes[i], notes[i], 0.11, 0.35, i * 0.1)
     }
   }
 
+  var JINGLE = [[659, .11], [659, .11], [659, .22], [659, .11], [659, .11], [659, .22], [659, .11], [784, .11], [523, .16], [587, .06], [659, .3]]
+
   function play(name, arg) { if (ready(name)) SOUNDS[name](arg) }
+
+  // The end of a level: a fanfare up or down, or in the Christmas season a
+  // won level gets its jingle instead.
+  function finale(w) {
+    var good = w.saved * 2 >= w.toRelease
+    play(good && w.season && w.season.name === "christmas" ? "jingleBells" : "fanfare", good)
+  }
 
   // Events the world names outright, rather than ones read off a difference.
   var EVENT_SOUNDS = { "boss hit": "clang", "backup": "radio", "mission complete": "jingle" }
@@ -282,7 +298,7 @@
     else if (now.saved > was.saved) play("home")
     if (now.agiLost && !was.agiLost) play("agiLost")
     else if (now.lost > was.lost) play("down")
-    if (now.done && !was.done) play("fanfare", w.saved * 2 >= w.toRelease)
+    if (now.done && !was.done) finale(w)
   }
 
   // A little place between the action cues. Eight seconds, mono, 12 kHz;

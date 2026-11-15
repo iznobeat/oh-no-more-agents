@@ -182,3 +182,20 @@ test("the North Pole: sleigh bells a second before it is overhead, and a present
   w.ticks++; w.giftsOpened = 1; sfx.observe(w)
   assert.deepEqual(played, ["noise", "osc", "osc"], "the paper, then ta-da")
 })
+
+test("a won level in the Christmas season ends on Jingle Bells; a lost one, or out of season, on the fanfare", () => {
+  const end = (season, saved) => {
+    const { sfx, played } = load()
+    sfx.setOn(true)
+    const w = { ...world(), ticks: 50, season }
+    sfx.observe(w); sfx.observe(w)
+    w.done = true; w.saved = saved; w.ticks++; sfx.observe(w)
+    return played
+  }
+  // The first one home says yippee and chimes in the same tick; compare like with like.
+  const osc = p => p.filter(x => x === "osc").length, noise = p => p.filter(x => x === "noise").length
+  const jingle = end({ name: "christmas" }, 9), plain = end(undefined, 9)
+  assert.equal(osc(jingle) - osc(plain), 11 - 4, "eleven notes for the fanfare's four")
+  assert.equal(noise(jingle) - noise(plain), 1, "and the bells")
+  assert.deepEqual(end({ name: "christmas" }, 2), end(undefined, 2), "a lost level keeps its own")
+})
