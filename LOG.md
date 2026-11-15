@@ -13039,3 +13039,10 @@ Manager only). The native North Pole pin re-captured (level 42 has him).
 itself out of; at the Pole (where it is Santa, 476) the crate is a present —
 red paper, a gold ribbon both ways, a bow on top (`drawGearPresent`).
 **Test:** northpole (a present at the Pole, the crate elsewhere).
+
+## 478 — 2026-11-15 · Deploy: walking, short drops, homecomings; Santa
+
+**Deployed** build 9595552a (Worker version 9d21b169), replacing 5031515c;
+covers C11, 476 and 477. **Before:** gate 1779/1779, CRAP green; `npm run
+smoke -- --level 42 --season christmas` passed (42–49). **After:** `npm run
+verify -- --previous 5031515c` passed.
