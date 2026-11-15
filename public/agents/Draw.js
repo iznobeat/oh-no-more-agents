@@ -2715,6 +2715,7 @@ function drawLifts(ctx, w, pal) {
 
     if (w.res === 2) drawPageLiftCabin(ctx, w, pal, L, x0, carTop, wid)
     else drawLiftCabin(ctx, pal, x0, carTop, wid, C)
+    drawChristmasLiftCar(ctx,w,L)
   }
 }
 
@@ -10388,6 +10389,7 @@ function drawPageFrozen(ctx,w,pal,f) {
   ctx.fillRect(cx-3.5,base-9,1,4);ctx.fillRect(cx+2.5,base-8,1,3)
   ctx.fillStyle=pal.skin
   ctx.fillRect(cx-4,base-10,1.5,2);ctx.fillRect(cx+2.5,base-9,1.5,2)
+  drawChristmasFrozenHat(ctx,w,f)
   drawFrozenPrism(ctx,cx,top,alpha)
   // A little fog on the inside: slow opacity only, never a moving body.
   var breath=w.reducedMotion?0.12:0.08+Math.max(0,24-(w.ticks+f.x*13)%180)/120
@@ -10453,6 +10455,7 @@ function drawFrozen(ctx, w, pal, f) {
   if (f.thawedAt >= 0) { drawThaw(ctx, w, pal, f, w.ticks - f.thawedAt); return }
   var C = w.k.CELL
   drawAgent(ctx, w, pal, { x: f.x + 0.5, y: f.y, dir: f.dir, state: "wait", anim: 0, fade: 0 }, {})
+  drawChristmasFrozenHat(ctx,w,f)
   var x = f.x * C - 1, top = (f.y + 1) * C - SPRITE_PX - 1
   drawIcePane(ctx, w, pal, x, top, C * 2 + 2, SPRITE_PX + 1)
 }
@@ -15322,6 +15325,7 @@ function tubePosition(route, progress) {
 }
 function drawTubeSend(ctx, w, pal, p, route, age) {
   if (age < TUBE_TRAVEL) drawTubeCapsule(ctx, w, pal, p, tubePosition(route, age / (TUBE_TRAVEL - 1)))
+  drawChristmasTubeLetter(ctx,w,route,age)
   drawTubePuff(ctx, w, pal, route[0], age)
   drawTubePuff(ctx, w, pal, route[3], age - TUBE_TRAVEL + 1)
 }
@@ -25619,7 +25623,11 @@ var CHRISTMAS_MACHINES = {
   Factory: drawChristmasBelts, Subway: drawChristmasMetro, Harbour: drawChristmasFerries,
   "Data Center": drawChristmasRacks, "Clock Tower": drawChristmasGates,
   Rooftops: drawChristmasZips, "Building Site": drawChristmasCranes,
-  Spaceship: drawChristmasPads
+  Spaceship: drawChristmasPads, "Mail Room": drawChristmasMail,
+  Library: drawChristmasBooks, Jungle: drawChristmasRopes, Foundry: drawChristmasRopes,
+  Desert: drawChristmasCacti, Cavern: drawChristmasSinkEdges,
+  Trench: drawChristmasBuoys, "The Cloud": drawChristmasClouds,
+  Ruins: drawChristmasBoulder
 }
 function drawChristmasMachines(ctx, w) {
   if (!w.season || w.season.name !== "christmas") return
@@ -25627,7 +25635,7 @@ function drawChristmasMachines(ctx, w) {
   if (!paint) return
   var boxes = christmasMachineReservations(w)
   var ink = { fillStyle: "#fff1cf", clear: function(x,y,width,height) {
-    return christmasClear(boxes,x,y,width,height) && mechanismAir(w,x,y) && mechanismAir(w,x+width-0.5,y+height-0.5)
+    return christmasClear(boxes,x,y,width,height) && christmasMachineAir(w,x,y,width,height)
   }, fillRect: function(x,y,width,height) {
     if (!christmasClear(boxes,x,y,width,height)) return
     if (!mechanismAir(w,x,y) || !mechanismAir(w,x+width-0.5,y+height-0.5)) return
@@ -25723,14 +25731,15 @@ function drawChristmasRacks(ctx,w) {
     var i=y*cols+x
     if(T[i]!==k.ORE) continue
     var side=T[i-1]===k.EMPTY ? -1 : T[i+1]===k.EMPTY ? 1 : 0
-    if(!side) continue
-    christmasMachineBulb(ctx,w,x*4+(side<0 ? -2 : 4),y*4,y+x)
+    if(side) drawChristmasBeacon(ctx,w,x*4+(side<0 ? -5 : 5),y*4,(y+x)*2)
+    if(!T[i+cols]) drawChristmasBeacon(ctx,w,x*4,(y+1)*4+3,(y+x)*2)
   }
 }
 function drawChristmasGates(ctx,w) {
   for(var i=0;i<w.gates.length;i++) {
     var b=clockGateDrawing(w,w.gates[i])
-    drawChristmasWreath(ctx,w,b.x-7,b.y+7)
+    var spot=christmasHangingSpot(ctx,b.x-18,b.y+8,16,16)
+    if(spot) drawChristmasHalo(ctx,w,spot.x,spot.y)
   }
 }
 function drawChristmasZips(ctx,w) {
@@ -25738,7 +25747,8 @@ function drawChristmasZips(ctx,w) {
     var g=roofLineDrawing(w,w.ziplines[i],i)
     for(var s=4;s<g.length-3;s+=5) {
       var x=Math.round(g.x+g.dir*s),y=Math.round(g.y+roofCableSag(g,s))
-      christmasMachineBulb(ctx,w,x,y+1,Math.floor(s/5))
+      ctx.fillStyle="#d3bc79";ctx.fillRect(x,y+1,1,6)
+      drawChristmasBeacon(ctx,w,x,y+7,Math.floor(s/5))
     }
   }
 }
@@ -25770,10 +25780,207 @@ function drawChristmasPads(ctx,w) {
 }
 function drawChristmasPadStars(ctx,w,x,y) {
   var tick=christmasMachineTick(w)
-  for(var n=0;n<4;n++) {
-    var px=x*4+(n%2 ? 4 : -3),py=(y+1)*4-5-((Math.floor(tick/5)+n*4)%17)
-    ctx.fillStyle=n%2 ? "#73e58b" : "#ff5769"
-    ctx.fillRect(px-1,py,3,1);ctx.fillRect(px,py-1,1,3)
-    ctx.fillStyle="#fff1bf";ctx.fillRect(px,py,1,1)
+  for(var n=0;n<3;n++) {
+    var px=x*4+(n-1)*9,py=(y+1)*4-15-((Math.floor(tick/8)+n*5)%9)
+    drawChristmasStar(ctx,w,px,py,n)
   }
+}
+
+// Strong native silhouettes; page highlights refine rather than replace them.
+function drawChristmasBeacon(ctx,w,x,y,n) {
+  ctx.fillStyle="#22352c";ctx.fillRect(x-1,y-1,5,7)
+  var hot=Math.floor(christmasMachineTick(w)/8)%4===n%4
+  ctx.fillStyle=hot ? "#fff1bf" : n%2 ? "#a4ff70" : "#ff5769"
+  ctx.fillRect(x,y,3,4)
+  ctx.fillStyle="#fff5d7";ctx.fillRect(x,y,1,2)
+  if(w.res===2) ctx.fillRect(x+0.5,y+0.5,1,0.5)
+}
+function drawChristmasStar(ctx,w,x,y,n) {
+  ctx.fillStyle=n%2 ? "#ff5364" : "#ffd45c"
+  ctx.fillRect(x-1,y-4,3,9);ctx.fillRect(x-4,y-1,9,3)
+  ctx.fillRect(x-2,y-2,5,5)
+  ctx.fillStyle="#fff5d7";ctx.fillRect(x,y-1,1,3)
+  if(w.res===2) ctx.fillRect(x-1,y-1,0.5,0.5)
+}
+function drawChristmasHalo(ctx,w,x,y) {
+  ctx.fillStyle="#194b36";ctx.fillRect(x-5,y-7,10,3);ctx.fillRect(x-7,y-4,3,8)
+  ctx.fillRect(x+4,y-4,3,8);ctx.fillRect(x-5,y+4,10,3)
+  ctx.fillStyle="#a4ff70";ctx.fillRect(x-4,y-7,8,1);ctx.fillRect(x-7,y-3,1,6)
+  ctx.fillStyle="#ff4059";ctx.fillRect(x-5,y+4,4,4);ctx.fillRect(x+1,y+4,4,4)
+  ctx.fillStyle="#fff1bf";ctx.fillRect(x-1,y+4,2,2)
+  for(var n=0;n<4;n++) {
+    ctx.fillStyle=n%2 ? "#ffd45c" : "#ff5364"
+    ctx.fillRect(x-5+n*3,y+(n%2 ? -6 : 5),2,2)
+  }
+}
+function drawChristmasMail(ctx,w) {
+  for(var i=0;i<w.pads.length;i++) {
+    var p=w.pads[i],route=tubeRoute(w,p)
+    // Waiting letters by each hopper make the seasonal post visible between sends.
+    drawChristmasMailPort(ctx,w,route[0])
+    drawChristmasMailPort(ctx,w,route[3])
+  }
+}
+function drawChristmasLetter(ctx,w,x,y) {
+  if(!ctx.clear(x-6,y-4,12,9)) return
+  ctx.fillStyle="#b92e46";ctx.fillRect(x-6,y-4,12,9)
+  ctx.fillStyle="#fff1cf";ctx.fillRect(x-5,y-3,10,6)
+  ctx.fillStyle="#d5a96e";ctx.fillRect(x-4,y-2,2,1);ctx.fillRect(x+2,y-2,2,1);ctx.fillRect(x-2,y-1,4,1)
+  ctx.fillStyle="#ff4059";ctx.fillRect(x,y,2,2)
+  ctx.fillStyle="#73e58b";ctx.fillRect(x+3,y-3,2,2)
+}
+function drawChristmasBooks(ctx,w) {
+  for(var i=0;i<w.librarians.length;i++) {
+    var lib=w.librarians[i],y=(lib.y+1)*4
+    var spot=christmasHangingSpot(ctx,lib.x*4-20,y-12,16,23)
+    if(!spot) continue
+    var x=spot.x;y=spot.y+11
+    for(var tier=0;tier<4;tier++) {
+      var width=16-tier*3,top=y-3-tier*4
+      ctx.fillStyle=tier%2 ? "#328752" : "#bd354d";ctx.fillRect(x-Math.floor(width/2),top,width,3)
+      ctx.fillStyle="#ffe4a0";ctx.fillRect(x-Math.floor(width/2)+2,top+1,width-3,1)
+    }
+    drawChristmasStar(ctx,w,x,y-19,0)
+  }
+}
+function drawChristmasRopes(ctx,w) {
+  for(var i=0;i<w.ladders.length;i++) {
+    var l=w.ladders[i]
+    if(!l.vine&&!l.chain) continue
+    var x=Math.round((l.x+(l.side>0 ? 0 : 1))*4)-l.side*1
+    x+=l.side>0 ? -8 : 6
+    for(var y=(l.top+1)*4;y<(l.bottom+1)*4-3;y+=9) {
+      ctx.fillStyle="#8b7951";ctx.fillRect(x,y,5,1)
+      if(l.chain) {
+        drawChristmasBauble(ctx,w,x,y+4,i+y)
+        ctx.fillStyle="#d3bc79";ctx.fillRect(x+1,y,9,1)
+        drawChristmasBauble(ctx,w,x+9,y+6,i+y+1)
+      }
+      else drawChristmasBauble(ctx,w,x,y+3,0)
+    }
+  }
+}
+function drawChristmasBauble(ctx,w,x,y,n) {
+  ctx.fillStyle="#ffdc85";ctx.fillRect(x-1,y-3,2,2)
+  ctx.fillStyle=n%2 ? "#73e58b" : "#ff4059"
+  ctx.fillRect(x-4,y-2,8,5);ctx.fillRect(x-3,y-3,6,7)
+  ctx.fillStyle="#fff1cf";ctx.fillRect(x-2,y-1,2,1)
+  if(w.res===2) ctx.fillRect(x-2.5,y-1.5,0.5,1)
+}
+function drawChristmasCacti(ctx,w) {
+  var found=false
+  for(var i=0;i<w.decor.length;i++) {
+    var d=w.decor[i]
+    if(d.kind!=="spire" || !lightDecorAlive(w,d)) continue
+    found=true
+    var x=d.x*4,y=(d.y+1)*4,h=3+d.size*3
+    for(var n=0;n<3;n++) {
+      var px=x+(n%2 ? 9 : -5),py=y-h-2+n*5
+      ctx.fillStyle="#d3bc79";ctx.fillRect(px,py,4,1)
+      drawChristmasBeacon(ctx,w,px,py+1,n)
+    }
+  }
+  if(!found) drawChristmasCactusStand(ctx,w)
+}
+function drawChristmasSinkEdges(ctx,w) {
+  for(var i=0;i<w.sinkholes.length;i++) {
+    var s=w.sinkholes[i],x=s.x*4,y=s.top*4
+    var spot=christmasHangingSpot(ctx,x+6,y-12,20,7)
+    if(!spot) continue
+    ctx.fillStyle="#d3bc79";ctx.fillRect(spot.x-8,spot.y-2,18,1)
+    for(var n=0;n<3;n++) drawChristmasBeacon(ctx,w,spot.x-7+n*7,spot.y-1,n)
+  }
+}
+function drawChristmasBuoys(ctx,w) {
+  for(var i=0;i<w.corridors.length;i+=2) {
+    var c=w.corridors[i],x=(c.startX+c.dir*8)*4,y=c.floorY*4-4
+    if(!ctx.clear(x-8,y-25,16,25)) continue
+    ctx.fillStyle="#d3bc79";ctx.fillRect(x,y-22,1,22)
+    ctx.fillStyle="#ff4059";ctx.fillRect(x-5,y-6,11,3)
+    ctx.fillStyle="#fff1cf";ctx.fillRect(x-4,y-3,9,2)
+    drawChristmasHalo(ctx,w,x,y-15)
+    drawChristmasStar(ctx,w,x,y-27,0)
+  }
+}
+function drawChristmasClouds(ctx,w) {
+  var k=w.k
+  for(var y=k.SKY;y<k.ROWS-2;y++) for(var x=5;x<k.COLS-5;x+=4) {
+    var at=y*k.COLS+x
+    if(!w.terrain[at] || w.terrain[at+k.COLS]) continue
+    drawChristmasBeacon(ctx,w,x*4,(y+1)*4+3,x+y)
+    ctx.fillStyle="#bdab83";ctx.fillRect(x*4,(y+1)*4+1,1,2)
+  }
+}
+function drawChristmasLiftCar(ctx,w,l) {
+  if(!w.season || w.season.name!=="christmas") return
+  // Hung on the car roof, travelling with it; riders are painted afterwards.
+  drawChristmasHalo(ctx,w,Math.round(l.mid*4),Math.round(l.car*4)-25)
+}
+function drawChristmasBoulder(ctx,w) {
+  var b=w.boulder
+  if(!b || b.state==="done") return
+  var shake=b.state==="wake"&&!w.reducedMotion ? Math.round(Math.sin((w.ticks-b.wokeAt)*1.3)) : 0
+  var x=Math.round(b.x*4)+shake+2,y=(Math.floor(b.y)+1)*4-BOULDER_ROWS.length-3
+  ctx.fillStyle="#ff4059";ctx.fillRect(x-8,y-4,6,5);ctx.fillRect(x+2,y-4,6,5)
+  ctx.fillStyle="#fff1bf";ctx.fillRect(x-2,y-2,4,3)
+  ctx.fillStyle="#ff5364";ctx.fillRect(x-4,y+1,2,4);ctx.fillRect(x+2,y+1,2,4)
+}
+function drawChristmasFrozenHat(ctx,w,f) {
+  if(!w.season || w.season.name!=="christmas") return
+  var x=(f.x+0.5)*4,y=(f.y+1)*4-SPRITE_PX
+  ctx.fillStyle="#a3203b";ctx.fillRect(x-5,y-4,10,4)
+  ctx.fillStyle="#ff4059";ctx.fillRect(x-4,y-7,8,5);ctx.fillRect(x-1,y-9,6,3)
+  ctx.fillRect(x+4,y-7,3,3)
+  ctx.fillStyle="#fff1cf";ctx.fillRect(x-5,y-1,10,2);ctx.fillRect(x+6,y-5,3,3)
+  ctx.fillStyle="#b4e7f4";ctx.fillRect(x-4,y-6,1,3)
+  if(w.res===2) {ctx.fillStyle="#fff5ff";ctx.fillRect(x-3.5,y-5,0.5,2)}
+}
+
+function christmasHangingSpot(ctx,x,y,width,height) {
+  var offsets=[0,-12,12,-24,24,-36,36]
+  for(var i=0;i<offsets.length;i++) {
+    var px=x+offsets[i]
+    if(ctx.clear(px-width/2,y-Math.floor(height/2),width,height)) return {x:px,y:y}
+  }
+  return null
+}
+function drawChristmasMailPort(ctx,w,p) {
+  var spot=christmasHangingSpot(ctx,p.x+15,p.y-6,12,9)
+  if(!spot) return
+  ctx.fillStyle="#b58a52";ctx.fillRect(spot.x-1,spot.y+4,2,3)
+  drawChristmasLetter(ctx,w,spot.x,spot.y)
+}
+function drawChristmasCactusStand(ctx,w) {
+  for(var i=0;i<w.corridors.length;i++) {
+    var c=w.corridors[i],y=c.floorY*4
+    var spot=christmasHangingSpot(ctx,(c.startX+c.dir*12)*4,y-12,22,24)
+    if(!spot) continue
+    var x=spot.x
+    ctx.fillStyle="#408355";ctx.fillRect(x-1,y-20,3,20)
+    ctx.fillRect(x-5,y-14,5,2);ctx.fillRect(x-5,y-18,2,5)
+    ctx.fillRect(x+2,y-10,5,2);ctx.fillRect(x+5,y-15,2,6)
+    drawChristmasBeacon(ctx,w,x-4,y-21,0)
+    drawChristmasBeacon(ctx,w,x+5,y-8,1)
+    drawChristmasStar(ctx,w,x,y-25,0)
+    return
+  }
+}
+
+function christmasMachineAir(w,x,y,width,height) {
+  var C=w.k.CELL
+  for(var cy=Math.floor(y/C);cy*C<y+height;cy++)
+    for(var cx=Math.floor(x/C);cx*C<x+width;cx++)
+      if(!mechanismAir(w,cx*C,cy*C)) return false
+  return true
+}
+
+function drawChristmasTubeLetter(ctx,w,route,age) {
+  if(!w.season || w.season.name!=="christmas" || age<0 || age>=TUBE_TRAVEL) return
+  var pos=tubePosition(route,w.reducedMotion ? 0.5 : age/(TUBE_TRAVEL-1))
+  var x=pos.x+(pos.horizontal ? 0 : 11),y=pos.y+(pos.horizontal ? 11 : 0)
+  if(!christmasMachineAir(w,x-6,y-4,12,9)) return
+  if(!christmasClear(christmasMachineReservations(w),x-6,y-4,12,9)) return
+  var ink={clear:function(){return true},fillStyle:"",fillRect:function(a,b,c,d){ctx.fillStyle=this.fillStyle;ctx.fillRect(a,b,c,d)}}
+  // Cargo strapped outside the passenger capsule, never across its window.
+  drawChristmasLetter(ink,w,x,y)
 }

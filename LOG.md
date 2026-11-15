@@ -12315,3 +12315,70 @@ four seconds, steaming. Behind the colony. Still under reduced motion.
 **Measured:** 10 Pole levels × 16 colonies: 98% home (97% before).
 **Test:** northpole (placement, walkers only, one mug each, warmed then back
 to pace; stand, steam, mug, reduced motion, no world writes).
+## C6 — 2026-11-15 · Christmas machinery at full frame
+
+**Changed (Draw only, Christmas season):** made C5's four faint machines read
+at native full-frame scale: warm red/cream rack-edge and underside chases against
+the Data Center's teal, a larger bright-edged wreath beside the Clock Tower gate
+cassette, bold red/gold transporter stars above the original cyan coils, and a
+deeper, larger-bulb festoon following the Rooftop zipline's real cable and sag.
+Factory parcels, Subway train lights, Harbour mast lights and Building Site hook
+trees retain their C5 art.
+
+Finished the eleven requested ordinary biomes: Mail Room letters wait beside
+both tube hoppers, with letter cargo strapped beside a sending capsule's passenger
+window; Library has a striped book tree and star beside the librarian's desk;
+Jungle vines carry bright red berries; Desert cacti get lights (a small lit cactus
+stand when that layout has no cactus); Cavern sinkholes get a three-lamp festoon
+above the crust, leaving its crack intact; frozen Ice Cave colleagues wear larger
+floppy Santa hats beneath the ice pass; Foundry chains carry paired red/green
+ornaments; Trench has a starred wreath buoy; Cloud banks carry hanging lamps;
+Skyscraper wreaths travel with the actual lift car; the Ruins boulder wears a bow.
+The lift decoration runs after its cabin and the frozen hat before the ice, so
+later original paint cannot erase them. New motion holds still under reduced
+motion. No simulation, North Pole section, season rules, text or umbrella edits.
+No new world state or RNG. Full-decoration clearance avoids clipping wreaths and
+book trees against internal wall cells that corner-only placement checks missed.
+
+**Looked at:** first re-opened C5's native full-frame machine sheet. Extended
+`tools/christmas-round5-art.js` to all 21 biomes, selecting live machinery-bearing
+layouts for frozen colleagues, vines, chains and boulders, retaining per-biome
+before/after frames and crops, and adding five-row full-frame parts so the whole
+board stays readable during review. Rendered r6-1 through r6-8. Rejected clipped
+wreaths, invisible mail/tree placements, shallow zip bulbs blending into existing
+garlands, and single small chain ornaments. Added whole-rectangle placement checks,
+moved the hopper letters and tree into clear air, deepened the zip festoon, paired
+the chain ornaments, shifted the boulder bow clear of the left wall, and used red
+berries against the Jungle green.
+
+Final full-frame comparisons inspected, baseline left / current right:
+`/tmp/xmas-dressing/r6-8/machines-full-res1-sheet.png` and
+`/tmp/xmas-dressing/r6-8/machines-full-res2-sheet.png`, inspected through all five
+`machines-full-res1-part1.png` … `part5.png` and
+`machines-full-res2-part1.png` … `part5.png` in that directory. Also inspected both
+final `machines-crop-res1-sheet.png` and `machines-crop-res2-sheet.png`; earlier
+iterations' full sheets, page parts and individual frames informed the refinements.
+Frost and North Pole remain comparison controls. No browser visual session or
+production request was needed; FPS used the existing ephemeral local headless tool.
+
+**Validation:** baseline full check 1,718/1,718; final check and CRAP coverage both
+1,726/1,726, exit 0. Eight new tests cover native/page full-frame visibility for all
+15 changed biomes, exact out-of-season frame digests, read-only worlds and reduced
+motion, season opt-out, terrain/scenery/hazard/exit exclusions, opaque live cast
+and umbrella pixels, thaw and lift following, and actual tube cargo travelling
+clear of its passenger window. Pixel comparisons use hashes or bounded byte loops,
+never raw buffer deepEqual. Existing C5 colour assertions include the new red/gold
+kit. `npm run crap -- --changed --threshold 30` exit 0: highest changed function
+`drawLifts` 18.0; reviewWorld 16.4; new art helpers at most 15.5. Full runs use the
+shared lock and unchanged six-file concurrency. Stamps refreshed.
+
+`npm run fps -- 8 12 14 --season christmas`: before and after 60 median / 60 p5
+on all three; worst frames 17/17/33 ms before, 17/17/17 ms after; CPU 16/15/25%
+before, 10/10/9% after. The baseline overlapped its check, so CPU is not a controlled
+speedup claim. Final logs: `/tmp/xmas-dressing/r6-final-check.log`,
+`/tmp/xmas-dressing/r6-crap.log`, `/tmp/xmas-dressing/r6-fps-after.log`.
+
+**Next:** review more live December colonies and tight machinery placements;
+reservations intentionally suppress individual ornaments where they cannot fit.
+No known unresolved test or performance issue. No merge, push, deploy, sibling
+writes or port 8787 changes.
