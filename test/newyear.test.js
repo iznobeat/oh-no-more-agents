@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -41,7 +42,9 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
       const historical=hash(christmasFrame(foeBefore,b,christmasWorld(level,b),res).buf),review=foePins.newyear[`${mode}/${level}/${res}`]
       assert.equal(historical,pin?pin.after:before,'before C14 '+`${mode} ${level} ${res}`)
       if(review)assert.equal(historical,review.before)
-      assert.equal(hash(christmasFrame(D,b,wb,res).buf),review?review.after:historical,`${mode} ${level} ${res}`)
+      const iron=ironPins.newyear[`${mode}/${level}/${res}`],prior=review?review.after:historical
+      if(iron)assert.equal(iron.before,prior)
+      assert.equal(hash(christmasFrame(D,b,wb,res).buf),iron?iron.after:prior,`${mode} ${level} ${res}`)
       if(level===1 || level===21){
         wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30
         const report=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).reports[`${mode}/${level}/${res}`]

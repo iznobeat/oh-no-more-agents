@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
@@ -46,7 +47,8 @@ test('ordinary out of season frames remain byte identical across every biome and
  }}finally{Math.random=random}
   // Same C11 live-colony review and exact C10 scope audit as round four.
   assert.equal(historical.digest('hex'),'6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b')
- assert.equal(h.digest('hex'),foePins.aggregates['120,350'].after)
+ assert.equal(ironPins.aggregates['120,350'].before,foePins.aggregates['120,350'].after)
+ assert.equal(h.digest('hex'),ironPins.aggregates['120,350'].after)
 })
 test('new machine animation is still with reduced motion at both resolutions',()=>{
   for(const [name,key]of MACHINES)for(const res of[1,2]) {

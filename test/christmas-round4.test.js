@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from "node:test"
 import assert from "node:assert/strict"
 import {createHash} from "node:crypto"
@@ -89,7 +90,8 @@ test("ordinary biomes retain complete baseline pixels at both scales",()=>{
  // C11: reviewed live boots, short drops and native greetings. With those
  // paths disabled the complete C10 aggregate remains e6652116… exactly.
  assert.equal(historical.digest("hex"),"6cd8b9ef1425b025a89f0baa8e61c6f101688eb783620ab3c35b9687e2fc9e4b")
- assert.equal(h.digest("hex"),foePins.aggregates["120,350"].after)
+ assert.equal(ironPins.aggregates["120,350"].before,foePins.aggregates["120,350"].after)
+ assert.equal(h.digest("hex"),ironPins.aggregates["120,350"].after)
 })
 test("round four review retains full boards, both-facing poses and hatch phases at both scales",()=>{
  const out=fs.mkdtempSync(path.join(os.tmpdir(),"christmas-r4-"))

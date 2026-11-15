@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -42,7 +43,9 @@ test('every ordinary full frame remains byte-identical out of season',()=>{
       const historical=digest(christmasFrame(foeBefore,api,w,res).buf),review=foePins.c6full[`${name}/${res}/${ticks}`]
       assert.equal(historical,pin?pin.after:before,name+' before C14')
       if(review)assert.equal(historical,review.before)
-      assert.equal(digest(christmasFrame(D,api,w,res).buf),review?review.after:historical,name)
+      const iron=ironPins.c6full[`${name}/${res}/${ticks}`],prior=review?review.after:historical
+      if(iron)assert.equal(iron.before,prior)
+      assert.equal(digest(christmasFrame(D,api,w,res).buf),iron?iron.after:prior,name)
     }
   }
 })
@@ -87,7 +90,11 @@ test('opaque live faces, bodies and umbrellas keep their exact pixels in all new
     for(let i=0;i<mask.buf.length;i+=4)if(mask.buf[i+3]===255){a.update(before.subarray(i,i+4));b.update(after.subarray(i,i+4))}
     const pin=workPins.c6cast[`${name}/${res}`],oldHash=a.digest('hex')
     if(pin)assert.equal(oldHash,pin.before,name+' historical cast pin')
-    assert.equal(b.digest('hex'),pin?pin.after:oldHash,name)
+    // This historical four-byte sampling of the RGB buffer also includes
+    // scenery. Retain its scene pin; C15 separately masks truly opaque RGB.
+    const iron=ironPins.c6cast[`${name}/${res}`],prior=pin?pin.after:oldHash
+    if(iron)assert.equal(iron.before,prior)
+    assert.equal(b.digest('hex'),iron?iron.after:prior,name)
   }
 })
 test('frozen colleagues lose their hat when thawed and lift wreaths follow the real car',()=>{

@@ -1,3 +1,4 @@
+import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from "node:test"
 import assert from "node:assert/strict"
 import fs from "node:fs"
@@ -109,7 +110,8 @@ test("ordinary out of season frames remain byte identical, including report card
  // C11: live boot arcs and native greetings; disabling those poses restores
  // the exact C10 aggregate (0644914d…), audited in colony-last.test.js.
  assert.equal(historical.digest("hex"),"7bbf5ffc46ddc2c003f06fd2edb13f70096c3b94bd85d4dd74affb778fc723bd")
- assert.equal(h.digest("hex"),foePins.aggregates["350,900"].after)
+ assert.equal(ironPins.aggregates['350,900'].before,foePins.aggregates['350,900'].after)
+ assert.equal(h.digest("hex"),ironPins.aggregates['350,900'].after)
 })
 
 test("review retains before/after full frames, report cards and timed arrival strips at both resolutions",()=>{

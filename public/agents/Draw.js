@@ -206,6 +206,7 @@ function drawTerrain(ctx, w, pal) {
   drawAssemblyBackdrop(ctx, w)
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
+  drawIronworksHall(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
   drawDataHall(ctx, w)
@@ -219,6 +220,7 @@ function drawTerrain(ctx, w, pal) {
   if (desertPage(w)) drawDesertRelics(ctx, w)
   if (w.biome === "Foundry") drawFoundryBackdrop(ctx, w, pal)
 
+  drawIronworksKilns(ctx, w, pal)
   drawTerrainMaterials(ctx, w, pal)
   drawCloudBanks(ctx, w, pal)
 
@@ -243,6 +245,7 @@ function drawTerrain(ctx, w, pal) {
 
   if (w.biome === "Foundry") drawFoundryMaterials(ctx, w, pal)
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
+  drawIronworksBrick(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -2353,6 +2356,7 @@ function drawBeltDrum(ctx, w, pal, x, top, side, dir) {
 }
 
 function drawMachines(ctx, w, pal) {
+  drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
   if (w.biome === "Building Site") drawSiteMachines(ctx, w, pal)
@@ -26706,4 +26710,177 @@ function drawColonyNativeHome(ctx,w,pal,ag,x,y,d,robe) {
     ctx.fillRect(Math.round(x+4+Math.cos(ang)*r),Math.round(y+6+Math.sin(ang)*r*0.7),1,1)
   }
   ctx.restore()
+}
+
+// C15: the ironworks at native scale too. Architecture is behind the old
+// girders; refractory joints are inside surviving cells. No palette changes.
+function drawIronworksHall(ctx, w, pal) {
+  if (w.biome !== "Foundry") return
+  ctx.save()
+  drawIronworksSky(ctx,w,pal)
+  var C = w.k.CELL, top = w.k.SKY*C, width = w.k.COLS*C, bottom = w.k.ROWS*C
+  for (var x = 20; x < width; x += 64) {
+    drawIronworksDuct(ctx,w,pal,x+44,top+12,bottom)
+    ctx.fillStyle = pal.dirtShade
+    ctx.fillRect(x, top+8, 3, bottom-top-8)
+    ctx.fillStyle = pal.dirtEdge; ctx.globalAlpha = 0.55
+    ctx.fillRect(x, top+8, 1, bottom-top-8)
+    // Sawtooth clerestory, repeated on the distant mill's roof.
+    for (var s = 0; s < 12; s++) ctx.fillRect(x+s*4, top+8-s, 4, 1)
+    ctx.fillRect(x+47, top-3, 2, 12)
+    ctx.globalAlpha = 1
+    for (var row = 0; row < w.corridors.length; row++) {
+      var y = w.corridors[row].floorY*C-24
+      drawIronworksWindow(ctx, pal, x+7, y, row+Math.floor(x/64))
+      ctx.fillStyle = pal.backLit
+      ctx.fillRect(x+3, y+19, 60, 2)
+      for (var brace = 0; brace < 12; brace++) ctx.fillRect(x+3+brace*3, y+18-brace, 3, 1)
+    }
+  }
+  ctx.restore()
+}
+function drawIronworksWindow(ctx, pal, x, y, seed) {
+  ctx.fillStyle = pal.dirtShade
+  ctx.fillRect(x, y, 31, 14)
+  ctx.fillStyle = pal.oreShade; ctx.globalAlpha = 0.55
+  ctx.fillRect(x+1, y+1, 29, 11)
+  ctx.fillStyle = pal.dirtEdge; ctx.globalAlpha = 0.65
+  ctx.fillRect(x+2, y+2, 27, 3)
+  ctx.globalAlpha = 1; ctx.fillStyle = pal.backDim
+  for (var bar = 0; bar < 5; bar++) ctx.fillRect(x+5+bar*5, y+1, 1, 12)
+  ctx.fillRect(x, y+6, 31, 1)
+  ctx.fillStyle = pal.dirtEdge
+  ctx.fillRect(x-1, y+13, 33, 1)
+  ctx.fillStyle = pal.poolLip; ctx.globalAlpha = 0.18
+  ctx.fillRect(x+2+(seed%5)*5, y+7, 3, 4)
+  ctx.globalAlpha = 1
+}
+function drawIronworksBrick(ctx, w, pal) {
+  if (w.biome !== "Foundry") return
+  ctx.save()
+  var k=w.k, C=k.CELL
+  for (var y=k.SKY;y<k.ROWS;y++) for (var x=0;x<k.COLS;x++) {
+    var m=w.terrain[y*k.COLS+x]
+    if (m===k.DIRT || m===k.ROCK) drawIronworksJoint(ctx,w,pal,x,y,m)
+  }
+  ctx.restore()
+}
+function drawIronworksJoint(ctx, w, pal, x, y, m) {
+  var C=w.k.CELL, px=x*C, py=y*C, seam=(x+Math.floor(y/2)*2)%4===0
+  ctx.fillStyle=pal.rockShade; ctx.globalAlpha=0.65
+  if (y%2===1) ctx.fillRect(px,py+C-1,C,1)
+  if (seam) ctx.fillRect(px,py,1,C)
+  ctx.fillStyle=m===w.k.ROCK ? pal.rockEdge : pal.dirtEdge
+  ctx.globalAlpha=(w.res||1)>=2 ? 0.28 : 0.55
+  if (y%2===0) ctx.fillRect(px+1,py,C-1,1)
+  if ((x*13+y*7)%23===0) ctx.fillRect(px+2,py+2,1,1)
+  if (w.terrain[(y-1)*w.k.COLS+x]!==w.k.EMPTY) return
+  ctx.fillStyle=pal.oreEdge; ctx.globalAlpha=0.6
+  ctx.fillRect(px,py,C,1)
+}
+// Layout-only fitting locations. Version and terrain identity invalidate them
+// after carving; ticking never searches the board or writes into the world.
+var IRONWORKS_CACHE=new WeakMap()
+function ironworksSpots(w) {
+  var old=IRONWORKS_CACHE.get(w)
+  if (old && old.version===w.terrainVersion && old.terrain===w.terrain) return old.spots
+  var spots=[], k=w.k, C=k.CELL, boxes=abyssReserved(w)
+  for (var row=0;row<w.corridors.length;row++) {
+    var cor=w.corridors[row], y=(cor.floorY-5)*C
+    for (var x=28+(w.level*7+row*19)%40;x<k.COLS*C-24;x+=72) {
+      if (!abyssClear(w,x,y-2,24,14,boxes)) continue
+      spots.push({x:x,y:y,seed:x+row*31})
+      break
+    }
+  }
+  IRONWORKS_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function drawIronworksLife(ctx, w, pal) {
+  if (w.biome!=="Foundry") return
+  ctx.save()
+  var spots=ironworksSpots(w), t=w.reducedMotion ? 0 : w.ticks
+  for (var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    drawIronworksFan(ctx,w,pal,b,t)
+    drawIronworksSteam(ctx,w,pal,b,t)
+  }
+  ctx.restore()
+}
+function drawIronworksFan(ctx,w,pal,b,t) {
+  var x=b.x, y=b.y, pose=Math.floor((t+b.seed)/12)%2
+  ctx.globalAlpha=0.8;ctx.fillStyle=pal.dirtShade
+  moteFineRect(ctx,w,x,y,12,10)
+  ctx.fillStyle=pal.rockEdge
+  moteFineRect(ctx,w,x+1,y,10,1)
+  moteFineRect(ctx,w,x,y+1,1,8)
+  moteFineRect(ctx,w,x+11,y+1,1,8)
+  moteFineRect(ctx,w,x+1,y+9,10,1)
+  ctx.fillStyle=pal.decor;ctx.globalAlpha=0.8
+  if (pose===0) {
+    moteFineRect(ctx,w,x+2,y+4,8,2);moteFineRect(ctx,w,x+5,y+1,2,8)
+  } else {
+    for(var d=0;d<7;d++) {
+      moteFineRect(ctx,w,x+3+d,y+2+d,1,1)
+      moteFineRect(ctx,w,x+9-d,y+2+d,1,1)
+    }
+  }
+  ctx.fillStyle=pal.dirtEdge
+  moteFineRect(ctx,w,x+5,y+4,2,2)
+}
+function drawIronworksSteam(ctx,w,pal,b,t) {
+  ctx.fillStyle=pal.decorLit
+  for(var puff=0;puff<3;puff++) {
+    var age=(Math.floor(t/5)+b.seed+puff*9)%28
+    ctx.globalAlpha=(28-age)/100
+    moteFineRect(ctx,w,b.x+13+Math.floor(age/8),b.y+8-Math.floor(age/4),2+Math.floor(age/9),1)
+  }
+}
+function drawIronworksKilns(ctx,w,pal) {
+  if(w.biome!=="Foundry" || (w.res||1)>=2) return
+  ctx.save()
+  for(var i=0;i<w.corridors.length;i++) {
+    var b=foundryBay(w,i), x=b.x, y=b.y
+    ctx.fillStyle=pal.dirtShade
+    ctx.fillRect(x-12,y-20,24,20);ctx.fillRect(x-6,y-32,12,12)
+    ctx.fillStyle=pal.rockShade
+    ctx.fillRect(x-14,y-20,28,2);ctx.fillRect(x-14,y-2,28,2)
+    ctx.fillStyle=pal.rockEdge
+    ctx.fillRect(x-10,y-17,2,14);ctx.fillRect(x+8,y-17,2,14)
+    ctx.fillStyle=pal.backDim
+    ctx.fillRect(x-6,y-10,12,8);ctx.fillRect(x-4,y-12,8,2)
+    ctx.fillStyle=pal.poolLip;ctx.globalAlpha=0.55
+    ctx.fillRect(x-4,y-7,8,4)
+    ctx.fillStyle=pal.poolGlint;ctx.globalAlpha=0.5
+    ctx.fillRect(x-3,y-4,6,1)
+    ctx.globalAlpha=1;ctx.fillStyle=pal.rigDark
+    for(var bar=-3;bar<=3;bar+=3)ctx.fillRect(x+bar,y-9,1,6)
+  }
+  ctx.restore()
+}
+
+function drawIronworksSky(ctx,w,pal) {
+  var top=w.k.SKY*w.k.CELL, width=w.k.COLS*w.k.CELL
+  ctx.fillStyle=pal.dirtShade
+  for(var i=0;i<7;i++) {
+    var x=i*67-12, h=8+(i*7+w.level)%14
+    ctx.fillRect(x,top-5,56,5)
+    ctx.fillRect(x+9,top-h,7,h)
+    ctx.fillRect(x+7,top-h,11,2)
+    ctx.fillRect(x+33,top-h+5,5,h-5)
+  }
+  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.4
+  ctx.fillRect(0,top-2,width,1)
+  ctx.globalAlpha=1
+}
+function drawIronworksDuct(ctx,w,pal,x,top,bottom) {
+  ctx.fillStyle=pal.rockShade
+  ctx.fillRect(x,top,6,bottom-top)
+  ctx.fillStyle=pal.rockEdge;ctx.globalAlpha=0.3
+  ctx.fillRect(x+1,top,1,bottom-top)
+  for(var y=top+12;y<bottom;y+=24) {
+    ctx.fillRect(x-1,y,8,2)
+    ctx.fillRect(x+5,y+2,1,1)
+  }
+  ctx.globalAlpha=1
 }
