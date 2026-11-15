@@ -13555,3 +13555,132 @@ final-check,crap}.{log,exit}; baseline check is in biome-audit/before-check.*.
 No known unresolved test, art or performance issue; visual review was through
 the real renderer rather than live QML. No merge, push, deploy, production
 requests, port 8787 changes, sibling writes or Omarchy writes.
+
+## C16 — 2026-11-15 · Frost becomes an alpine snowfield
+
+**Chose:** Frost, excluding C15's Foundry. Re-rendered all 21 biomes out of
+season using `shoot.js biomes --ticks 350` and individual `shoot.js level N
+--ticks 350`, res 1 and 2, scale 1. Inspected all seven side-by-side catalogue
+triplets at both resolutions. The Library, Jungle, Desert, Subway and North
+Pole give their full boards a material and a place. Frost had large flat grey
+shelves and a nearly blank lower mass, with a fuzzy ridge rather than a
+recognisable landscape. The page's aurora and snow caps helped the air, but
+left the land unfinished, especially on the native panel. It was the weakest
+remaining complete board. Baseline: 19156074ad1f2e8fea754864fa8db6888f0a300c.
+
+**Changed (Draw only):** translucent compacted snow strata, short buried
+facets and native crust highlights, clipped to surviving DIRT/ROCK in the
+cached terrain pass. Existing grain, material colours, shapes, ice, ponds,
+icicles, decor, page caps, aurora and snowfall remain. Stepped alpine peaks
+with shaded snowy facets sit behind the original ridge; a few snow-dusted
+firs occupy supported, reserved clear air. Short animated spindrift wisps
+run from `drawMachines`, before the colony and hazard painters. Every new
+colour is an existing Palette role; Palette.js is unchanged.
+
+Fir and wisp placements use a world-keyed WeakMap, invalidated by terrain
+version and terrain identity. Their complete footprint excludes original
+decor, hazards, pits and the exit, checks interior air cells as well as
+corners, and requires ground beneath the trunk. Up to two per corridor,
+seven per world; tight layouts suppress them. Every live rectangle also
+checks current air. Reduced motion holds the wisps still. No per-tick board
+search, world writes, drawing RNG, dependencies, new text or actor changes.
+Sim.js, sfx.js and season.js were untouched. The other twenty biomes retain
+exact complete-frame pixels, including Foundry.
+
+**Review/tool:** all catalogue evidence is in
+/tmp/xmas-dressing/biome2-audit; the seven `group-N-res{1,2}.png` files retain
+side-by-side full boards. `tools/alpine-art.js <before-ref> <out>` retains
+six complete before-left / after-right pairs per scale, levels 3/23/43 at
+350/900 ticks, and a catalogue. Round 1 exposed a level-selection mistake:
+North Pole is a special insertion, not a 21-level regular cycle. Levels 24
+and 45 were Foundry/Jungle. Corrected to Frost 3/23/43 and re-ran review and
+baseline FPS. Round 2 added ground support, strengthened fir silhouettes,
+and scanned more safe candidate sites so every reviewed layout has scenery.
+The complete reservation was extended through the fir's last base row.
+
+Final before/after full-frame sheets inspected at native/page size:
+
+- /tmp/xmas-dressing/biome2-3/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome2-3/final/full-res2-sheet.png
+
+Review used the actual renderer, not a live Omarchy/QML panel. render.js
+uses its documented gradient approximation. The plateau layers and peaks
+are clearly visible at 1x, with subdued firs behind the colony at both sizes.
+
+**Pins deliberately advanced:** no previous golden JSON was overwritten.
+`alpine-pins.json` pins twelve independent historical and reviewed whole
+frames. `alpine-scenes.json` records the exact predecessor hash and explicit
+successor for each affected historical scene or aggregate. Earlier reference
+helpers first remove the four C16 hooks, retaining their historical
+assertions; C15's scope audit uses its pre-C16 renderer. C16 independently
+audits every biome at both scales and ticks 120/350, and proves removing
+only these four hooks restores the complete predecessor even in Frost.
+The arrival/office aggregates include scenery: their transitions come from
+Frost, not changed arrival or umbrella-office painters. The proper opaque
+RGB colony/umbrella mask remains byte-identical. SHA-256 prefixes below;
+full hashes and exact keys are in the fixtures.
+- full frame `3/350/1`: `f64e2e01` → `fa8a7b67`.
+- full frame `3/900/1`: `fdfe3a0e` → `63e8d394`.
+- full frame `23/350/1`: `cdb2b54a` → `3172992e`.
+- full frame `23/900/1`: `8b93c61c` → `06f80dd1`.
+- full frame `43/350/1`: `44020284` → `7fa11228`.
+- full frame `43/900/1`: `8a21c678` → `f4d4e82b`.
+- full frame `3/350/2`: `5ec5b56b` → `4a201415`.
+- full frame `3/900/2`: `24a40192` → `d029f8d4`.
+- full frame `23/350/2`: `1378b1ce` → `c2b52e2a`.
+- full frame `23/900/2`: `8597ea9b` → `6426eddf`.
+- full frame `43/350/2`: `407158a6` → `e361058d`.
+- full frame `43/900/2`: `d1d21e7c` → `6de4cfcc`.
+- `aggregates/350,900`: `94528dd4` → `14960852`.
+- `disabled/350,900`: `026e857d` → `2236a4ef`.
+- `aggregates/120,350`: `cd0e1080` → `df3f598e`.
+- `disabled/120,350`: `c1d36e9b` → `f221c31c`.
+- `newyear/none/3/1`: `57cf0023` → `24ecebc7`.
+- `newyear/none/3/2`: `7732b29d` → `a7d6d374`.
+- `newyear/christmas/3/1`: `37af7eda` → `bd05b75e`.
+- `newyear/christmas/3/2`: `296d0cd3` → `bc26d10a`.
+- `c6full/Frost/1/120`: `33d04192` → `b8cff07c`.
+- `c6full/Frost/1/400`: `e3a92c9e` → `777c8d5b`.
+- `c6full/Frost/2/120`: `f4ab2265` → `3c044bc4`.
+- `c6full/Frost/2/400`: `341686bb` → `3276de75`.
+- `exitNative`: `ad0c8792` → `a008a8b5`.
+- `office`: `2a9147ec` → `8c4228a3`.
+
+**Validation so far:** baseline `npm run check` **1812/1812**, exit 0,
+178.96 s. Checked the new test filename was free before adding it. Ten new
+regressions cover reviewed complete frames and substantial native pixel
+changes; all-biome scope; palette/grid/context and frozen-world purity in
+all themes; surviving materials and static cached art; version/source cache
+invalidation; supported placements and complete air/reservation bounds;
+spindrift animation, current-air clipping and reduced motion; unchanged
+opaque colony/umbrella colours; and reproducible full-frame sheets and every
+historical scene transition. Bounded loops and pixel digests only, no raw
+buffer deepEqual. The focused set passed **110/110**, exit 0, 31.82 s.
+Final gates and performance results follow below.
+
+**Final validation:** `npm run check` **1822/1822**, exit 0, 167.90 s.
+`npm run crap -- --changed --threshold 30` exit 0, with fresh coverage
+**1822/1822**, 318.32 s. New renderer maximum **11.0** (`alpineSpots`,
+94.1% coverage); other new renderer functions **2.0–9.0**, 100% coverage.
+Changed `drawTerrain` **29.0** and `drawMachines` **24.0**, both 100% coverage.
+New review/reference functions score at most **8.0**, with 100% coverage.
+All new/changed functions are under 30. Stamps: Draw e1036be0, build 602ed3ca.
+Source stayed frozen through final check, FPS and coverage; only this log
+was completed afterwards. FIFO locking and six-file concurrency retained.
+
+**Performance:** matched `npm run fps -- 3 23 43 --season none`, before
+against the saved pre-change public assets and after against final frozen
+source, behind the shared lock. Before → after, all three levels:
+**60 median / 60 p5, 17 ms worst frame, 0% long tasks → identical**.
+CPU **12/13/13% → 10/10/11%**; no speedup claimed against changing desktop
+load. No frame-rate loss measured. The initial wrong-level FPS run and a
+probe begun before its isolated root existed were discarded; both correct
+final measurements exited 0. Complete logs and explicit exit files:
+/tmp/xmas-dressing/biome2-3/{before-check,focused-final,final-check,crap,
+before-fps,after-fps}.{log,exit}.
+
+**Next:** watch the alpine silhouettes and strata on crowded native boards.
+No known unresolved art, test or performance issue. Visual review used the
+real raster renderer rather than live QML; its gradients use the documented
+approximation. No merge, push, deployment, production requests, port 8787
+changes, sibling writes or Omarchy writes.

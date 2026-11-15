@@ -1,3 +1,4 @@
+import {alpineSuccessor} from '../tools/alpine-reference.js'
 import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -26,7 +27,7 @@ test('disabling only the three reviewed poses restores the exact complete C10 ag
    sum.update(worldFrame(S,draw,P,{level,seed:3,ticks:tick,theme:'tokyo-night',res,page:res===2}).img.buf)
   assert.equal(foePins.disabled[ticks.join(',')].before,expected)
   assert.equal(ironPins.disabled[ticks.join(',')].before,foePins.disabled[ticks.join(',')].after)
-  assert.equal(sum.digest('hex'),draw===disabled?ironPins.disabled[ticks.join(',')].after:expected)
+  assert.equal(sum.digest('hex'),draw===disabled?alpineSuccessor(ironPins.disabled[ticks.join(',')].after):expected)
  }}finally{Math.random=random}
 })
 for(const name of names)test(name+': consecutive native/page frames retain deliberate exact historical and reviewed pins',()=>{

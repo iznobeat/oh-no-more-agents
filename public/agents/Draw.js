@@ -206,6 +206,7 @@ function drawTerrain(ctx, w, pal) {
   drawAssemblyBackdrop(ctx, w)
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
+  drawAlpineSky(ctx, w, pal)
   drawIronworksHall(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
@@ -245,6 +246,7 @@ function drawTerrain(ctx, w, pal) {
 
   if (w.biome === "Foundry") drawFoundryMaterials(ctx, w, pal)
   if (spaceshipPage(w)) drawSpaceshipMaterials(ctx, w, pal)
+  drawAlpineSnow(ctx, w, pal)
   drawIronworksBrick(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
@@ -265,6 +267,7 @@ function drawTerrain(ctx, w, pal) {
   drawPortQuay(ctx, w)
   drawCloudPageBanks(ctx, w, pal)
   drawChristmasGround(ctx, w)
+  drawAlpineFirs(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2356,6 +2359,7 @@ function drawBeltDrum(ctx, w, pal, x, top, side, dir) {
 }
 
 function drawMachines(ctx, w, pal) {
+  drawAlpineLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -26883,4 +26887,126 @@ function drawIronworksDuct(ctx,w,pal,x,top,bottom) {
     ctx.fillRect(x+5,y+2,1,1)
   }
   ctx.globalAlpha=1
+}
+
+// C16: the exposed alpine snowfield, at native scale as well as on the page.
+// The old ridge, material grain, icicles, snowfall and aurora still paint.
+function drawAlpineSky(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var top=w.k.SKY*w.k.CELL, wide=w.k.COLS*w.k.CELL
+  for(var n=0;n<7;n++) {
+    var peak=n*67-12+(w.level%5)*3, summit=top+4+(n*13+w.level*3)%25
+    for(var row=0;row<52;row+=2) {
+      var half=Math.floor(row*0.85), y=summit+row
+      ctx.fillStyle=pal.backDim
+      ctx.fillRect(peak-half,y,half*2+2,2)
+      ctx.fillStyle=pal.backLit;ctx.globalAlpha=0.65
+      ctx.fillRect(peak-half,y,half+1,2)
+      if(row<14) {
+        ctx.fillStyle=pal.decorDim;ctx.globalAlpha=0.65
+        ctx.fillRect(peak-half,y,Math.max(1,half-Math.floor(row/3)),2)
+      }
+      ctx.globalAlpha=1
+    }
+  }
+  ctx.fillStyle=pal.backLit;ctx.globalAlpha=0.35
+  ctx.fillRect(0,top-3,wide,1)
+  ctx.restore()
+}
+function drawAlpineSnow(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var k=w.k
+  for(var y=k.SKY;y<k.ROWS;y++) for(var x=0;x<k.COLS;x++) {
+    var m=w.terrain[y*k.COLS+x]
+    if(m===k.DIRT || m===k.ROCK) drawAlpineStratum(ctx,w,pal,x,y,m)
+  }
+  ctx.restore()
+}
+function drawAlpineStratum(ctx,w,pal,x,y,m) {
+  var C=w.k.CELL, px=x*C, py=y*C
+  var bend=Math.floor(2*Math.sin(x/11)+2*Math.sin(x/27)), band=(py+bend+64)%23
+  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=m===w.k.DIRT ? 0.26 : 0.08
+  if(band<9) ctx.fillRect(px,py,C,C)
+  ctx.fillStyle=pal.dirtShade;ctx.globalAlpha=0.28
+  if(band>18) ctx.fillRect(px,py+2,C,1)
+  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.48
+  if(band<4) ctx.fillRect(px,py+1,C,1)
+  // Short buried facets, rather than a replacement fill over the old stone.
+  if((x*17+y*31+w.level)%43===0) {
+    ctx.fillStyle=pal.rockShade;ctx.globalAlpha=0.4
+    ctx.fillRect(px+1,py+1,1,2);ctx.fillRect(px+2,py+2,1,1)
+  }
+  if((w.res||1)>=2 || w.terrain[(y-1)*w.k.COLS+x]!==w.k.EMPTY) return
+  ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.8
+  ctx.fillRect(px,py,C,1)
+}
+var ALPINE_CACHE=new WeakMap()
+function alpineSpots(w) {
+  var old=ALPINE_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain) return old.spots
+  var spots=[],C=w.k.CELL,boxes=abyssReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var cor=w.corridors[row],y=cor.floorY*C-25, count=0
+    for(var x=24+(w.level*11+row*23)%39;x<w.k.COLS*C-26;x+=11) {
+      if(!w.terrain[cor.floorY*w.k.COLS+Math.floor((x+6)/C)]) continue
+      if(!alpineClear(w,x-3,y-3,25,28,boxes)) continue
+      spots.push({x:x,y:y,seed:x+row*17})
+      x+=42;count++
+      if(count===2 || spots.length>=7) break
+    }
+    if(spots.length>=7) break
+  }
+  ALPINE_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function alpineClear(w,x,y,width,height,boxes) {
+  if(!abyssClear(w,x,y,width,height,boxes)) return false
+  var k=w.k,C=k.CELL
+  for(var yy=Math.floor(y/C);yy<=Math.floor((y+height-1)/C);yy++)
+    for(var xx=Math.floor(x/C);xx<=Math.floor((x+width-1)/C);xx++)
+      if(w.terrain[yy*k.COLS+xx]!==k.EMPTY) return false
+  return true
+}
+function drawAlpineFirs(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var spots=alpineSpots(w)
+  for(var i=0;i<spots.length;i++) drawAlpineFir(ctx,w,pal,spots[i])
+  ctx.restore()
+}
+function drawAlpineFir(ctx,w,pal,b) {
+  var x=b.x+6,y=b.y+2
+  ctx.fillStyle=pal.rockShade
+  ctx.fillRect(x,y,2,23)
+  for(var tier=0;tier<5;tier++) {
+    var half=2+tier, yy=y+tier*4
+    ctx.fillStyle=pal.rockShade
+    ctx.fillRect(x-half,yy+2,half*2+3,2)
+    ctx.fillRect(x-half+1,yy,half*2,2)
+    ctx.fillStyle=pal.backLit
+    ctx.fillRect(x-half,yy+1,half+1,1)
+    ctx.fillStyle=pal.decorDim;ctx.globalAlpha=0.85
+    ctx.fillRect(x-half+1,yy,half,1)
+    ctx.globalAlpha=1
+  }
+  ctx.fillStyle=pal.backLit
+  ctx.fillRect(x-4,y+22,12,1)
+}
+function drawAlpineLife(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var spots=alpineSpots(w),t=w.reducedMotion ? 0 : w.ticks
+  for(var i=0;i<spots.length;i++) drawAlpineWisp(ctx,w,pal,spots[i],t)
+  ctx.restore()
+}
+function drawAlpineWisp(ctx,w,pal,b,t) {
+  ctx.fillStyle=pal.decorLit
+  for(var flake=0;flake<4;flake++) {
+    var age=(Math.floor(t/4)+b.seed+flake*11)%43
+    var x=b.x-2+Math.floor(age/3),y=b.y+3+flake*5-Math.floor(age/12)
+    ctx.globalAlpha=(43-age)/110
+    moteFineRect(ctx,w,x,y,2+Math.floor(age/15),1)
+  }
 }

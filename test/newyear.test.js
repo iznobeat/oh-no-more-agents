@@ -1,3 +1,4 @@
+import {alpineSuccessor} from '../tools/alpine-reference.js'
 import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -44,7 +45,7 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
       if(review)assert.equal(historical,review.before)
       const iron=ironPins.newyear[`${mode}/${level}/${res}`],prior=review?review.after:historical
       if(iron)assert.equal(iron.before,prior)
-      assert.equal(hash(christmasFrame(D,b,wb,res).buf),iron?iron.after:prior,`${mode} ${level} ${res}`)
+      assert.equal(hash(christmasFrame(D,b,wb,res).buf),alpineSuccessor(iron?iron.after:prior),`${mode} ${level} ${res}`)
       if(level===1 || level===21){
         wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30
         const report=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).reports[`${mode}/${level}/${res}`]
