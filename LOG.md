@@ -13796,3 +13796,13 @@ urn/laurel balance in narrow Ruins 62. No known unresolved test, art or frame
 rate issue. Visual assessment used the real raster renderer, not live QML.
 No merge, push, deploy, production requests, port 8787 changes, sibling writes
 or Omarchy writes.
+
+## 483 — 2026-11-15 · Deploy: Frost's peaks and firs, the Ruins' sanctuary
+
+**Deployed** build 9def91c5 (Worker version 1fa4cf94), replacing 563e8216;
+covers C16 (revised: Frost keeps its own mottled terrain, and gains a clear
+band of peaks behind the aurora, firs and spindrift) and C17 (the Ruins:
+masonry, sanctuary silhouettes, sun reliefs, urns with laurels, butterflies;
+reviewed at full frame and in a close crop at res 2). **Before:** gate
+1830/1830; `npm run smoke -- --level 2` passed (2–7). **After:** `npm run
+verify -- --previous 563e8216` passed.
