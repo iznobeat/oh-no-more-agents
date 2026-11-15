@@ -6652,6 +6652,7 @@ function drawHatch(ctx, w, pal) {
   var x = Math.round(w.hatch.x * C)
   var y = w.hatch.y * C
   var open = hatchOpen(w)
+  if (w.biome === "North Pole") return drawNorthHatch(ctx, w, pal, x, y, open)
   var kick = hatchKick(w)
   // The housing settles on its brackets; the mouth stays on the spawn line.
   var bob = kick < 0 ? 0 : HATCH_RECOIL[kick]
@@ -14164,6 +14165,7 @@ function drawAgent(ctx, w, pal, ag, opts) {
 
   if (libraryShelfPose(w, ag)) drawShelfGrip(ctx, w, pal, ag, ox, oy, dir, robe)
 
+  drawNorthScarf(ctx, w, ag, ox, oy, dir, bodyDrop, idle)
   drawAgentMarks(ctx, w, pal, ag, ox, oy, dir, st, bodyDrop)
   drawAgentGagFinish(ctx, w, pal, ag, ox, oy, st, dir, bodyDrop)
 
@@ -25378,4 +25380,93 @@ function northSnowDepths(w) {
   }
   NORTH_SNOW_DEPTHS.set(w,scene)
   return scene
+}
+
+// Knitted winter kit belongs to the biome, independent of the page season.
+var NORTH_SCARF_RED = ["#d42a3c", "#a91f48", "#e04d35"]
+var NORTH_SCARF_POSES = {walk:true,fall:true,wait:true,block:true,camp:true,bash:true,dig:true,build:true,climb:true,ride:true,saved:true,bomb:true,ceil:true}
+function northScarfMotion(w,ag,idle) {
+  if (w.reducedMotion) return {length:0,wave:0}
+  var phase=((ag.anim||0)+(ag.id||0)*3)>>2
+  if (ag.state==="saved") return {length:6,wave:[0,-1,-2,-1,1,2,0,-1][Math.min(7,Math.floor((ag.fade||0)/2))]}
+  if (ag.state==="fall") return {length:6,wave:[0,1,0,-1][phase%4]}
+  if (ag.state!=="walk" || idle) return {length:0,wave:0}
+  return {length:skating(w,ag)?9:6,wave:[0,1,0,-1][phase%4]}
+}
+function drawNorthScarf(ctx,w,ag,x,y,d,drop,idle) {
+  if (w.biome!=="North Pole" || !NORTH_SCARF_POSES[ag.state]) return
+  var fine=(w.res||1)>=2, pixel=fine?blitFine:blit
+  var red=NORTH_SCARF_RED[(ag.id||0)%3], motion=northScarfMotion(w,ag,idle)
+  // Top edge is below the face. Use the body's supplied drop, including the
+  // page gait and landing squash, and the existing sprite flip/transform.
+  var head=traitHeadOffset(w,ag)
+  x+=d*head.x
+  var neck=7+drop+head.y-(idle && idle.pose==="glance"?1:0)
+  for(var i=0;i<6;i++) {
+    ctx.fillStyle=i%3===1?"#fff1da":red
+    pixel(ctx,x,y,d,i+1,neck,1,2)
+  }
+  drawNorthScarfTail(ctx,w,x,y,d,neck,red,motion)
+}
+function drawNorthScarfTail(ctx,w,x,y,d,neck,red,motion) {
+  var fine=(w.res||1)>=2, pixel=fine?blitFine:blit
+  var length=motion.length||6
+  for(var i=0;i<length;i++) {
+    var tx=motion.length ? -i : 0
+    var ty=motion.length ? neck+1+Math.round(i/length*motion.wave) : neck+1+i
+    ctx.fillStyle=Math.floor(i/2)%2?"#fff1da":red
+    pixel(ctx,x,y,d,tx,ty,2,2)
+    if (fine) {
+      ctx.fillStyle=i%2?"#fff1da":"#f48b86"
+      pixel(ctx,x,y,d,tx+0.5,ty+0.5,0.5,0.5)
+    }
+  }
+  ctx.fillStyle=red
+  var endX=motion.length?1-length:0, endY=motion.length?neck+1+motion.wave:neck+length
+  pixel(ctx,x,y,d,endX,endY+2,1,1)
+}
+
+// A ceiling-slung gift: same housing, spawn line and door angle as the machine.
+function drawNorthHatch(ctx,w,pal,x,y,open) {
+  var shake=northHatchShake(w)
+  ctx.save();ctx.translate(shake,0)
+  ctx.fillStyle="#742334";ctx.fillRect(x-14,y-10,28,10)
+  ctx.fillStyle="#c73542";ctx.fillRect(x-13,y-9,26,8)
+  ctx.fillStyle="#e45854";ctx.fillRect(x-13,y-9,26,2)
+  ctx.fillStyle="#f4ca68";ctx.fillRect(x-2,y-10,4,10);ctx.fillRect(x-14,y-5,28,2)
+  ctx.fillStyle="#742334";ctx.fillRect(x-16-shake,y-2,32,4)
+  ctx.fillStyle="#c73542";ctx.fillRect(x-15-shake,y-1,30,2)
+  ctx.fillStyle="#f4ca68";ctx.fillRect(x-16-shake,y-2,32,1)
+  ctx.fillRect(x-2,y-2,4,4)
+  // The hatch is near the board's top: keep the whole bow in view.
+  ctx.fillRect(x-8,y-11,6,1);ctx.fillRect(x+2,y-11,6,1)
+  ctx.fillRect(x-8,y-10,1,2);ctx.fillRect(x+7,y-10,1,2)
+  ctx.fillRect(x-7,y-8,5,1);ctx.fillRect(x+2,y-8,5,1)
+  ctx.fillStyle="#fff1b0";ctx.fillRect(x-2,y-10,4,3)
+  if ((w.res||1)>=2) drawNorthHatchFine(ctx,x,y)
+  ctx.restore()
+  ctx.fillStyle=pal.hatchMouth;ctx.fillRect(x-9,y+2,18,3)
+  drawNorthGiftFlaps(ctx,x,y,open)
+}
+function northHatchShake(w) {
+  if (w.reducedMotion || w.done || w.released>=w.toRelease) return 0
+  var left=w.releaseInterval-w.releaseTimer
+  return left>0 && left<=4 ? [0,-1,1,-1,1][left] : 0
+}
+function drawNorthHatchFine(ctx,x,y) {
+  ctx.fillStyle="#fff1b0"
+  ctx.fillRect(x-1.5,y-6,0.5,8);ctx.fillRect(x-15,y-2,30,0.5)
+  ctx.fillRect(x-7,y-10.5,4,0.5);ctx.fillRect(x+3,y-10.5,4,0.5)
+  // Little paper stars, rather than letters or a label.
+  for(var side=-1;side<=1;side+=2) {
+    ctx.fillRect(x+side*9-1,y-7,2.5,0.5);ctx.fillRect(x+side*9,y-8,0.5,2.5)
+  }
+}
+function drawNorthGiftFlaps(ctx,x,y,open) {
+  var angle=open*Math.PI*0.5
+  for(var i=0;i<9;i++) {
+    var dx=Math.round(i*Math.cos(angle)),dy=Math.round(i*Math.sin(angle))
+    ctx.fillStyle=i%4<2?"#c73542":"#f4ca68"
+    ctx.fillRect(x-9+dx,y+2+dy,1,2);ctx.fillRect(x+8-dx,y+2+dy,1,2)
+  }
 }
