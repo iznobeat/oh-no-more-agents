@@ -431,3 +431,13 @@ test("at the Pole the special who restocks the toolbar is Santa: hat and beard, 
   w.biome = "North Pole"; ag.special = "rubberduck"
   assert.equal(shot("North Pole"), blank, "only the Package Manager")
 })
+
+test("Santa comes down in a present at the Pole, a packing crate everywhere else", () => {
+  const w = S.generate(42, 0, 3), pal = P.build(theme, 42)
+  const ag = Object.assign(S.spawn(w), { x: 40, y: 30, state: "height", dir: 1, special: "pkgmanager" })
+  const shot = biome => { w.biome = biome; const img = canvas(400, 248, "#000000"); D.drawGearCrate(img.ctx, w, pal, ag, 156, 104, 1, "#c43d3d", "#f4f1e8", {}); return img }
+  const pole = shot("North Pole"), mail = shot("Mail Room")
+  assert.notEqual(digest(pole.buf), digest(mail.buf))
+  const px = (img, x, y) => [...img.buf.slice((y * 400 + x) * 3, (y * 400 + x) * 3 + 3)]
+  assert.deepEqual(px(pole, 159, 113), [0xf2, 0xc1, 0x4e], "a gold ribbon")
+})

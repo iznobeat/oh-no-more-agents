@@ -13566,6 +13566,7 @@ function drawGearBrolly(ctx, w, pal, ag, ox, oy, dir, robe, hair, fr) {
 var CRATE_WOOD = "#b7864b", CRATE_DARK = "#7a5530"
 function drawGearCrate(ctx, w, pal, ag, ox, oy, dir, robe, hair, fr) {
   var y = oy + 9
+  if (w.biome === "North Pole") return drawGearPresent(ctx, ox, y)
   ctx.fillStyle = CRATE_WOOD
   ctx.fillRect(ox - 2, y, 12, 8)
   ctx.fillStyle = CRATE_DARK
@@ -13573,6 +13574,18 @@ function drawGearCrate(ctx, w, pal, ag, ox, oy, dir, robe, hair, fr) {
   ctx.fillRect(ox - 2, y, 1, 8); ctx.fillRect(ox + 9, y, 1, 8)
   ctx.fillStyle = "#1a1a20"
   ctx.fillRect(ox + 3, y + 1, 2, 2); ctx.fillRect(ox + 2, y + 2, 4, 1)      // "this way up"
+}
+
+// At the Pole Santa comes down in a present, not a packing crate: red paper,
+// a gold ribbon both ways and a bow on top.
+function drawGearPresent(ctx, ox, y) {
+  ctx.fillStyle = NP_RED_DARK
+  ctx.fillRect(ox - 2, y, 12, 8)
+  ctx.fillStyle = NP_RED
+  ctx.fillRect(ox - 1, y + 1, 10, 6)
+  ctx.fillStyle = NP_GOLD
+  ctx.fillRect(ox + 3, y, 2, 8); ctx.fillRect(ox - 2, y + 3, 12, 2)            // the ribbon
+  ctx.fillRect(ox + 1, y - 2, 2, 2); ctx.fillRect(ox + 5, y - 2, 2, 2)          // the bow
 }
 
 // Rubber Duck's way down: sat on an inflatable duck, which bobs. The duck's

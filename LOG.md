@@ -13032,3 +13032,10 @@ shadow line in the beard at res 2).
 **Test:** northpole (the special at every Pole level that has one, specials
 elsewhere still varied; hat and beard at the Pole only, on the Package
 Manager only). The native North Pole pin re-captured (level 42 has him).
+
+## 477 — 2026-11-15 · Santa comes down in a present
+
+**Changed (Draw):** the Package Manager's way down is a crate it unpacks
+itself out of; at the Pole (where it is Santa, 476) the crate is a present —
+red paper, a gold ribbon both ways, a bow on top (`drawGearPresent`).
+**Test:** northpole (a present at the Pole, the crate elsewhere).
