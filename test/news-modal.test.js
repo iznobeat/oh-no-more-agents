@@ -16,8 +16,8 @@ test("patch notes: keyboard focus enters, wraps both ways, blocks the page, and 
     assert.equal(r.exceptionDetails, undefined, "page expression did not throw")
     return r.result.value
   }
-  const until = async (expression, expected) => {
-    for (let i = 0; i < 40; i++) { if (await ev(expression) === expected) return; await sleep(50) }
+  const until = async (expression, expected, tries = 40) => {
+    for (let i = 0; i < tries; i++) { if (await ev(expression) === expected) return; await sleep(50) }
     assert.equal(await ev(expression), expected, expression)
   }
   const key = async (key, code, vk, modifiers = 0) => {
@@ -38,7 +38,9 @@ test("patch notes: keyboard focus enters, wraps both ways, blocks the page, and 
   try {
     await b.cmd("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
     await b.cmd("Page.navigate", { url: `http://127.0.0.1:${server.address().port}/?level=3&seed=42` })
-    await until(`!!(window.AgentWorld && AgentWorld())`, true)
+    // Booting the page: up to 10 s, not 2 — under a full parallel run the 1 MB
+    // of scripts can take longer than the focus checks below ever should.
+    await until(`!!(window.AgentWorld && AgentWorld())`, true, 200)
     await open()
     assert.equal(await ev(`document.activeElement.tagName`), "BUTTON", "the close control is a real button")
     for (const shift of [0, 8]) for (let i = 0; i < 3; i++) {

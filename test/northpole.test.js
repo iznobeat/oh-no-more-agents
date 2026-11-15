@@ -441,3 +441,17 @@ test("Santa comes down in a present at the Pole, a packing crate everywhere else
   const px = (img, x, y) => [...img.buf.slice((y * 400 + x) * 3, (y * 400 + x) * 3 + 3)]
   assert.deepEqual(px(pole, 159, 113), [0xf2, 0xc1, 0x4e], "a gold ribbon")
 })
+
+test("waiting at the Pole, the colony packs snowballs instead of checking its phones; the ball grows", () => {
+  const w = S.generate(42, 0, 3), pal = P.build(theme, 42)
+  const ag = Object.assign(S.spawn(w), { x: 30.5, y: 28, state: "walk", dir: 1, waitFor: 5, anim: 0 })
+  const poses = new Set()
+  for (let t = 0; t < 2000; t++) { w.ticks = t; const i = D.agentIdle(w, ag); if (i && i.pose) poses.add(i.pose) }
+  assert.ok(poses.has("snowball") && !poses.has("drum"), [...poses].join())
+  const cavern = Object.assign({}, w, { biome: "Cavern" })
+  const elsewhere = new Set()
+  for (let t = 0; t < 2000; t++) { cavern.ticks = t; const i = D.agentIdle(cavern, ag); if (i && i.pose) elsewhere.add(i.pose) }
+  assert.ok(!elsewhere.has("snowball") && elsewhere.has("drum"), "only at the Pole")
+  const ball = phase => { const img = canvas(400, 248, "#000000"); D.drawIdleSnowball(img.ctx, w, pal, 100, 100, 1, "#333", phase); return digest(img.buf) }
+  assert.equal(new Set([0, 14, 28].map(ball)).size, 3, "it grows as it is packed")
+})

@@ -9003,8 +9003,13 @@ function agentIdle(w, ag) {
   var turn = (Math.floor(clock / period) + ag.id) % 3
   // A queue is short, so it shows its pose the whole time rather than now and then.
   var posing = phase < 36 || kind === "queue"
-  return { kind: kind, phase: phase, pose: posing ? IDLE_REPERTOIRE[kind][turn] : "" }
+  var pose = posing ? IDLE_REPERTOIRE[kind][turn] : ""
+  // At the Pole the phone, the drumming and the stretch give way to packing a
+  // snowball: there is snow underfoot and nothing better to do while waiting.
+  if (w.biome === "North Pole" && POLE_IDLE[pose]) pose = "snowball"
+  return { kind: kind, phase: phase, pose: pose }
 }
+var POLE_IDLE = { phone: true, drum: true, stretch: true }
 
 // Sleeve rectangles. Hands and props go on after the suit's fine pass, so a
 // lapel cannot paint over a wristwatch. The feet stay together and planted;
@@ -9012,7 +9017,7 @@ function agentIdle(w, ag) {
 var IDLE_SLEEVES = {
   watch: [[5, 9, 4, 2], [6, 8, 2, 2]], fold: [[0, 9, 8, 2]],
   phone: [[6, 9, 3, 2]], glance: [], yawn: [[6, 6, 2, 5]],
-  drum: [[6, 10, 4, 1]], tie: [[5, 8, 2, 3]], tap: [], stretch: []
+  drum: [[6, 10, 4, 1]], tie: [[5, 8, 2, 3]], tap: [], stretch: [], snowball: [[5, 9, 3, 2]]
 }
 function drawIdleBody(ctx, w, pal, ag, ox, oy, dir, robe, drop, idle) {
   if ((w.res || 1) >= 2 && idle.kind === "block") return drawBracedBlocker(ctx, w, pal, ag, ox, oy, dir, robe, idle)
@@ -9042,7 +9047,23 @@ function drawIdleFine(ctx, pal, ag, ox, oy, dir, drop, idle, w) {
 
 var IDLE_GESTURES = {
   watch: drawIdleWatch, fold: drawIdleFold, phone: drawIdlePhone,
-  yawn: drawIdleYawn, drum: drawIdleDrum, tie: drawIdleTie, stretch: drawIdleStretch
+  yawn: drawIdleYawn, drum: drawIdleDrum, tie: drawIdleTie, stretch: drawIdleStretch,
+  snowball: drawIdleSnowball
+}
+// Packing a snowball: both hands out in front, the ball between them growing
+// as it is pressed, and at page resolution a glint and a few crumbs.
+function drawIdleSnowball(ctx, w, pal, ox, oy, dir, robe, phase) {
+  var size = phase < 12 ? 1 : phase < 24 ? 2 : 3
+  ctx.fillStyle = pal.skin
+  blit(ctx, ox, oy, dir, 7, 9, 1, 2)
+  blit(ctx, ox, oy, dir, 8 + size, 9, 1, 2)
+  ctx.fillStyle = NP_SNOW
+  blit(ctx, ox, oy, dir, 8, 11 - size, size, size)
+  if ((w.res || 1) < 2) return
+  ctx.fillStyle = "#ffffff"
+  blitFine(ctx, ox, oy, dir, 8, 11 - size, 0.5, 0.5)
+  ctx.fillStyle = NP_DRIFT
+  if (phase % 8 < 4) blitFine(ctx, ox, oy, dir, 8 + size / 2, 12 + (phase % 4) * 0.5, 0.5, 0.5)
 }
 function drawIdleGesture(ctx, w, pal, ag, ox, oy, dir, robe, drop, idle) {
   if (!idle || colonyBalance(w,ag)) return

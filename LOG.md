@@ -13162,3 +13162,16 @@ foes-3/crap.log, all under `/tmp/xmas-dressing/`.
 unresolved art/test issue; review uses real Canvas rendering and staged boards,
 not a live Omarchy/QML session. No merge, push, deploy, production request,
 port 8787 change or Omarchy write.
+
+## 479 — 2026-11-15 · Snowballs while they wait
+
+**Changed (Draw):** an agent with nothing to do at the North Pole — waiting
+its turn, held at a wall, stuck a while — packs a snowball where it would
+elsewhere check its phone, drum its fingers or stretch: both hands out in
+front, the ball growing between them as it is pressed, a glint and crumbs at
+page resolution (`POLE_IDLE`, `drawIdleSnowball`). Same timing as every idle
+pose; the other poses are unchanged.
+**Test:** northpole (snowball at the Pole, the drum elsewhere, it grows).
+**Also:** `test/news-modal.test.js` failed once in the full gate (the page
+had not booted within its 2 s wait; 3 of 3 passes alone). With six test
+files at once (464) the boot wait is now 10 s; the focus checks keep 2 s.
