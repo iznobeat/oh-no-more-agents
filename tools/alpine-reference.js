@@ -1,3 +1,4 @@
+import {cryoSuccessor} from './cryo-reference.js'
 import {antiqueSourceBefore} from './antique-art.js'
 import antiquePins from '../test/fixtures/antique-scenes.json' with {type:'json'}
 import pins from '../test/fixtures/alpine-scenes.json' with {type:'json'}
@@ -6,4 +7,4 @@ import pins from '../test/fixtures/alpine-scenes.json' with {type:'json'}
 export function alpineSourceBefore(source){
  return antiqueSourceBefore(source).replace(/^  drawAlpine(?:Sky|Snow|Firs|Life)\(ctx, w, pal\)\n/gm,'')
 }
-export function alpineSuccessor(previous){const prior=pins[previous]?.after || previous;return antiquePins[prior]?.after || prior}
+export function alpineSuccessor(previous){const prior=pins[previous]?.after || previous;return cryoSuccessor(antiquePins[prior]?.after || prior)}

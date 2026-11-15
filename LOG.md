@@ -13806,3 +13806,145 @@ masonry, sanctuary silhouettes, sun reliefs, urns with laurels, butterflies;
 reviewed at full frame and in a close crop at res 2). **Before:** gate
 1830/1830; `npm run smoke -- --level 2` passed (2–7). **After:** `npm run
 verify -- --previous 563e8216` passed.
+
+## C18 — 2026-11-16 · Ice Cave gains a cathedral of blue ice
+
+**Chose:** Ice Cave, after rendering all 21 biomes out of season with
+`node tools/shoot.js biomes --ticks 350` and every individual
+`shoot.js level N --ticks 350`, res 1/2, scale 1. Inspected the complete
+catalogue side by side in three seven-board parts at each resolution.
+Library's stacks, Subway's station and the revised Ruins establish a place
+at either scale. Factory was the other weak native board, but has readable
+cogs, belts and a distinct assembly floor on the page. Ice Cave's native
+board was mostly untextured blue slabs and repeated triangle icicles against
+empty dark air. Its good blue-green page columns did nothing for the panel.
+That made it the weakest remaining complete scene, especially at 1x.
+Baseline: d23489275d26fb1c4e64e953923f7a967bba9081.
+
+**Changed (Draw only):** distant faceted ice pillars, broad hanging shoulders
+at the upper cavern and large interlocking crystal fans give the corridors depth.
+All are cached terrain paint, behind the original backdrop and the existing
+page columns. Bare native DIRT gains sparse three-row ice facets. The page's
+existing grain, cracks and inclusions get no second texture. Every original
+material painter, colour, icicle, crystal, decor piece and frozen colleague
+remains. New paint uses Palette roles only; Palette.js is untouched.
+
+One supported crystal group per safe corridor at most (three differently
+sized prisms, a low ice base) provides a few readable focal points rather
+than a field of small repeated props. A handful of slow frost fragments drift
+around the groups from drawMachines. Complete placement/motion envelopes
+reserve original decor, hazard zones, pits, the exit, hatch approach and frozen
+colleagues. Sites are layout-derived, cached in a world-keyed WeakMap by terrain
+version and terrain identity. Each live fragment also tests current air;
+reduced motion holds it still. No per-tick board scan, world write, drawing
+RNG, actor or umbrella change, new text, dependency or simulation change.
+Sim.js, sfx.js and season.js stayed untouched. Every other biome retains exact
+full-frame pixels at both resolutions and both audited times.
+
+**Review/tool:** /tmp/xmas-dressing/biome4-audit/res{1,2}/ retains the complete
+out-of-season audit and individual level frames. Before assets are preserved
+in /tmp/xmas-dressing/biome4-6/before/public. Inspected rounds 1–3. Rejected the
+first square recesses and the ordering that covered original page columns;
+placed the new layer behind them and changed the recesses to broad crystal
+fans. Tight early layouts exposed an overly large prop envelope; narrowed the
+group and used a cached one-pixel placement search to find genuinely safe sites.
+A focused scope audit also caught and removed an accidental support-helper
+substitution in Ruins before accepting the final art.
+
+`tools/cryo-art.js <out>` retains twelve complete before-left / after-right
+boards: 6/26/46, ticks 350/900, res 1/2. It pins cosmetic randomness, writes
+individual pairs, full sheets, and four historical scene pairs per resolution.
+Inspected final full-frame sheets at their actual native/page size:
+
+- /tmp/xmas-dressing/biome4-6/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome4-6/final/full-res2-sheet.png
+
+Also inspected final/pinned-res1-sheet.png and pinned-res2-sheet.png in the
+same directory (ordinary/Christmas frames and C6's staged Ice Cave scenes).
+The native changes read at full frame; page columns, material grain, hazard
+tells and colony contrast remain clear. Review used the real raster renderer,
+not a live QML panel; render.js approximates gradients as documented.
+
+**Pins deliberately advanced:** no old golden JSON was overwritten.
+`test/fixtures/cryo-pins.json` records the independent before/after full frames;
+`cryo-scenes.json` records the following explicit historical transitions.
+Removing four C18 hooks recovers the exact complete predecessor; the new scope
+test checks all 21 biomes at both resolutions/times. Earlier C15–C17 reference
+helpers strip those later hooks before checking their original pins, then the
+current aggregate assertions follow the explicit C18 transitions. Every old
+assertion remains in force; no biome, scene or frame was exempted.
+The C6 legacy cast sample uses a four-byte stride on an RGB buffer and samples
+some scenery, so its native Ice Cave transition is explicit too. Independent
+two-background RGB masks prove truly opaque colony/umbrella, hazard-tell and
+frozen-colleague pixels retain their exact complete-frame colours.
+SHA-256 prefixes (full values retained in the JSON fixtures):
+- full `6/350/1`: `d0b8af54` → `73211e1a`.
+- full `6/900/1`: `e558685a` → `7131a4a6`.
+- full `26/350/1`: `6e835552` → `1997c857`.
+- full `26/900/1`: `772ad623` → `ecca8db9`.
+- full `46/350/1`: `ff980524` → `d991c3c2`.
+- full `46/900/1`: `28189c96` → `415a9f6f`.
+- full `6/350/2`: `94fdce55` → `82043028`.
+- full `6/900/2`: `566ca522` → `d7345abf`.
+- full `26/350/2`: `2d9bf253` → `03a4db99`.
+- full `26/900/2`: `05f18393` → `b461774e`.
+- full `46/350/2`: `c871f9e2` → `ee979bc6`.
+- full `46/900/2`: `18d53a84` → `97923c6f`.
+- `aggregates/350,900`: `044d9554` → `8c6d3baa`.
+- `disabled/350,900`: `7511b42f` → `7d7e3e56`.
+- `aggregates/120,350`: `5030e32f` → `2ff3f718`.
+- `disabled/120,350`: `b8f6c9f8` → `c31fb0a2`.
+- `newyear/none/6/1`: `ef2a87e6` → `ac31dab1`.
+- `newyear/none/6/2`: `42afcca5` → `8efd833f`.
+- `newyear/christmas/6/1`: `3fb01cf2` → `0ac9a846`.
+- `newyear/christmas/6/2`: `bf1c8626` → `60f67d36`.
+- `c6cast/Ice Cave/1`: `73ca5a58` → `d0daadcd`.
+- `c6full/Ice Cave/1/120`: `bcdb0048` → `82c865a1`.
+- `c6full/Ice Cave/1/400`: `16042f72` → `d5827437`.
+- `c6full/Ice Cave/2/120`: `0e0fff1f` → `f15abf86`.
+- `c6full/Ice Cave/2/400`: `9755828b` → `3625a89a`.
+- `exitNative`: `a1ad3873` → `c1c6cdcf`.
+- `office`: `a4031044` → `e30eb9a6`.
+
+**Validation:** baseline `npm run check`: **1830/1830**, exit 0, 179.39 s.
+Checked `test/cryo-art.test.js` was free with `test -e` before creating it.
+Ten new tests cover twelve independently pinned reviewed frames and a visible
+full-frame change floor, all-biome scope and exact source restoration, all-theme
+palette/grid/context and frozen-world purity, native-only material scope and
+static cached art, supported/reserved placements and cache identity/version
+invalidation, current-air clipping and reduced motion, opaque colony/umbrella
+colours, reproducible review artifacts and historical transitions, varied-layout
+hatch/frozen-colleague clearance, and opaque hazard/frozen-colleague colours
+through charge/fire poses. Digests and bounded byte/call loops only;
+no new raw-buffer deepEqual. Final focused file: **10/10**.
+
+An initial sandboxed baseline launcher hit Node child-process EPERM; the normal
+escalated baseline completed. The first final check process ended with SIGTERM
+143 before totals and was not accepted as a pass. The retry uses a persistent
+user service and explicit exit file. CRAP ran once to completion on the frozen
+source; its fresh coverage passed **1840/1840** in 339.70 s and
+`npm run crap -- --changed --threshold 30` exited **0**. Highest new renderer
+score **12.1** (cryoSpots); new cached/live painters **3–8**, support **3**;
+new review/scene helpers at most **8**. Changed drawTerrain **29**, drawMachines
+**24**. Stamps: Draw b2109c2e, build 2630d920. Shared FIFO lock and unchanged
+six-file concurrency retained. No source/stamp edits during gates.
+
+Final `npm run check`: **1840/1840**, exit **0**, 159.43 s. Only this log
+was completed after the frozen-source gates. Logs and explicit exits:
+/tmp/xmas-dressing/biome4-6/{baseline-check,check1,final-check,crap1}.log,
+final-check.exit and crap1.exit. The interrupted check1 log has no accepted
+result; final-check is the successful persistent retry.
+
+**Performance:** matched back-to-back `npm run fps -- 6 26 46 --season none`,
+exact baseline assets versus frozen current source, under the shared lock after
+coverage. Before and after, all three levels: **60 median / 60 p5, 17 ms worst
+frame, 0% long tasks**. CPU **10/9/10% → 10/9/10%**. Both runs and the pair
+completed with exit **0**. No measured frame-rate or CPU regression. Retained
+matched-before-fps.log, matched-after-fps.log, fps-queue.log and matched-fps.exit
+in /tmp/xmas-dressing/biome4-6/. Earlier baseline FPS results are retained too.
+
+**Next:** owner review of the full native/page Ice Cave sheets, especially the
+balance of large far-wall fans and the few near crystal groups. No known
+unresolved art, test or frame-rate issue. Live Omarchy/QML appearance was not
+inspected. No merge, push, deploy, production requests, port 8787 changes,
+sibling writes or Omarchy writes.

@@ -1,3 +1,4 @@
+import {cryoSourceBefore} from './cryo-art.js'
 // C17: explicit transitions for the reviewed Ruins scenery; retain all prior pins.
 import fs from 'node:fs'
 import {antiqueSourceBefore} from './antique-art.js'
@@ -76,8 +77,8 @@ function arrivalScenes(out,old,D,P){
  out[office[0]]={label:'office',after:office[1]}
 }
 export function antiqueScenes(){
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=antiqueSourceBefore(source)
- const S=load('Sim.js'),P=load('Palette.js'),D=load('Draw.js'),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
+ const source=cryoSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=antiqueSourceBefore(source)
+ const S=load('Sim.js'),P=load('Palette.js'),D=renderer(source),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
  try{
   aggregateScenes(out,source,before,S,P)
   seasonalScenes(out,old,D,fs.readFileSync('public/agents/season.js','utf8'))

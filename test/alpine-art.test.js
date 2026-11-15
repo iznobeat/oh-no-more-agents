@@ -1,3 +1,4 @@
+import {cryoSuccessor} from '../tools/cryo-reference.js'
 import {antiqueSourceBefore} from '../tools/antique-art.js'
 import antiquePins from './fixtures/antique-scenes.json' with {type:'json'}
 import {alpineScenes} from '../tools/alpine-scenes.js'
@@ -139,7 +140,7 @@ test('C16 reviewed firs are grounded, complete footprints avoid old decor and ha
 test('C16 every advanced historical scene is independently reproducible and prior pins remain explicit',()=>{
  const pins=JSON.parse(fs.readFileSync('test/fixtures/alpine-scenes.json','utf8'))
  assert.deepEqual(alpineScenes('19156074ad1f2e8fea754864fa8db6888f0a300c'),pins)
- for(const [before,pin]of Object.entries(pins))assert.equal(alpineSuccessor(before),antiquePins[pin.after]?.after || pin.after)
+ for(const [before,pin]of Object.entries(pins))assert.equal(alpineSuccessor(before),cryoSuccessor(antiquePins[pin.after]?.after || pin.after))
  assert.equal(alpineSuccessor('unaffected'),'unaffected')
  assert.equal(alpineSourceBefore(source),source.replace(/^  drawAlpine(?:Sky|Snow|Firs|Life)\(ctx, w, pal\)\n/gm,''))
 })
