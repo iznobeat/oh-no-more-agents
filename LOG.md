@@ -12207,3 +12207,15 @@ covers C4 and 462. **Before:** gate 1708/1708, CRAP green; `npm run smoke
 --previous c9970d81` passed.
 **Note:** the CRAP report now takes 10–15 minutes (coverage runs the
 browser tests at concurrency 2); worth a look at what dominates it.
+
+## 464 — 2026-11-15 · The gate back to two and a half minutes
+
+**Why:** the CRAP report had grown to 10–15 minutes and the gate to 4½.
+C4 had bounded `test:raw` and `coverage:raw` to two test files at once,
+because its own run was inside a 3 GB scope; outside one, two at once left
+fourteen of sixteen cores idle.
+**Changed:** both at `--test-concurrency=6`. Measured on main, sampling
+`free` every 5 s: gate 272 s → 148 s, coverage about 12 min → 278 s, the
+machine's used memory from 15.5 GB to a peak of 20.4 GB (31 GB total). AGENTS.md
+says so, and how to cap a single run inside a scope without lowering the
+shared scripts again.

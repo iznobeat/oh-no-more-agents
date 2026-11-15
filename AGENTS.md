@@ -93,7 +93,11 @@ Each of these is here because breaking it once cost something real.
   over 4 GB (`journalctl --user -u node-test-guard`). Run heavy art tests under
   a cap, e.g. `systemd-run --user --scope -p MemoryMax=3G node
   --max-old-space-size=2048 --test <file>`, and never `deepEqual` raw pixel
-  buffers: compare digests or bytes.
+  buffers: compare digests or bytes. The full suite runs six files at once
+  (`--test-concurrency=6`: about 5 GB on top of the desktop, gate 2½ min,
+  coverage under 5 min). Don't run the whole suite inside a small scope; if
+  you must cap one, run `npx node --test --test-concurrency=2 ...` inside it
+  rather than lowering the shared scripts (two at once made coverage 12 min).
 - **Production checks are read-only.** Any headless script pointed at
   oh-no-more-agents.com must fail every non-GET `/api/*` request before it
   leaves (CDP `Fetch`, `BlockedByClient`) and use a throwaway profile.
