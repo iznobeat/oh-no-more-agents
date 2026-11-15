@@ -14097,3 +14097,13 @@ No known unresolved test, art or performance issue. Native Omarchy/QML was
 not inspected; visual review used the raster renderer described above.
 No merge, push, deploy, production request, port 8787 change, sibling write
 or Omarchy write.
+
+## 484 — 2026-11-16 · Deploy: the Ice Cave's crystals, the Factory's hall
+
+**Deployed** build 4efda3eb (Worker version a1488c4f), replacing 9def91c5;
+covers C18 (Ice Cave: faceted cavern walls, crystal groups, frost drift) and
+C19 (Factory: brick on its flat brown masses, clerestory windows, roof
+silhouettes, cable drums), both reviewed at full frame at both resolutions.
+Five biomes reworked from the audit so far: Foundry, Frost, Ruins, Ice Cave,
+Factory. **Before:** gate 1850/1850; `npm run smoke -- --level 8` passed
+(8–14). **After:** `npm run verify -- --previous 9def91c5` passed.
