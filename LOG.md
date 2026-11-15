@@ -12098,3 +12098,57 @@ ponds still stand out against it; native pin re-captured once for both.
 **Before:** gate 1697/1697, CRAP green; `npm run smoke -- --level 21 --season
 christmas` passed (21–27).
 **After:** `npm run verify -- --previous e8b3d449` passed.
+
+## C4 — 2026-11-15 · Scarves for the colony, a present for the way in
+
+**Changed (Draw only, North Pole year-round):** red/cream knitted scarves in
+three id-selected reds. The two-pixel neck band and striped tail read at native
+size; page tails carry half-pixel stitches. The scarf takes the existing body
+motion (including page gait, landing squash and skating), head/trait offset,
+sprite flip and home-step/fade transforms. Walking tails trail, ice tails extend
+further, umbrella passengers flutter, stationary agents let the tail hang. On
+the existing saved fade the tail flicks as the agent goes through the workshop
+door; C3's flare and snow remain. Reduced motion hangs the new scarf still.
+No face/glasses or umbrella paint is covered.
+
+The hatch is a red wrapped present with gold ribbon, an outlined bow and page
+paper stars, within the original footprint. Bottom flaps use `hatchOpen`'s exact
+angle and the mouth stays on the spawn line. The box trembles for the final four
+ticks of the existing release timer, with its bracket fixed; reduced motion
+omits that tremble. Every ordinary biome retains its pixels. No Sim, season,
+new text, sibling, production or umbrella changes.
+
+**Looked at:** `shoot.js level 21` and `level 42`, seed 3, ticks 120/350, res 1/2,
+scale 1, before in `/tmp/xmas-dressing/r4-0`, after in `r4-2`, repeated on the final source in `r4-3`. Also `shoot.js crop
+42` at page resolution, and a native crop at tick 350. `christmas-round4-art.js`
+retains full boards, close crops, both-facing walking/skating/stationary/falling/
+saved/reduced poses and hatch opening phases, baseline left, new right. Inspected
+native/page sheets in r4-1 through r4-3. First pass had an overly heavy gold lip
+and a partly off-board bow: thinned the lip and lowered the bow. Final inspected
+sheets in `/tmp/xmas-dressing/r4-3`: `pole-res1-sheet.png`,
+`pole-res2-sheet.png`, `colony-res1-sheet.png`, `colony-res2-sheet.png`,
+`hatch-res1-sheet.png`, `hatch-res2-sheet.png`, `crop-res1-sheet.png`,
+`crop-res2-sheet.png`. The native full boards show bright striped tails across
+the colony; the page closeups show stitches and the bow loops.
+
+**Validation:** baseline full check 1,697/1,697; eight new tests bring the suite
+to 1,705, all passing in both full check (exit 0) and coverage. Focused Christmas/North Pole regression 34/34 before the final face
+clearance test; final round-four file 8/8. Coverage includes id colours,
+mirroring/grid/knit, body/trait motion, surviving ice, flutter/flick/still frames,
+read-only frozen worlds, hatch bounds/mouth/angle/pre-release/reduced motion,
+review output, and all twenty ordinary biome digests at both scales/ticks.
+Deliberately re-pinned christmas-round2's combined native North Pole frames:
+`d8172de0…` → `cbeb446e…`, for the scarves and wrapped hatch.
+
+The first baseline full run hit its 3 GB scope cap with Node's unrestricted
+file concurrency and stopped without totals. Bounded `test:raw` and
+`coverage:raw` to two concurrent files; the rerun completed in 283 seconds.
+Heavy gates use the shared test lock, 3 GB systemd caps and 2 GB Node heaps.
+The final check and CRAP ran as a user service with explicit status files after
+a scope ended between the completed check and CRAP; both final exit codes are 0.
+Changed-source CRAP at threshold 30 passed: new art helpers at most 12.0,
+review tool at most 10.0, changed drawAgent 27.0 and drawHatch 16.0. Coverage
+completed in 649 seconds. Stamps refreshed. Both gates passed before commit. No merge, push, deploy or sibling writes.
+
+**Next:** inspect the year-round scarves alongside the parallel seasonal
+settled-snow/footprint work after integration.
