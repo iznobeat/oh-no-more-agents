@@ -11,6 +11,7 @@ const D=load('Draw.js'),P=load('Palette.js')
 const base=renderer(execFileSync('git',['show','c8b27d0632e84e91e240f580d8028596b1fd63e9:public/agents/Draw.js'],{maxBuffer:4e6}).toString())
 const api=season(fs.readFileSync('public/agents/season.js','utf8'),'?season=christmas')
 const changed=ALL_MACHINES.filter(([n])=>!['Factory','Subway','Harbour','Building Site','Frost','North Pole'].includes(n))
+const workPins=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-work-pins.json',import.meta.url),'utf8'))
 const digest=b=>createHash('sha256').update(b).digest('hex')
 function additions(w) {
   const img=canvas(400*w.res,248*w.res);img.ctx.setTransform(w.res,0,0,w.res,0,0)
@@ -33,7 +34,9 @@ test('every ordinary full frame remains byte-identical out of season',()=>{
     const w=reviewWorld(name,key);delete w.season
     for(const ticks of[120,400]) {
       w.ticks=ticks
-      assert.equal(digest(christmasFrame(D,api,w,res).buf),digest(christmasFrame(base,api,w,res).buf),name)
+      const pin=workPins.c6full[`${name}/${res}/${ticks}`],before=digest(christmasFrame(base,api,w,res).buf)
+      if(pin)assert.equal(before,pin.before,name+' historical pin')
+      assert.equal(digest(christmasFrame(D,api,w,res).buf),pin?pin.after:before,name)
     }
   }
 })
@@ -76,7 +79,9 @@ test('opaque live faces, bodies and umbrellas keep their exact pixels in all new
     const before=christmasFrame(base,api,w,res).buf,after=christmasFrame(D,api,w,res).buf
     const a=createHash('sha256'),b=createHash('sha256')
     for(let i=0;i<mask.buf.length;i+=4)if(mask.buf[i+3]===255){a.update(before.subarray(i,i+4));b.update(after.subarray(i,i+4))}
-    assert.equal(a.digest('hex'),b.digest('hex'),name)
+    const pin=workPins.c6cast[`${name}/${res}`],oldHash=a.digest('hex')
+    if(pin)assert.equal(oldHash,pin.before,name+' historical cast pin')
+    assert.equal(b.digest('hex'),pin?pin.after:oldHash,name)
   }
 })
 test('frozen colleagues lose their hat when thawed and lift wreaths follow the real car',()=>{

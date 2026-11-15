@@ -3777,7 +3777,7 @@ function drawBrickTamp(ctx, w, pal, ag) {
   if (age > 2) return
   var x = pageAgentX(w, ag), y = pageAgentY(w, ag)
   ctx.globalAlpha = 1; ctx.fillStyle = pal.skin
-  if (age !== 1) blitFine(ctx, x, y, ag.dir, 10.5, 15, 1.5, 0.5)
+  if (age !== 1) blitFine(ctx, x, y, ag.dir, 10.5, 14, 1.5, 0.5)
   ctx.globalAlpha = 0.9 - age * 0.25
   for (var end = 0; end < 2; end++) {
     var bx = end ? 14 + age : 7 - age, px = ag.dir > 0 ? x + bx : x + SPRITE_W - bx - 2
@@ -9087,6 +9087,7 @@ function drawIdleTie(ctx, w, pal, ox, oy, dir, robe, phase) {
 }
 
 function drawAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, skin, st, bodyDrop, walkLead, squash, idle) {
+  if (drawColonyWorkBody(ctx, w, pal, ag, ox, oy, dir, robe)) return
   if (drawPageAgentBody(ctx, w, pal, ag, ox, oy, dir, robe, st, bodyDrop, idle)) return
   if ((w.res || 1) >= 2 && st === "bomb") return drawBombPose(ctx, w, pal, ag, ox, oy, dir, robe)
   if (idle) return drawIdleBody(ctx, w, pal, ag, ox, oy, dir, robe, bodyDrop, idle)
@@ -11106,6 +11107,7 @@ var FINE_POSES = {
   bomb: drawFineBomb, ceil: drawFineStride
 }
 function drawAgentFine(ctx, pal, ag, ox, oy, dir, drop, lead, squash, robe, w) {
+  if (w && colonyWorking(w, ag)) return drawColonyWorkFine(ctx,w,pal,ag,ox,oy,dir,drop)
   if (w && libraryShelfPose(w, ag)) {
     drawFineHead(ctx, pal, ag, ox, oy, dir, drop)
     drawFineSuit(ctx, pal, ox, oy, dir, 7)
@@ -11535,6 +11537,7 @@ var WORK_TOOL_DRAW = { bash: drawWorkBash, dig: drawWorkDig }
 
 function drawWorkTools(ctx, w, pal, ag, ox, oy, dir) {
   if ((w.res || 1) < 2) return
+  if (drawColonyWorkTool(ctx, w, pal, ag, ox, oy, dir)) return
   var draw = WORK_TOOL_DRAW[ag.state]
   if (!draw) return
   ctx.save()
@@ -14441,7 +14444,7 @@ function agentDrawMotion(w, ag, st, idle) {
 
   var m = pageAgentMotion(w, ag, st, idle, { lead: walkLead, squash: squash, drop: bodyDrop })
   if (!idle && skating(w, ag)) { m.lead = SKATE_GAIT[(ag.anim >> 3) % 4]; m.drop = 0 }
-  return m
+  return colonyWorkMotion(w, ag, m)
 }
 // On the ice the stride is held: a long push one leg, a long push the other.
 var SKATE_GAIT = [1, 1, -1, -1]
@@ -26046,4 +26049,96 @@ function drawNewyearRibbon(ctx,w,x,y,dir,tilt) {
   pixel(ctx,x,y,dir,7,-2+tilt,3,1);pixel(ctx,x,y,dir,9,-1+tilt,1,3)
   ctx.fillStyle="#ffd85c";pixel(ctx,x,y,dir,8,1+tilt,2,1)
   ctx.restore()
+}
+
+// The colony's work loop: timer zero is the cut/brick, never the wind-up.
+// [tool x, tool y, grip y, body drop]. Whole-pixel key poses also serve the
+// panel; the page interpolates the drawn handle on its half-pixel grid.
+var COLONY_WORK = {
+  bash: [[12,9,10,1],[12,10,11,1],[10,8,10,0],[8,5,8,0],[7,3,7,0],[10,5,8,0]],
+  dig: [[9,15,12,2],[10,14,12,2],[12,11,10,1],[12,8,9,0],[10,7,8,0],[9,9,9,0],[9,12,11,1]],
+  build: [[11,14,13,1],[10,12,11,1],[7,10,10,0],[7,8,9,0],[9,9,10,0],[11,12,12,1]]
+}
+function colonyWorking(w,ag) {
+  return (w.res||1)<=2 && !ag.special && !w.submerged && !(ag.brollyFor>0) && Object.prototype.hasOwnProperty.call(COLONY_WORK,ag.state)
+}
+function colonyWorkPose(w,ag) {
+  var rows=COLONY_WORK[ag.state]
+  return rows[w.reducedMotion?0:(ag.timer||0)%rows.length]
+}
+function colonyWorkMotion(w,ag,m) {
+  if (colonyWorking(w,ag)) m.drop=colonyWorkPose(w,ag)[3]
+  return m
+}
+function drawColonyWorkBody(ctx,w,pal,ag,x,y,d,robe) {
+  if (!colonyWorking(w,ag)) return false
+  var row=colonyWorkPose(w,ag),drop=row[3]
+  ctx.fillStyle=robe
+  blit(ctx,x,y,d,1,7+drop,6,6-drop)
+  // Braced boots and a bent far elbow, with the near sleeve following the load.
+  blit(ctx,x,y,d,0,13,3,3);blit(ctx,x,y,d,5,13,3,3)
+  blit(ctx,x,y,d,0,9+drop,2,3)
+  blit(ctx,x,y,d,6,8+drop,2,Math.max(1,row[2]-7-drop))
+  blit(ctx,x,y,d,7,row[2],Math.max(2,row[0]-7),2)
+  ctx.fillStyle=pal.skin;blit(ctx,x,y,d,row[0]-1,row[2],2,1)
+  if(w.res===2) {
+    ctx.fillStyle=pal.shirt;blitFine(ctx,x,y,d,row[0]-1.5,row[2]-0.5,1,0.5)
+    drawFineShoes(ctx,pal,x,y,d,0,15.5,6,15.5,2)
+  }
+  if((w.res||1)<2)drawColonyWorkTool(ctx,w,pal,ag,x,y,d)
+  return true
+}
+function colonyWorkRect(ctx,w,x,y,d,bx,by,bw,bh) {
+  if(w.res===2) blitFine(ctx,x,y,d,Math.round(bx*2)/2,Math.round(by*2)/2,bw,bh)
+  else blit(ctx,x,y,d,Math.round(bx),Math.round(by),Math.max(1,Math.round(bw)),Math.max(1,Math.round(bh)))
+}
+function drawColonyWorkTool(ctx,w,pal,ag,x,y,d) {
+  if(!colonyWorking(w,ag))return false
+  ctx.save()
+  var row=colonyWorkPose(w,ag)
+  if(ag.state==='build')drawColonyBrick(ctx,w,pal,ag,x,y,d,row)
+  else drawColonySteel(ctx,w,pal,ag,x,y,d,row)
+  drawColonyWorkDust(ctx,w,pal,ag,x,y,d)
+  ctx.restore();return true
+}
+function drawColonySteel(ctx,w,pal,ag,x,y,d,row) {
+  var bx=row[0],by=row[1],hand=row[2],steps=Math.max(Math.abs(bx-8),Math.abs(by-hand))
+  ctx.fillStyle=pal.rig
+  for(var i=0;i<=steps;i++)colonyWorkRect(ctx,w,x,y,d,8+(bx-8)*i/steps,hand+(by-hand)*i/steps,1,1)
+  ctx.fillStyle=pal.steelShade
+  if(ag.state==='bash') {
+    colonyWorkRect(ctx,w,x,y,d,bx-2,by,5,2)
+    ctx.fillStyle=pal.steelEdge;colonyWorkRect(ctx,w,x,y,d,bx-2,by,5,0.5)
+    colonyWorkRect(ctx,w,x,y,d,bx+2.5,by+1,0.5,1)
+  }else{
+    colonyWorkRect(ctx,w,x,y,d,bx-1,by,3,2)
+    ctx.fillStyle=pal.steelEdge;colonyWorkRect(ctx,w,x,y,d,bx-1,by,1,2)
+    colonyWorkRect(ctx,w,x,y,d,bx,by+2,1.5,0.5)
+  }
+  ctx.fillStyle=pal.skin;colonyWorkRect(ctx,w,x,y,d,8,hand,1.5,1)
+}
+function drawColonyBrick(ctx,w,pal,ag,x,y,d,row) {
+  var age=w.reducedMotion?0:(ag.timer||0)%6,bx=row[0],by=row[1]
+  // Release at contact, withdraw an empty hand, then fetch the next brick.
+  if(age===1)return
+  ctx.fillStyle=pal.dirtEdge;colonyWorkRect(ctx,w,x,y,d,bx,by,5,2)
+  ctx.fillStyle=pal.dirt;colonyWorkRect(ctx,w,x,y,d,bx,by+0.5,4,1)
+  ctx.fillStyle=pal.dirtShade;colonyWorkRect(ctx,w,x,y,d,bx+2,by+1,0.5,1)
+  if(age!==0){ctx.fillStyle=pal.skin;colonyWorkRect(ctx,w,x,y,d,bx,by+2,2,0.5)}
+}
+function drawColonyWorkDust(ctx,w,pal,ag,x,y,d) {
+  if(w.reducedMotion)return
+  var age=ag.timer||0
+  if(age>2)return
+  var by=ag.state==='bash'?10:15
+  ctx.fillStyle=pal.dust
+  colonyWorkRect(ctx,w,x,y,d,15+age,by-age,2,1)
+  ctx.fillStyle=pal.dirtEdge
+  colonyWorkRect(ctx,w,x,y,d,12+age,by-2-age,1,1)
+}
+
+function drawColonyWorkFine(ctx,w,pal,ag,x,y,d,drop) {
+  drawFineHead(ctx,pal,ag,x,y,d,drop)
+  drawFineSuit(ctx,pal,x,y,d,7+drop)
+  drawFineShoes(ctx,pal,x,y,d,0,15.5,6,15.5,2)
 }

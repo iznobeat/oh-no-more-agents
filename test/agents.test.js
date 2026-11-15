@@ -90,7 +90,7 @@ function fineSample(state, dir, phase, mode) {
   }
 }
 
-test("new fine poses leave res 1 and unspecified res byte-identical", () => {
+test("reviewed native poses match the pinned res 1 and unspecified res frames", () => {
   const hash = createHash("sha256"), w = S.generate(8, 0, 3)
   const theme = themeOf("tokyo-night"), pal = P.build(theme.theme, 8)
   w.ticks = 77
@@ -101,7 +101,7 @@ test("new fine poses leave res 1 and unspecified res byte-identical", () => {
       D.drawAgent(img.ctx, w, pal, fineSample(state, dir, phase, mode), {})
       hash.update(img.buf)
     }
-  assert.equal(hash.digest("hex"), "3a7f5b4793a2b2c030da0d28417789877a11c421c9b8eb5d90cd71060f9fd3a6")
+  assert.equal(hash.digest("hex"), "ee81abc84f7a8da3f01aa4f8e53d1df03eb20483d1a0cbeafd85e5e463724af0")
 })
 
 for (const state of FINE_STATES) {
@@ -141,9 +141,8 @@ for (const state of FINE_STATES) {
       D.drawAgent(coarse.ctx, w, pal, ag, {})
       if (state === "swim") D.drawFineSwim(fine.ctx, pal, ag, 36, 48, dir)
       else {
-        const drop = state === "bomb" ? D.bombCrouch(ag) : (state === "slide" ? 4 : (state === "dig" ? 2 : 0))
         const lead = [0, 1, 0, -1][(phase >> 2) % 4]
-        D.drawAgentFine(fine.ctx, pal, ag, 36, 48, dir, drop, lead, 0, pal.robe)
+        D.drawAgentFine(fine.ctx, pal, ag, 36, 48, dir, D.agentDrawMotion(w, ag, state, null).drop, lead, 0, pal.robe, w)
       }
       let marks = 0
       for (let i = 0; i < fine.buf.length; i += 3) {
