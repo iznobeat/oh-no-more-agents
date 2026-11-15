@@ -12117,3 +12117,10 @@ floor, where the colony walks, stays trodden.
 **Test:** season-settle (tops and clearance, growth and its cap, half
 steps, reduced motion, cache; trampling and refill, never over an agent, not
 at the Pole).
+
+## 461 — 2026-11-15 · Deploy: settled snow
+
+**Deployed** build c9970d81 (Worker version 2a3ad76c), replacing ad596f26;
+covers 460. **Before:** gate 1699/1699, CRAP green, `npm run smoke --
+--level 4 --season christmas` passed (4–9). **After:** `npm run verify --
+--previous ad596f26` passed.
