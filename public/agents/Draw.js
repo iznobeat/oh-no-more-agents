@@ -206,6 +206,7 @@ function drawTerrain(ctx, w, pal) {
   drawAssemblyBackdrop(ctx, w)
   drawOfficeBackdrop(ctx, w)
   drawAbyssBackdrop(ctx, w)
+  drawAlpineSky(ctx, w, pal)
   drawIronworksHall(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
@@ -265,6 +266,7 @@ function drawTerrain(ctx, w, pal) {
   drawPortQuay(ctx, w)
   drawCloudPageBanks(ctx, w, pal)
   drawChristmasGround(ctx, w)
+  drawAlpineFirs(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2356,6 +2358,7 @@ function drawBeltDrum(ctx, w, pal, x, top, side, dir) {
 }
 
 function drawMachines(ctx, w, pal) {
+  drawAlpineLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -26883,4 +26886,96 @@ function drawIronworksDuct(ctx,w,pal,x,top,bottom) {
     ctx.fillRect(x+5,y+2,1,1)
   }
   ctx.globalAlpha=1
+}
+
+// C16: the exposed alpine snowfield, at native scale as well as on the page.
+// The old ridge, material grain, icicles, snowfall and aurora still paint.
+function drawAlpineSky(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var top=w.k.SKY*w.k.CELL, wide=w.k.COLS*w.k.CELL
+  for(var n=0;n<Math.ceil(wide/67)+1;n++) {
+    var peak=n*67-12+(w.level%5)*3, summit=top+3+(n*13+w.level*3)%17
+    // Stand clear of the old foothills; one cool, continuous silhouette band.
+    for(var row=0;row<76;row+=2) {
+      var half=Math.floor(row*0.85), y=summit+row
+      ctx.fillStyle=pal.back
+      ctx.fillRect(peak-half,y,half*2+2,2)
+      ctx.fillStyle=pal.backLit
+      ctx.fillRect(peak-half,y,half+1,2)
+      if(row<12) {
+        ctx.fillStyle=pal.decorDim
+        ctx.fillRect(peak-half,y,Math.max(1,half-Math.floor(row/3)),2)
+      }
+    }
+  }
+  ctx.restore()
+}
+var ALPINE_CACHE=new WeakMap()
+function alpineSpots(w) {
+  var old=ALPINE_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain) return old.spots
+  var spots=[],C=w.k.CELL,boxes=abyssReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var cor=w.corridors[row],y=cor.floorY*C-25, count=0
+    for(var x=24+(w.level*11+row*23)%39;x<w.k.COLS*C-26;x+=11) {
+      if(!w.terrain[cor.floorY*w.k.COLS+Math.floor((x+6)/C)]) continue
+      if(!alpineClear(w,x-3,y-3,25,28,boxes)) continue
+      spots.push({x:x,y:y,seed:x+row*17})
+      x+=42;count++
+      if(count===2 || spots.length>=7) break
+    }
+    if(spots.length>=7) break
+  }
+  ALPINE_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function alpineClear(w,x,y,width,height,boxes) {
+  if(!abyssClear(w,x,y,width,height,boxes)) return false
+  var k=w.k,C=k.CELL
+  for(var yy=Math.floor(y/C);yy<=Math.floor((y+height-1)/C);yy++)
+    for(var xx=Math.floor(x/C);xx<=Math.floor((x+width-1)/C);xx++)
+      if(w.terrain[yy*k.COLS+xx]!==k.EMPTY) return false
+  return true
+}
+function drawAlpineFirs(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var spots=alpineSpots(w)
+  for(var i=0;i<spots.length;i++) drawAlpineFir(ctx,w,pal,spots[i])
+  ctx.restore()
+}
+function drawAlpineFir(ctx,w,pal,b) {
+  var x=b.x+6,y=b.y+2
+  ctx.fillStyle=pal.rockEdge
+  ctx.fillRect(x,y,2,23)
+  for(var tier=0;tier<4;tier++) {
+    var half=2+tier*2, yy=y+tier*5
+    // Solid overlapping boughs, with a dark underside and sparse snow caps.
+    ctx.fillStyle=pal.decorDim
+    ctx.fillRect(x-half+1,yy,half*2,3)
+    ctx.fillRect(x-half,yy+3,half*2+3,3)
+    ctx.fillStyle=pal.backDim
+    ctx.fillRect(x-half,yy+5,half*2+3,1)
+    ctx.fillStyle=pal.decorLit
+    ctx.fillRect(x-half+1,yy,half,1)
+  }
+  ctx.fillStyle=pal.decorLit
+  ctx.fillRect(x-4,y+22,12,1)
+}
+function drawAlpineLife(ctx,w,pal) {
+  if(w.biome!=="Frost") return
+  ctx.save()
+  var spots=alpineSpots(w),t=w.reducedMotion ? 0 : w.ticks
+  for(var i=0;i<spots.length;i++) drawAlpineWisp(ctx,w,pal,spots[i],t)
+  ctx.restore()
+}
+function drawAlpineWisp(ctx,w,pal,b,t) {
+  ctx.fillStyle=pal.decorLit
+  for(var flake=0;flake<4;flake++) {
+    var age=(Math.floor(t/4)+b.seed+flake*11)%43
+    var x=b.x-2+Math.floor(age/3),y=b.y+3+flake*5-Math.floor(age/12)
+    ctx.globalAlpha=(43-age)/110
+    moteFineRect(ctx,w,x,y,2+Math.floor(age/15),1)
+  }
 }

@@ -1,3 +1,4 @@
+import {alpineSourceBefore} from '../tools/alpine-reference.js'
 import os from 'node:os'
 import path from 'node:path'
 import {ironworksSheets} from '../tools/ironworks-art.js'
@@ -44,11 +45,11 @@ test('C15 complete Foundry boards retain independent historical and reviewed pin
  }}finally{Math.random=random}
 })
 test('C15 all other biomes retain byte-identical complete frames; removing four hooks recovers Foundry too',()=>{
- const without=renderer(source.replace(/^  drawIronworks(?:Hall|Brick|Kilns|Life)\(ctx, w, pal\)\n/gm,'')),random=Math.random;Math.random=()=>0.5
+ const prior=renderer(alpineSourceBefore(source)),without=renderer(alpineSourceBefore(source).replace(/^  drawIronworks(?:Hall|Brick|Kilns|Life)\(ctx, w, pal\)\n/gm,'')),random=Math.random;Math.random=()=>0.5
  try{for(const res of[1,2])for(let level=1;level<=21;level++)for(const ticks of[120,350]){
   const opts={level,ticks,res,page:res===2},expected=hash(frame(S,old,P,opts).img.buf)
   assert.equal(hash(frame(S,without,P,opts).img.buf),expected,`four-hook scope ${level}/${res}/${ticks}`)
-  if(level!==4)assert.equal(hash(frame(S,D,P,opts).img.buf),expected,`unchanged biome ${level}/${res}/${ticks}`)
+  if(level!==4)assert.equal(hash(frame(S,prior,P,opts).img.buf),expected,`unchanged biome ${level}/${res}/${ticks}`)
  }}finally{Math.random=random}
 })
 test('C15 additions use existing palette, preserve context, stay on grid and read frozen worlds without RNG',()=>{

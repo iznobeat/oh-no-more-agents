@@ -13567,3 +13567,102 @@ colony still reads). **Before:** gate 1812/1812, CRAP green; `npm run smoke
 **Held back:** C16 (Frost) — sent back: its new strata lie over Frost's own
 mottled texture as horizontal streaks, and the peaks and firs are too faint
 at full frame.
+## C16 — 2026-11-15 · Frost becomes an alpine snowfield (revised)
+
+**Chose:** Frost, excluding C15's Foundry, after reviewing all 21 biomes at
+res 1 and 2 out of season. Its grey shelves and fuzzy ridge lacked a clear
+landscape. Original baseline: 19156074ad1f2e8fea754864fa8db6888f0a300c.
+First review: b86c3e8. The owner rejected the strata over the existing mottled
+DIRT: the combined patterns read as horizontal streaks and glitchy bands.
+The first peaks and firs were also too faint in the complete frame.
+
+**Final state (Draw only):** removed the entire added snow-material pass,
+including buried facets and native crust highlights. The original mottled
+DIRT/ROCK, palette, shapes, grain, ice, ponds, icicles and page caps remain.
+Peaks now form an opaque, cool silhouette band using existing back/backLit
+roles, with small decorDim summit facets. Their higher summits and deeper
+faces show above the original foothills, behind the live aurora; extending
+the band to the board width also handles wide layouts. They remain darker
+than the play area. Firs have four solid overlapping branch tiers, darker
+undersides, a visible trunk and sparse decorLit snow, readable at 1x.
+
+Retained the short animated spindrift wisps before colony and hazard painters.
+Reduced motion holds them still. Fir/wisp sites remain world-keyed and cached
+by terrain identity/version: complete reserved air footprints, ground under
+the trunk, no original decor, hazards, pits or exits. Up to two per corridor,
+seven per world; tight layouts suppress them. Live rectangles check current
+air. No per-tick board search, world writes, RNG, dependencies or new text.
+Sim.js, Palette.js, umbrellas and actor painters are untouched. The other
+twenty biomes retain byte-identical full frames against main. Main at review
+was 50fcef6ffd21b8c97e840a68db61732b5bdd9a8d; its core files match the
+original C16 baseline exactly.
+
+**Review/tool:** tools/alpine-art.js now retains nearest-neighbour 1x and 2x
+sheets and individual full-frame pairs, plus normal/reduced-motion pairs.
+Before is main on the left; after is revised Frost on the right. Levels
+3/23/43 at ticks 350/900, res 1/2. Revision 1 raised the summits too far,
+leaving detached tips above the ceiling; revision 2 painted over the old
+foothills, exposing flat triangle bases. Revision 3 keeps a complete peak
+band behind the foothills. Inspected both final full sheets at 1x and 2x,
+and normal/reduced-motion sheets: clear peaks and tiered firs, unchanged
+mottling in the large lower masses, quiet spindrift without moving wisps
+under reduced motion. This is the real raster renderer, not live QML;
+gradients retain render.js's documented approximation.
+
+Final evidence in /tmp/xmas-dressing/biome2-rev-3/:
+
+- full-res1-sheet.png and full-res2-sheet.png
+- full-res1-sheet-2x.png and full-res2-sheet-2x.png
+- reduced-motion-res1-sheet.png and reduced-motion-res2-sheet.png
+- reduced-motion-res1-sheet-2x.png and reduced-motion-res2-sheet-2x.png
+
+**Pins:** historical predecessor hashes remain unchanged. C16's own reviewed
+successors in alpine-pins.json/alpine-scenes.json advance to this revision;
+first-review successors remain in commit b86c3e8 and the evidence directory's
+c16-first-review-pins.json. Prior art rounds still remove the C16 hooks and
+retain their historical assertions; only three hooks remain. The independent
+all-biome scope audit also recovers exact predecessor Frost by removing them.
+The opaque RGB colony/umbrella mask remains byte-identical. The changed-pixel
+floor is now 900 native pixels, reflecting scenery only after deleting the
+broad material overlay; exact reviewed frame digests still gate every scene.
+Final twelve full-frame hashes, predecessor → revision (SHA-256 prefixes):
+
+- `3/350/1`: `f64e2e01` → `6bdeaab0`.
+- `3/900/1`: `fdfe3a0e` → `ba9f2131`.
+- `23/350/1`: `cdb2b54a` → `30499545`.
+- `23/900/1`: `8b93c61c` → `ea2f8377`.
+- `43/350/1`: `44020284` → `db11eac9`.
+- `43/900/1`: `8a21c678` → `eadffc12`.
+- `3/350/2`: `5ec5b56b` → `9e2d2c06`.
+- `3/900/2`: `24a40192` → `61269d1c`.
+- `23/350/2`: `1378b1ce` → `5886474d`.
+- `23/900/2`: `8597ea9b` → `6510f521`.
+- `43/350/2`: `407158a6` → `523ad7d3`.
+- `43/900/2`: `d1d21e7c` → `cafa32b0`.
+
+**Validation:** `npm run check` **1822/1822**, exit 0, 179.55 s.
+All ten C16 regressions passed: full frames and historical transitions,
+all-biome scope, palette/grid/context and frozen-world purity, cached scenery,
+terrain invalidation and support/reservation bounds, animated/static clipped
+spindrift, opaque colony/umbrella pixels, and reproducible 1x/2x/reduced sheets.
+The initial focused run rejected the obsolete 1500-pixel floor on Frost 23
+(1007 scenery pixels); revised full gates use the documented 900-pixel floor.
+`npm run crap -- --changed --threshold 30` **exit 0**, fresh coverage
+**1822/1822**, 370.24 s. Changed Frost painters: Sky **5.0**, Fir **2.0**,
+100% coverage; drawTerrain **29.0**, 100%. Updated review helpers max **7.0**,
+100%. All changed functions remain under 30. FIFO locking and six-file
+concurrency retained; no simultaneous heavy runs. Source/stamps stayed frozen
+through check, FPS and coverage; only this log was finished afterwards.
+Stamps: Draw 67825113, build 5beea892.
+
+**Performance:** matched `npm run fps -- 3 23 43 --season none`, isolated
+main assets versus frozen revised source, under the shared lock. Both:
+**60 median / 60 p5, 17 ms worst frame, 0% long tasks** on all three levels.
+CPU main **9/10/10%**, revised **10/9/9%**; no speedup or frame-rate loss
+claimed against changing desktop load. Both runs exited 0. Complete logs:
+/tmp/xmas-dressing/biome2-rev-3/{before-fps,after-fps,check,crap}.log;
+explicit gate exit files accompany check/crap.
+
+**Next:** owner review of the revised full sheets, especially Frost 23's
+crowded narrow sky band. No merge, push, deployment, production requests,
+port 8787 changes, sibling writes or Omarchy writes.

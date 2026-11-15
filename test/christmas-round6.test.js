@@ -1,3 +1,4 @@
+import {alpineSuccessor} from '../tools/alpine-reference.js'
 import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -45,7 +46,7 @@ test('every ordinary full frame remains byte-identical out of season',()=>{
       if(review)assert.equal(historical,review.before)
       const iron=ironPins.c6full[`${name}/${res}/${ticks}`],prior=review?review.after:historical
       if(iron)assert.equal(iron.before,prior)
-      assert.equal(digest(christmasFrame(D,api,w,res).buf),iron?iron.after:prior,name)
+      assert.equal(digest(christmasFrame(D,api,w,res).buf),alpineSuccessor(iron?iron.after:prior),name)
     }
   }
 })
