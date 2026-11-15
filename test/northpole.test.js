@@ -382,3 +382,27 @@ test("hot cocoa drawn: the stand, its steam, a mug carried for a few seconds; st
   w.cocoa = null
   assert.equal(shot(110, [ag]), blank)
 })
+
+test("reindeer rounded up: the sleigh flies a lap of honour with them harnessed on; not if descoped or under reduced motion", () => {
+  const w = S.generate(63, 0, 3)
+  for (let t = 0; t < 3000 && !(w.mission && w.mission.done); t++) S.step(w)
+  const m = w.mission
+  assert.equal(m.kind, "reindeer"); assert.ok(m.done && m.openedAt !== undefined)
+  const W = w.k.COLS * w.k.CELL
+  const shot = ticks => {
+    w.ticks = ticks
+    const img = canvas(400, 248, "#000000"), before = JSON.stringify(w)
+    D.drawSleighLap(img.ctx, w, W)
+    assert.equal(JSON.stringify(w), before, "drawing wrote to the world")
+    return digest(img.buf)
+  }
+  const blank = digest(canvas(400, 248, "#000000").buf)
+  assert.notEqual(shot(m.openedAt + 80), blank, "across the sky")
+  assert.notEqual(shot(m.openedAt + 80), shot(m.openedAt + 120), "and moving")
+  assert.equal(shot(m.openedAt + D.SLEIGH_LAP + 1), blank, "once")
+  w.reducedMotion = true; assert.equal(shot(m.openedAt + 80), blank); w.reducedMotion = false
+  m.descoped = true; assert.equal(shot(m.openedAt + 80), blank)
+  // A longer team: six reindeer reach further than the sleigh's own four.
+  const width = extra => { const img = canvas(400, 248, "#000000"); D.drawSleigh(img.ctx, w, 100, 30, 1, extra); let max = 0; for (let x = 0; x < 400; x++) for (let y = 15; y < 40; y++) if (img.buf[(y * 400 + x) * 3]) max = x; return max }
+  assert.equal(width(2) - width(0), 12)
+})

@@ -24958,9 +24958,22 @@ function drawNorthPoleSleigh(ctx, w, pal) {
     var bob = w.reducedMotion ? 0 : Math.round(Math.sin((w.ticks + r * 40) * 0.09) * 2)
     drawSleigh(ctx, w, x, 12 + bob, run.dir)
   }
+  drawSleighLap(ctx, w, W)
 }
-function drawSleigh(ctx, w, x, y, dir) {
-  var t = w.reducedMotion ? 0 : w.ticks
+// The reindeer rounded up, the sleigh flies a lap of honour across the sky
+// with them harnessed on in front of its own team. Not when the mission was
+// descoped, and not under reduced motion.
+var SLEIGH_LAP = 260
+function drawSleighLap(ctx, w, W) {
+  var m = w.mission
+  if (!m || m.kind !== "reindeer" || !m.done || m.descoped || m.openedAt === undefined || w.reducedMotion) return
+  var age = w.ticks - m.openedAt, dir = w.level % 2 ? 1 : -1
+  if (age < 0 || age > SLEIGH_LAP) return
+  var x = Math.round(dir > 0 ? -60 + age * SLEIGH_SPEED : W + 60 - age * SLEIGH_SPEED)
+  drawSleigh(ctx, w, x, 16 + Math.round(Math.sin(w.ticks * 0.09) * 2), dir, m.completed || m.targets.length)
+}
+function drawSleigh(ctx, w, x, y, dir, extra) {
+  var t = w.reducedMotion ? 0 : w.ticks, team = 4 + (extra || 0)
   ctx.fillStyle = NP_GOLD
   for (var sp = 0; sp < 5; sp++) if ((t + sp * 3) % 6 < 4) ctx.fillRect(x - dir * (10 + sp * 5), y + 1 + (sp % 2) * 2, 1, 1)
   ctx.fillRect(x - 6, y + 4, 12, 1)                                                     // the runner
@@ -24975,10 +24988,11 @@ function drawSleigh(ctx, w, x, y, dir) {
   ctx.fillStyle = NP_SNOW
   ctx.fillRect(x + dir - 1, y - 5, 3, 1); ctx.fillRect(x + dir * 2 - (dir < 0 ? 1 : 0), y - 3, 1, 2)
   ctx.fillStyle = NP_GOLD
-  ctx.fillRect(x + dir * 7 - (dir < 0 ? 22 : 0), y - 1, 23, 1)                        // the traces
-  for (var d = 0; d < 4; d++) {
+  var traces = team * 6 - 1
+  ctx.fillRect(x + dir * 7 - (dir < 0 ? traces - 1 : 0), y - 1, traces, 1)          // the traces
+  for (var d = 0; d < team; d++) {
     var dx = x + dir * (10 + d * 6)
-    drawSleighDeer(ctx, dx, y - 1, dir, t + d * 2, d === 3)
+    drawSleighDeer(ctx, dx, y - 1, dir, t + d * 2, d === team - 1)
     if (w.res === 2) drawSleighDeerFine(ctx, dx, y - 1, dir, t + d * 2)
   }
   if (w.res === 2) drawSleighFine(ctx, x, y, dir)

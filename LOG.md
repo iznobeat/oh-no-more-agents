@@ -12402,3 +12402,15 @@ level, and every level out of season, keeps its fanfare (`finale`, one call
 in `observe`).
 **Test:** sfx (eleven notes for the fanfare's four, the bells; lost and
 out-of-season ends unchanged).
+
+## 469 — 2026-11-15 · The sleigh's lap of honour
+
+**Changed (Draw):** when the colony has rounded up the reindeer, the sleigh
+flies a lap of honour across the sky band (about nine seconds) with them
+harnessed on in front of its own four, the new lead with the red nose
+(`drawSleighLap`; `drawSleigh` takes a count of extra deer). Not when the
+mission was descoped, not under reduced motion. Where a level shows the
+feed box over the sky band, it hides the lap as it already hides the
+regular sleigh runs (seen on 63).
+**Test:** northpole (crosses and moves, once, descoped, reduced motion,
+no world writes; two extra deer lengthen the team by 12 px).
