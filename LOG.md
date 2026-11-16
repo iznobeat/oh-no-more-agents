@@ -15637,3 +15637,14 @@ unresolved art, test or frame-rate issue.
 native colonies. Live Omarchy/QML remains unverified; raster renders skip text
 and approximate gradients as documented. No merge, push, deploy, production
 request, port 8787 change or sibling/Omarchy write.
+
+## 492 — 2026-11-16 · Deploy: darts, turrets, flame, sawblades, laser grids, Tesla coils
+
+**Deployed** build f192a4df (Worker version 56e8778d), replacing 393f9679;
+covers C30 (a loaded dart rack and staggered volley, twin turrets that cock
+and recoil in turn, a flame that builds from a pilot and cools to exhaust)
+and C31 (the sawblade holds its lift then releases, the laser grid's heads
+lower before the discharge, the Tesla coil's crown lifts as its coils
+charge), reviewed in their strips. 36 tells improved across the foe/hazard
+rounds. **Before:** gate 1978/1978; `npm run smoke -- --level 15` passed
+(15–22). **After:** `npm run verify -- --previous 393f9679` passed.
