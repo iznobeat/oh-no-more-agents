@@ -1,8 +1,10 @@
+import {foeRoundFourteenSourceBefore,foeRoundFourteenSuccessor} from './foe-round14-reference.js'
 import {execFileSync} from 'node:child_process'
 import fs from 'node:fs'
 let reference
 // Restore only C33's three painters and six barrel/shutter/tension helpers.
 export function foeRoundThirteenSourceBefore(source){
+ source=foeRoundFourteenSourceBefore(source)
  reference ||= execFileSync('git',['show','abd55d1a61a798af3cecd8444ac6a81cbc5e359f:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
  for(const name of ['drawHzGun','drawHzSentry','drawHzTripwire']){
   const re=new RegExp('function '+name+'\\([^]*?\\n}\\n')
@@ -16,5 +18,5 @@ export function foeRoundThirteenSourceBefore(source){
 }
 export function foeRoundThirteenSuccessor(previous){
  const pins=JSON.parse(fs.readFileSync(new URL('../test/fixtures/foe-round13-scenes.json',import.meta.url),'utf8'))
- return pins[previous]?.after || previous
+ return foeRoundFourteenSuccessor(pins[previous]?.after || previous)
 }

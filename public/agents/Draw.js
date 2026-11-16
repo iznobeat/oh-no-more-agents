@@ -8894,32 +8894,62 @@ function drawHzScorpion(ctx, w, pal, h, geo) {
 // A rack fan on the wall: a round grille with blades that turn slowly at
 // rest, spin up through the wind-up, and then blow a shimmer of hot air down
 // the aisle as far as it reaches.
-function drawHzHotaisle(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide,
-    live = geo.live, winding = geo.winding, show = geo.show, hot = geo.hot, t = geo.t
-  var cy = y0 + 7
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0 + 2, wide, 10)
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0 + 1, y0 + 3, wide - 2, 8)
-  var spin = t * 0.08 + (winding ? h.t * geo.progress * 0.25 : 0)
-  if (live) spin = t * 0.9
-  ctx.fillStyle = show ? hot : pal.rigDark
-  for (var b = 0; b < 3; b++) {
-    var a = spin + b * 2.094
-    ctx.fillRect(Math.round(cx + Math.cos(a) * 3) - 1, Math.round(cy + Math.sin(a) * 3) - 1, 2, 2)
-  }
-  ctx.fillRect(cx - 1, cy - 1, 2, 2)
-  hzLamp(ctx, pal, h, geo, x0 + 1, y0 + 2)
-  if (!live && !geo.cool) return
-  ctx.fillStyle = hot
-  var reach = (h.reach || 10) * C
-  for (var s = 0; s < 4; s++) {
-    var sx = cx + h.dir * (((t * 3 + s * reach / 4) % reach) + 4)
-    ctx.globalAlpha = 0.7 * (1 - s / 5) * (live ? 1 : geo.cool)
-    ctx.fillRect(Math.min(sx, sx + h.dir * 6), cy - 3 + (s % 2) * 4, 6, 1)
+function hotAisleShutter(w, h, g) {
+  var open = 0
+  if (g.winding) open = Math.min(1, h.t / 10)
+  if (g.live) open = 1
+  if (g.cool) open = g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(open * 4 * grid) / grid
+}
+
+function drawHotAisleBlast(ctx, w, pal, h, g) {
+  if (!g.live && !g.cool) return
+  // catchFired measures from the cell midpoint, not the mount's outer edge.
+  var start = (h.zx0 + h.zx1) / 2 * g.C, reach = h.reach * g.C
+  var end = start + h.dir * reach, low = Math.min(start, end), high = Math.max(start, end)
+  var tick = w.reducedMotion ? 0 : h.t
+  ctx.fillStyle = g.hot
+  ctx.globalAlpha = (g.live ? 1 : g.cool) * 0.25
+  ctx.fillRect(low, g.y0 + 7, reach, 1)
+  for (var i = 0; i < 4; i++) {
+    var head = start + h.dir * ((tick * 3 + i * reach / 4) % reach)
+    var tail = head - h.dir * 7
+    var a = Math.max(low, Math.min(head, tail)), b = Math.min(high, Math.max(head, tail))
+    ctx.globalAlpha = (g.live ? 1 : g.cool) * 0.7
+    ctx.fillRect(a, g.y0 + 4 + (i % 2) * 5, b - a, 1)
   }
   ctx.globalAlpha = 1
+}
+
+function drawHzHotaisle(ctx, w, pal, h, geo) {
+  var cy = geo.y0 + 7, open = hotAisleShutter(w, h, geo)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0, geo.y0 + 2, geo.wide, 10)
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0 + 1, geo.y0 + 3, geo.wide - 2, 8)
+  var spin = w.reducedMotion ? 0 : geo.t * 0.08
+  if (geo.winding) spin = w.reducedMotion ? 0 : h.t * 0.08 + h.t * h.t * 0.012
+  if (geo.live) spin = w.reducedMotion ? 0 : 10.192 + h.t * 0.7
+  if (geo.cool) spin = w.reducedMotion ? 0 : 22.792 + (h.t - h.t * h.t / 24) * 0.7
+  ctx.fillStyle = geo.show ? geo.hot : pal.rigDark
+  for (var blade = 0; blade < 3; blade++) for (var r = 1; r <= 4; r++) {
+    var angle = spin + blade * 2.094
+    ctx.fillRect(Math.round(geo.cx + Math.cos(angle) * r) - 1, Math.round(cy + Math.sin(angle) * r) - 1, 2, 2)
+  }
+  ctx.fillRect(geo.cx - 1, cy - 1, 2, 2)
+  // Attached shutters visibly part before the fan discharges.
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0 + 1, cy - 4 - open, geo.wide - 2, 2)
+  ctx.fillRect(geo.x0 + 1, cy + 2 + open, geo.wide - 2, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rig
+  ctx.fillRect(geo.x0 + 1, cy - 3 - open, geo.wide - 2, 1)
+  ctx.fillRect(geo.x0 + 1, cy + 2 + open, geo.wide - 2, 1)
+  if (w.res === 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(geo.cx - 0.5, cy - 0.5, 1, 1)
+  }
+  drawHotAisleBlast(ctx, w, pal, h, geo)
 }
 
 function snakeStrikePose(w, h, g) {
@@ -9124,31 +9154,49 @@ function drawHzCurrent(ctx, w, pal, h, geo) {
   ctx.globalAlpha = 1
 }
 
-function drawHzVent(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, y1 = geo.y1, cx = geo.cx, wide = geo.wide,
-    tall = geo.tall, live = geo.live, t = geo.t, show = geo.show
-  // A split in the sea floor letting go of what is under it. Vertical, so it
-  // is the one thing in the biome going decisively up.
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0 + 1, y1 - 3, wide - 2, 3)                 // the fissure lip
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0 + 2, y1 - 4, wide - 4, 1)
-  if (show) {
-    // The plume: bubbles widening and fading as they climb, which is the
-    // same rule the divers' own exhaust follows so the biome stays coherent.
-    for (var vb = 0; vb < 16; vb++) {
-      var vlife = (((t * (live ? 2.6 : 1.0)) + vb * 19) % 100) / 100
-      var vx = cx + Math.sin(vlife * 5 + vb) * (2 + vlife * (wide / 2))
-      var vy = y1 - 4 - vlife * (live ? tall : 3 + geo.progress * 6)
-      if (vy < y0) continue
-      ctx.globalAlpha = (live ? 0.85 : 0.4) * (1 - vlife * 0.8)
-      ctx.fillStyle = live ? pal.bubbleLit : pal.bubble
-      var vsz = vlife > 0.6 ? 2 : 1
-      ctx.fillRect(Math.round(vx), Math.round(vy), vsz, vsz)
-    }
-    ctx.globalAlpha = 1
+function ventPressurePose(w, h, g) {
+  var open = 0, rise = 0
+  if (g.winding) { open = Math.min(1, h.t / 10); rise = Math.pow(Math.max(0, (h.t - 19) / 8), 2) }
+  if (g.live) { open = 1; rise = 1 }
+  if (g.cool) { open = g.cool; rise = g.cool }
+  var grid = w.res === 2 ? 2 : 1
+  return { open: Math.round(3 * open * grid) / grid, rise: rise }
+}
+
+function drawVentBubbles(ctx, w, pal, h, g, pose) {
+  if (!g.show && !g.cool) return
+  var tick = w.reducedMotion ? 0 : h.t + (g.live ? 28 : g.cool ? 54 : 0)
+  var height = 3 + pose.rise * (g.tall - 7)
+  for (var i = 0; i < 16; i++) {
+    var life = ((tick * 3 + i * 19) % 100) / 100
+    var x = g.cx + Math.sin(life * 5 + i) * (1 + life * (g.wide / 2 - 2))
+    var y = g.y1 - 4 - life * height
+    ctx.globalAlpha = (g.live ? 0.85 : 0.5) * (1 - life * 0.5)
+    ctx.fillStyle = g.live ? pal.bubbleLit : pal.bubble
+    var size = life > 0.6 ? 2 : 1
+    ctx.fillRect(Math.round(x), Math.round(y), size, size)
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y1 - 4, pal.bubbleLit)
+  ctx.globalAlpha = 1
+}
+
+function drawHzVent(ctx, w, pal, h, geo) {
+  var pose = ventPressurePose(w, h, geo), cy = geo.y1 - 4
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0 + 1, geo.y1 - 3, geo.wide - 2, 3)
+  // Two stone lips prise apart; the same slit releases the rising bubbles.
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0 + 2, cy - pose.open, geo.wide / 2 - 3, 2 + pose.open)
+  ctx.fillRect(geo.cx + 1, cy - pose.open, geo.wide / 2 - 3, 2 + pose.open)
+  ctx.fillStyle = pal.bubble
+  ctx.fillRect(geo.cx - 1, cy - pose.open, 2, 1 + pose.open)
+  if (w.res === 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(geo.x0 + 2.5, cy - pose.open + 0.5, geo.wide / 2 - 4, 0.5)
+    ctx.fillRect(geo.cx + 1.5, cy - pose.open + 0.5, geo.wide / 2 - 4, 0.5)
+  }
+  drawVentBubbles(ctx, w, pal, h, geo, pose)
+  if (!geo.show && !geo.cool && !w.reducedMotion)
+    hzPressure(ctx, w, pal, h, geo, geo.cx, cy, pal.bubbleLit)
 }
 
 // Swell, hold the seam under tension, split and exhale, then close.
@@ -9501,31 +9549,47 @@ function drawHzSprinkler(ctx, w, pal, h, geo) {
     hzPressure(ctx, w, pal, h, geo, geo.cx, geo.y0 + 7, pal.poolLip)
 }
 
+function polisherBrace(w, h, g) {
+  var brace = 0, release = 0
+  if (g.winding) { brace = Math.min(1, h.t / 9); release = Math.max(0, (h.t - 17) / 4) }
+  if (g.live) { brace = 1; release = 1 }
+  if (g.cool) { brace = g.cool; release = 1 }
+  var grid = w.res === 2 ? 2 : 1
+  return { lean: Math.round(4 * brace * grid) / grid, lift: Math.round(2 * brace * (1 - release) * grid) / grid }
+}
+
+function drawPolisherPad(ctx, w, pal, h, g, x) {
+  var tick = w.reducedMotion ? 0 : h.t
+  var turn = g.live ? tick * 2 : tick * (0.08 + g.progress * 0.5)
+  ctx.fillStyle = g.show ? g.hot : pal.steelShade
+  for (var i = 0; i < 5; i++)
+    ctx.fillRect(x - 5 + ((i * 3 + Math.floor(turn)) % 10), g.y1 - 1, 2, 1)
+  if (!g.show || w.reducedMotion) return
+  ctx.fillStyle = pal.decorLit
+  ctx.globalAlpha = 0.5
+  for (var f = 0; f < 4; f++)
+    ctx.fillRect(x - 7 + f * 4, g.y1 - 3 - ((tick + f * 7) % 5), 2, 1)
+  ctx.globalAlpha = 1
+}
+
 function drawHzPolisher(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, wide = geo.wide, live = geo.live, t = geo.t,
-    seed = geo.seed, show = geo.show, hot = geo.hot
-  // A floor buffer nobody switched off, running its beat up and down the
-  // same six cells for as long as the building stands.
-  var run = (Math.sin(t * 0.035 + seed) * 0.5 + 0.5)
-  var pcx = Math.round(x0 + 6 + run * (wide - 12))
+  var clock = w.reducedMotion ? 0 : geo.t
+  var run = Math.sin(clock * 0.035 + geo.seed) * 0.5 + 0.5
+  var x = Math.round(geo.x0 + 6 + run * (geo.wide - 12)), pose = polisherBrace(w, h, geo)
+  var y = geo.y1 - 4 - pose.lift
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(pcx - 5, y1 - 4, 10, 4)                    // the deck
+  ctx.fillRect(x - 5, y, 10, 4)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(pcx + 3, y1 - 12, 2, 9)                    // the handle
-  ctx.fillRect(pcx + 3, y1 - 13, 5, 2)
-  ctx.fillStyle = show ? hot : pal.steelShade
-  var turn = live ? t * 2 : t * 0.08 + (geo.winding ? h.t * (0.12 + geo.progress * 0.5) : 0)
-  for (var pb = 0; pb < 5; pb++)                          // the pad, spinning
-    ctx.fillRect(pcx - 5 + ((pb * 3 + Math.floor(turn)) % 10), y1 - 1, 2, 1)
-  if (show) {
-    ctx.globalAlpha = 0.5
-    ctx.fillStyle = pal.decorLit
-    for (var pf = 0; pf < 4; pf++)
-      ctx.fillRect(pcx - 7 + pf * 4, y1 - 6 - ((t + pf * 7) % 5), 2, 1)
-    ctx.globalAlpha = 1
+  ctx.fillRect(x - 1, y + 2, 2, 2 + pose.lift)
+  // The handle braces into the work; every segment stays attached to the deck.
+  for (var row = 0; row < 9; row++)
+    ctx.fillRect(x + 3 - Math.round(pose.lean * row / 8), y - row, 2, 1)
+  ctx.fillRect(x + 3 - pose.lean, y - 9, 5, 2)
+  if (w.res === 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x + 3.5 - pose.lean, y - 8.5, 3.5, 0.5)
   }
-  hzLamp(ctx, pal, h, geo, pcx - 2, y1 - 3)
-  hzImpact(ctx, pal, h, geo, pcx, y1 - 4, pal.decorLit)
+  drawPolisherPad(ctx, w, pal, h, geo, x)
 }
 
 function shredderPose(w, h, g) {

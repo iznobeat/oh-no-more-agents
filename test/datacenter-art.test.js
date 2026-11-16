@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import {renderer} from '../tools/gag-art.js'
+import {foeRoundFourteenSourceBefore,foeRoundFourteenSuccessor} from '../tools/foe-round14-reference.js'
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
@@ -157,19 +160,22 @@ test("original Data Center materials, rack lights, updrafts, props, hazards and 
   for (const [resolutions, expected] of [
     [[undefined, 1], "ca7e136e8f7cf1a570caad5b907beabc91fae80e7c8b89d9b838e3ab104d4bd3"], [[2], "55088e5a1f136ae9bd20f5db49a5cff93afd7cd72ccd88516a7a7dedad806e79"]
   ]) {
-    const hash = createHash("sha256")
-    for (const name of Object.keys(THEMES)) for (const level of levels)
-      for (const res of resolutions) for (const ticks of [0, 77, 240]) {
-        const { w, pal } = sample(level, name); w.res = res; w.ticks = ticks
-        const img = canvas(400, 248, themeOf(name).background)
-        D.drawBackdrop(img.ctx, w, pal); D.drawTerrainMaterials(img.ctx, w, pal)
-        D.drawDecor(img.ctx, w, pal); D.drawRackLights(img.ctx, w); D.drawUpdrafts(img.ctx, w, pal)
-        D.drawAmbience(img.ctx, w, pal); D.drawPits(img.ctx, w, pal)
-        D.drawExitBack(img.ctx, w, pal); D.drawEnemyHatch(img.ctx, w, pal, {})
-        for (const h of w.hazards) D.drawHazard(img.ctx, w, pal, h, {})
-        hash.update(img.buf)
-      }
-    assert.equal(hash.digest("hex"), expected)
+    const old=renderer(foeRoundFourteenSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')))
+    for(const [draw,pin]of[[old,expected],[D,foeRoundFourteenSuccessor(expected)]]){
+      const hash = createHash("sha256")
+      for (const name of Object.keys(THEMES)) for (const level of levels)
+        for (const res of resolutions) for (const ticks of [0, 77, 240]) {
+          const { w, pal } = sample(level, name); w.res = res; w.ticks = ticks
+          const img = canvas(400, 248, themeOf(name).background)
+          draw.drawBackdrop(img.ctx, w, pal); draw.drawTerrainMaterials(img.ctx, w, pal)
+          draw.drawDecor(img.ctx, w, pal); draw.drawRackLights(img.ctx, w); draw.drawUpdrafts(img.ctx, w, pal)
+          draw.drawAmbience(img.ctx, w, pal); draw.drawPits(img.ctx, w, pal)
+          draw.drawExitBack(img.ctx, w, pal); draw.drawEnemyHatch(img.ctx, w, pal, {})
+          for (const h of w.hazards) draw.drawHazard(img.ctx, w, pal, h, {})
+          hash.update(img.buf)
+        }
+      assert.equal(hash.digest("hex"), pin)
+    }
   }
 })
 
