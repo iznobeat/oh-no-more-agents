@@ -15144,3 +15144,117 @@ its collar before the discharge, the Loan Shark braces with open jaws before
 a continuous lunge — its warning had been colour only), reviewed in its
 strips. **Before:** gate 1926/1926; `npm run smoke -- --level 17` passed
 (17–24). **After:** `npm run verify -- --previous 700fcf8d` passed.
+## C28 — 2026-11-16 · Hook, fracture, feed
+
+**Chose:** Root Access (vinelock), Frozen State (blackice) and Garbage In
+(shredder), after re-rendering all 88 hostile kind/state fixtures and all
+48 hazard cycles at res 1/2. Inspected every native/page overview, consecutive
+hostile contact sheets, the three candidate cycles and complete native/page
+boards. None was selected in C12–C14/C24–C27. The vines grew almost straight
+up without a grasping pose; ice jumped from small cracks to one solid spike;
+the shredder's tiny shifting rollers barely prepared its sudden row of teeth.
+Baseline: 087a129d4c2a18b3c37e4d1cc3dc63e051066f62.
+
+**Changed (Draw only):** five rooted stems lift into opposing hooks over the
+first seven of fourteen charge ticks, hold, extend over the first three fire
+ticks and unfurl over six. Their wavy stems remain connected; the twelve-tick
+recovery draws them down into their roots. Ice fractures widen, small shoulders
+rise, then the central shard accelerates over the last three charge ticks to
+join fire zero exactly. Two smaller shards flank the original central wedge;
+a short overshoot settles, then the shards shrink back into their cracks.
+The shredder exposes a raised cutter rack over its first eight charge ticks,
+holds with turning grooves, bites with staggered teeth during fire and lowers
+through recovery. Original root mat, ice sheet/central wedge and hopper/slot
+identities and palette roles remain. Native whole pixels carry the movement;
+res 2 refines stem hooks, ice facets and cutter grooves on the half-pixel grid.
+
+Reduced motion holds live stem sway, shard overshoot, cutter travel and idle
+motion; phase-progress warnings remain. Idle vines, frost glints and the
+shredder lamp still move quietly without reduced motion. No Sim.js, sfx.js,
+North Pole code, hostile heads/riders, umbrellas, behaviour, timing, RNG,
+world writes, dependencies or product text changed. No sibling/Omarchy writes.
+
+**Review/tool:** extended tools/foe-strips.js with C28 compact consecutive
+cycles, before-left/after-right key strips and ordinary/Christmas/New Year
+complete boards. Checked all new test/helper/fixture names with test -e before
+creating them. The CLI entry point now follows all round constants; its first
+full run caught that initialization-order error, which was corrected and the
+complete CLI rerun successfully. Baseline catalogue and saved public assets:
+/tmp/xmas-dressing/foes8-0 (before-public subdirectory). First draft and revised
+wavy stems: foes8-1. Final complete catalogue, 541 files: foes8-2. All are under
+/tmp/xmas-dressing. Inspected these six final native/page comparisons:
+
+- /tmp/xmas-dressing/foes8-2/vinelock-compare-res1.png
+- /tmp/xmas-dressing/foes8-2/vinelock-compare-res2.png
+- /tmp/xmas-dressing/foes8-2/blackice-compare-res1.png
+- /tmp/xmas-dressing/foes8-2/blackice-compare-res2.png
+- /tmp/xmas-dressing/foes8-2/shredder-compare-res1.png
+- /tmp/xmas-dressing/foes8-2/shredder-compare-res2.png
+
+Also inspected consecutive compact cycles at both scales in draft 1, final
+native cycles, final ordinary charge/fire/rest native full boards, Christmas
+charge page and New Year charge native boards. Hostile consecutive contact
+sheets in the final directory retain eight consecutive frames of all eleven
+fixture states for each kind, at both scales. These are staged raster shots;
+no live Omarchy/QML claim.
+
+**Pins:** no existing golden file or historical pixel digest was overwritten;
+no existing pin moved. foe-round8-pins.json independently pins complete before/
+after cycles at both resolutions and facings, plus 168 full-board pairs (21 biomes ×
+two scales × four clocks; 336 predecessor/successor frames).
+Every full board in this ordinary fixture set remains exact. The historical
+scene/aggregate audit also found no change. C27 tests now explicitly recover
+their exact reviewed source before running all original assertions; the same
+normalization flows through older reference helpers. Restoring precisely three
+painters and removing four helpers recovers the entire baseline Draw source
+byte for byte, independently tested. No assertions removed, thresholds lowered,
+skips added or raw pixel-buffer diffs introduced.
+
+Complete cycle SHA-256 prefixes (both direction fixtures are identical):
+
+- vinelock/res1: b6a65d39 → 7efb45f0; res2: 218c7a36 → 8f31b106 — hooked preparation, unfurl and rooted recovery.
+- blackice/res1: a4c961f7 → 4cdcb1e0; res2: 307e1cc5 → c897cd08 — accelerating shards, overshoot and shrinking facets.
+- shredder/res1: fb9ca671 → eceb88cb; res2: 952ade23 → 31caa12d — exposed cutter rack, turning grooves and lowering recovery.
+
+**Validation:** baseline full check 1926/1926, exit 0, 217.31 s. Focused new
+animation/shared-hazard run 110/110, exit 0, 31.12 s. Added one further reduced-
+motion phase-progress test before the final gate. The first final run reported
+1938/1938 in 224.58 s, but its outer tool shell exited 143, so it was not
+accepted as a commit gate. Re-ran with an explicit exit file in a persistent
+systemd user job. Tests cover independent exact cycles, visible native changes,
+phase joins, recovery, all-theme bounded/grid/palette/purity, excluded hazards,
+all hostile states with Santa/party/antler riders, exact source restoration,
+scene-ledger reproduction and review output. Stamps: Draw 723e9829, build
+af73d2b1. Shared FIFO lock, unchanged six-file concurrency, bounded recordings
+and digest comparisons throughout. Copied the existing crapper cache into this
+worktree and corrected only its local editable path. Gate and FPS results below.
+
+Persistent final full check **1938/1938**, exit **0**, 219.07 s. Fresh
+coverage **1938/1938**, 522.29 s. The subsequent persistent CRAP gate reads that
+same fresh coverage with --use-existing-coverage; source stayed frozen across
+both checks and coverage. Renderer scores: drawHzBlackice **16.0**,
+drawHzVinelock **11.0**, vineLockPose **7.8**, shredderPose **7.1**,
+blackIcePose **7.1**, drawShredderRollers **5.0**, drawHzShredder **4.2**.
+New review/reference/scene helpers also score below 30. The final persistent
+gate exits and matched FPS results follow below.
+
+Persistent `npm run crap -- --changed --threshold 30 --use-existing-coverage`
+exit **0**. Persistent final FPS run exit **0**. Final source and fixtures
+remained frozen through all gates; only this log was appended afterwards.
+Retained logs/exits: /tmp/xmas-dressing/foes8-before-check.{log,exit},
+foes8-focused.{log,exit}, foes8-persistent-check.{log,exit},
+foes8-persistent-crap.{log,exit}, foes8-persistent-fps.{log,exit}.
+Fresh coverage and initial scoring output: foes8-crap.log.
+
+**Performance:** same `npm run fps -- 8 12 18`, baseline saved public assets
+versus final source, each under the shared lock. Before and after, all three
+levels: **60 median / 60 p5 FPS, 17 ms worst frame, 0% long tasks**.
+CPU **11/9/12% → 11/10/12%**. No measured frame-rate loss; no CPU speedup
+claimed. Baseline log/exit: /tmp/xmas-dressing/foes8-before-fps.{log,exit};
+final: /tmp/xmas-dressing/foes8-persistent-fps.{log,exit}. An earlier completed
+after sample also held 60/60 and 17 ms on all three levels.
+
+**Next:** owner review of the hooked vine preparation, rising ice shards and
+exposed cutter rack in crowded native colonies. No known remaining art or test
+issue; live Omarchy/QML remains unverified. No merge, push, deploy, production
+request, port 8787 change or sibling sync.
