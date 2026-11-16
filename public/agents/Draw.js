@@ -8107,22 +8107,53 @@ function drawHzPendulum(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, bx, by + 5, pal.rig)
 }
 
+function geyserPose(w, h, g) {
+  // Sim: 30 charge / 26 fire. Pressure holds before a three-tick release.
+  var height = 0, lift = 0
+  if (g.winding) { lift = Math.min(2, h.t / 8); height = 2 + Math.min(8, h.t / 3) }
+  if (g.live) { lift = 2; height = 10 + Math.min(1, h.t / 3) * (g.tall - 14) }
+  if (g.cool) { lift = 2 * g.cool; height = (g.tall - 4) * g.cool }
+  if (w.reducedMotion && g.live) height = g.tall - 4
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { lift: Math.round(lift * grid) / grid, height: Math.round(height * grid) / grid }
+}
+
 function drawHzGeyser(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, cx = geo.cx, wide = geo.wide,
-    tall = geo.tall, live = geo.live, t = geo.t, show = geo.show, hot = geo.hot
+  var pose = geyserPose(w, h, geo), cx = geo.cx, y = geo.y1 - 3
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y1 - 3, wide, 3)                  // grate
+  ctx.fillRect(geo.x0, y, geo.wide, 3)
   ctx.fillStyle = pal.rigDark
-  for (var gg = x0 + 1; gg < x1 - 1; gg += 3) ctx.fillRect(gg, y1 - 3, 1, 3)
-  if (show) {
-    // A plume that billows wider the higher it gets.
-    for (var pu = 0; pu < (live ? tall - 4 : 2 + Math.round(geo.progress * 5)); pu++) {
-      var pw = Math.round((wide / 2) * (0.3 + (pu / tall) * (live ? 1.4 : 0.4)))
-      ctx.fillStyle = (pu + Math.floor(t / 2)) % 4 === 0 ? pal.fireHot : hot
-      ctx.fillRect(cx - pw, y1 - 4 - pu, pw * 2, 1)
+  for (var gg = geo.x0 + 1; gg < geo.x1 - 1; gg += 3) ctx.fillRect(gg, y, 1, 3)
+  if (geo.show || geo.cool) {
+    // The centre of the original grate lifts; dark supports keep it attached.
+    ctx.fillRect(cx - 3, y - pose.lift, 1, pose.lift)
+    ctx.fillRect(cx + 2, y - pose.lift, 1, pose.lift)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(cx - 3, y - pose.lift, 6, 1)
+    drawGeyserPlume(ctx, w, pal, h, geo, pose)
+  }
+  if (!w.reducedMotion || geo.show || geo.cool)
+    hzPressure(ctx, w, pal, w.reducedMotion ? { t: 0 } : h, geo, cx, y, pal.decorLit)
+}
+
+function drawGeyserPlume(ctx, w, pal, h, g, pose) {
+  var t = w.reducedMotion ? 0 : h.t
+  for (var row = 0; row < pose.height; row++) {
+    var spread = g.live || g.cool ? 1.4 : 0.4
+    var pw = Math.max(1, Math.round((g.wide / 2) * (0.3 + row / g.tall * spread)))
+    // Stepped shoulders and an advancing pale core read as rising steam.
+    var lip = row > 3 && (row + Math.floor(t / 3)) % 6 < 2 ? 1 : 0
+    ctx.fillStyle = g.cool ? pal.decorDim : g.hot
+    ctx.fillRect(g.cx - pw + lip, g.y1 - 4 - row - pose.lift, (pw - lip) * 2, 1)
+    if ((row + Math.floor(t / 2)) % 5 < 2) {
+      ctx.fillStyle = pal.fireHot
+      ctx.fillRect(g.cx - 1, g.y1 - 4 - row - pose.lift, 2, 1)
     }
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y1 - 3, pal.decorLit)
+  if ((w.res || 1) >= 2 && pose.height > 0) {
+    ctx.fillStyle = pal.fireHot
+    ctx.fillRect(g.cx - 0.5, g.y1 - 4 - pose.height - pose.lift, 1, 0.5)
+  }
 }
 
 function rockLoadPose(w, h, g, index) {
@@ -8618,28 +8649,32 @@ function drawHzSnake(ctx, w, pal, h, geo) {
 }
 
 // --- Trench -------------------------------------------------------------
-function drawHzShark(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, t = geo.t, seed = geo.seed,
-    show = geo.show, hot = geo.hot
-  // The only hazard on the board that is not bolted to anything, so it is
-  // the only one that has to say where it is going. It patrols its zone at
-  // rest, hangs still and turns side-on while it winds up — a shark lining
-  // somebody up stops swimming, which is the tell — and crosses the zone in
-  // one run when it strikes.
-  var swim = live
-    ? (h.t / Math.max(1, 16)) * wide           // the run
-    : (winding ? wide * (0.4 + geo.progress * 0.1) : (0.5 + 0.5 * Math.sin(t * 0.018 + seed)) * (wide - 22))
-  var shdir = h.zx0 % 2 === 0 ? 1 : -1
-  var shx = Math.round(shdir > 0 ? x0 + swim : x1 - swim - 22)
-  var shy = Math.round(y0 + tall * 0.42 + Math.sin(t * 0.05) * (winding ? 0 : 2))
-  var nose = shdir > 0 ? shx + 22 : shx
+function sharkAttackPose(w, h, g) {
+  var tick = w.reducedMotion ? 0 : g.t
+  var idle = (0.5 + 0.5 * Math.sin(tick * 0.018 + g.seed)) * (g.wide - 22)
+  var swim = idle, jaw = 0, tail = 0, bob = Math.sin(tick * 0.05) * 2
+  if (g.winding) { swim = -Math.min(3, h.t / 6); jaw = Math.min(3, h.t / 6); tail = Math.min(2, h.t / 8) }
+  if (g.live) { swim = -3 + Math.min(1, h.t / 10) * (g.wide + 3); jaw = Math.min(3, (16 - h.t) / 2); tail = -2 }
+  if (g.cool) { swim = idle + (g.wide - idle) * g.cool; jaw = 0; tail = -2 * g.cool }
+  if (w.reducedMotion && g.live) { swim = g.wide / 2; jaw = 3; tail = 0 }
+  if (g.winding) bob = Math.sin((tick - h.t) * 0.05) * 2 * (1 - Math.min(1, h.t / 6))
+  if (g.live) bob = 0
+  if (g.cool) bob *= 1 - g.cool
+  var grid = (g.show || g.cool) && (w.res || 1) >= 2 ? 2 : 1
+  return { bob: Math.round(bob * grid) / grid, swim: Math.round(swim * grid) / grid, jaw: Math.round(jaw * grid) / grid, tail: Math.round(tail * grid) / grid }
+}
 
-  var pose = { x: shx, y: shy, dir: shdir, nose: nose }
+function drawHzShark(ctx, w, pal, h, geo) {
+  var p = sharkAttackPose(w, h, geo), shdir = h.zx0 % 2 === 0 ? 1 : -1
+  var shx = shdir > 0 ? geo.x0 + p.swim : geo.x1 - p.swim - 22
+  var shy = Math.round(geo.y0 + geo.tall * 0.42) + p.bob
+  if (!geo.show && !geo.cool) shy = Math.round(geo.y0 + geo.tall * 0.42 + Math.sin((w.reducedMotion ? 0 : geo.t) * 0.05) * 2)
+  var pose = { x: shx, y: shy, dir: shdir, nose: shdir > 0 ? shx + 22 : shx, jaw: p.jaw, tail: p.tail }
   drawSharkBody(ctx, pal, geo, pose)
   drawSharkFins(ctx, pal, geo, pose)
   drawSharkJaw(ctx, pal, geo, pose)
-  hzPressure(ctx, w, pal, h, geo, shdir > 0 ? shx - 1 : shx + 22, shy + 2, pal.bubble)
+  if (!w.reducedMotion || geo.show || geo.cool)
+    hzPressure(ctx, w, pal, w.reducedMotion ? { t: 0 } : h, geo, shdir > 0 ? shx - 1 : shx + 22, shy + 2, pal.bubble)
 }
 
 function drawSharkBody(ctx, pal, g, pose) {
@@ -8681,9 +8716,10 @@ function drawSharkFins(ctx, pal, g, pose) {
   ctx.fillStyle = live ? hot : pal.rigDark
   var tailX = shdir > 0 ? shx - 1 : shx + 22
   for (var tl = 0; tl < 5; tl++) {
+    var tailY = shy + (pose.tail || 0)
     var spread = 1 + tl                                   // opens away from the body
-    ctx.fillRect(tailX + (shdir > 0 ? -tl : tl), shy - spread - 1, 1, 2)   // upper lobe
-    if (tl < 4) ctx.fillRect(tailX + (shdir > 0 ? -tl : tl), shy + spread - 1, 1, 2)
+    ctx.fillRect(tailX + (shdir > 0 ? -tl : tl), tailY - spread - 1, 1, 2)   // upper lobe
+    if (tl < 4) ctx.fillRect(tailX + (shdir > 0 ? -tl : tl), tailY + spread - 1, 1, 2)
   }
   hzTri(ctx, shx + (shdir > 0 ? 13 : 9), shy - 3, 2, 5, -1)      // dorsal
   ctx.fillRect(shx + (shdir > 0 ? 6 : 13), shy + 3, 4, 1)        // pectoral
@@ -8697,14 +8733,20 @@ function drawSharkFins(ctx, pal, g, pose) {
 }
 
 function drawSharkJaw(ctx, pal, g, pose) {
-  var shy = pose.y, shdir = pose.dir, nose = pose.nose, live = g.live, show = g.show, hot = g.hot
-  // The jaw. Shut until it means it, and then the whole point of the thing.
-  if (show) {
-    ctx.fillStyle = live ? "#ffffff" : pal.warn
-    for (var tooth = 0; tooth < 4; tooth++)
-      hzTri(ctx, nose + (shdir > 0 ? -2 - tooth * 2 : 2 + tooth * 2), shy + 2, 1, 2, -1)
-    ctx.fillStyle = live ? hot : pal.warn
-    ctx.fillRect(shdir > 0 ? nose - 8 : nose + 1, shy + 1, 8, 1)
+  var nose = pose.nose, dir = pose.dir, y = pose.y, gape = pose.jaw || 0
+  if (g.show || g.cool) {
+    // The jaw separates before the bite; teeth stay attached to both edges.
+    var x = dir > 0 ? nose - 8 : nose + 1
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x, y + 1, 8, 1 + gape)
+    ctx.fillStyle = g.live ? g.hot : pal.warn
+    ctx.fillRect(x, y + 2 + gape, 8, 1)
+    ctx.fillStyle = g.live ? "#ffffff" : pal.warn
+    for (var tooth = 0; tooth < 4; tooth++) {
+      var tx = nose + (dir > 0 ? -2 - tooth * 2 : 2 + tooth * 2)
+      hzTri(ctx, tx, y + 1, 1, 2, 1)
+      ctx.fillRect(tx, y + 1 + gape, 1, 1)
+    }
   }
 }
 
@@ -8877,24 +8919,56 @@ function drawIcicleChips(ctx, w, pal, h, g) {
   }
 }
 
+function frostJetPose(w, h, g) {
+  // Sim: 22 charge / 20 fire. Retract the valve, release, then reseat it.
+  var pull = 0, length = 0
+  if (g.winding) { pull = Math.min(2, h.t / 6); length = 1 + Math.min(7, h.t / 3) }
+  if (g.live) { pull = Math.max(0, 2 - h.t / 2); length = 8 + Math.min(1, h.t / 3) * (12 * g.C - 8) }
+  if (g.cool) { pull = 0; length = 12 * g.C * g.cool }
+  if (w.reducedMotion && g.live) { pull = 0; length = 12 * g.C }
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { pull: Math.round(pull * grid) / grid, length: Math.round(length * grid) / grid }
+}
+
 function drawHzFrostjet(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, cx = geo.cx, tall = geo.tall,
-    live = geo.live, show = geo.show, hot = geo.hot
+  var p = frostJetPose(w, h, geo), x0 = geo.x0, y0 = geo.y0
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y0 + 1, 4, tall - 2)             // the nozzle housing
+  ctx.fillRect(x0, y0 + 1, 4, geo.tall - 2)
   ctx.fillStyle = pal.rigDark
   ctx.fillRect(x0 + 4, y0 + 3, 3, 3)
   ctx.fillStyle = pal.warn
-  ctx.fillRect(x0 + 1, y0 + 2, 1, tall - 4)
-  if (show) {
-    // A cone of vapour, thickening as it goes.
-    ctx.fillStyle = hot
-    for (var fj = 0; fj < (live ? 12 * C : 2 + Math.round(geo.progress * 5)); fj++) {
-      var fh = Math.round(1 + fj * (live ? 0.18 : 0.1))
-      ctx.fillRect(cx + h.dir * fj, y0 + 4 - fh / 2, 1, fh + 1)
+  ctx.fillRect(x0 + 1, y0 + 2, 1, geo.tall - 4)
+  if (geo.show || geo.cool) {
+    var mouth = h.dir > 0 ? x0 + 7 - p.pull : x0 + p.pull
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(mouth - 1, y0 + 2, 2, 5)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(mouth - 2, y0 + 2 - p.pull, 4, 1)
+    ctx.fillRect(mouth - 2, y0 + 6 + p.pull, 4, 1)
+    ctx.fillStyle = geo.hot
+    ctx.fillRect(mouth, y0 + 3, 1, 3)
+    drawFrostJetPlume(ctx, w, pal, h, geo, mouth, p.length)
+  }
+  if (!w.reducedMotion || geo.show || geo.cool)
+    hzPressure(ctx, w, pal, w.reducedMotion ? { t: 0 } : h, geo, x0 + 7, y0 + 4, pal.decorLit)
+}
+
+function drawFrostJetPlume(ctx, w, pal, h, g, mouth, length) {
+  var t = w.reducedMotion ? 0 : h.t
+  for (var col = 1; col <= length; col++) {
+    var half = Math.round((1 + col * (g.live || g.cool ? 0.18 : 0.1)) / 2)
+    var edge = col > 6 && (col - t * 2 + 400) % 8 < 2 ? 1 : 0
+    ctx.fillStyle = g.cool ? pal.decorDim : g.hot
+    ctx.fillRect(mouth + h.dir * col, g.y0 + 4 - half + edge, 1, half * 2 + 1 - edge * 2)
+    if ((col - t * 2 + 400) % 7 < 2) {
+      ctx.fillStyle = pal.decorLit
+      ctx.fillRect(mouth + h.dir * col, g.y0 + 4, 1, 1)
     }
   }
-  hzPressure(ctx, w, pal, h, geo, x0 + 7, y0 + 4, pal.decorLit)
+  if ((w.res || 1) >= 2 && length > 0) {
+    ctx.fillStyle = pal.fireHot
+    ctx.fillRect(mouth + h.dir * length, g.y0 + 3.5, 0.5, 1)
+  }
 }
 
 // --- spaceship ----------------------------------------------------------
