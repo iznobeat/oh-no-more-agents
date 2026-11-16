@@ -15371,3 +15371,14 @@ lowering sprinkler collars in crowded native colonies. No known remaining art,
 test or frame-rate issue. Live Omarchy/QML remains unverified; raster shots
 skip text and approximate gradients as documented. No merge, push, deploy,
 production request, port 8787 change or sibling sync.
+
+## 491 — 2026-11-16 · Deploy: vines, black ice, shredders, spikes, flywheels, sprinklers
+
+**Deployed** build 393f9679 (Worker version c1c2e134), replacing 7888079a;
+covers C28 (vinelock hooks and unfurls, black ice fractures before the
+shards, the shredder's cutters show before the bite) and C29 (spikes
+compress and hold, the flywheel's spokes connect and it spins up and coasts,
+the sprinkler lowers before the rain), reviewed in their strips. 30 tells
+improved across the foe/hazard rounds. **Before:** gate 1950/1950; `npm run
+smoke -- --level 5` passed (5–11). **After:** `npm run verify -- --previous
+7888079a` passed.
