@@ -15382,3 +15382,152 @@ the sprinkler lowers before the rain), reviewed in their strips. 30 tells
 improved across the foe/hazard rounds. **Before:** gate 1950/1950; `npm run
 smoke -- --level 5` passed (5–11). **After:** `npm run verify -- --previous
 7888079a` passed.
+## C30 — 2026-11-16 · Cock the rack, seat the barrels, open the throat
+
+**Chose:** Sharp Prompt (darts), Auto Moderator (turret) and Thermal
+Throttler (flame), after re-rendering all 88 hostile kind/state fixtures and
+all 48 hazard cycles at res 1/2. Inspected all twelve hazard overviews, both
+hostile overviews and all sixteen consecutive hostile contact sheets, then
+candidate complete cycles and full boards. None was selected in
+C12–C14/C24–C29. The dart plate barely changed before unconnected dashes
+appeared; the turret held two fixed barrels throughout charge and fire; flame
+jumped from a short striped pilot to a full striped triangle, then vanished.
+Baseline: 71ab84a324a134b0251aa916b5312ee88dc9f990.
+
+**Changed (Draw only):** three connected dart channels extend across the first
+eight of eighteen charge ticks and hold loaded tips visibly at their mouths.
+The ten-tick volley leaves those mouths in three staggered rows, with solid
+native arrowheads, and the empty rack retracts over twelve recovery ticks.
+Its flight stays within the old eleven-cell visual reach, and both facings
+launch from the appropriate side of the plate. The twin turret retracts two
+pixels and spreads three pixels to either side, holds its cocked stance,
+then accelerates down and inward over charge ticks 12–17. Both barrels seat
+on fire zero, recoil alternately on the existing twenty fire ticks and
+settle before recovery lifts them into the mount. Connected sliding joints
+keep the original mount/twin-barrel identity. Flame's two nozzle lips open
+three pixels to either side over twelve of thirty charge ticks; pressure
+builds in its pilot over the last six. Release retains the full lethal cone
+at fire zero, with a flowing hot core instead of disconnected horizontal
+stripes. The open valve closes while muted, broken exhaust dwindles over the
+existing twelve-tick recovery cue. Native whole pixels carry every tell;
+page barrel bores, dart fittings and nozzle edges refine the half-pixel grid.
+
+Reduced motion holds live recoil, dart travel, flame flow and idle lamps;
+phase-progress warnings and recovery stay readable. Original palette roles,
+wall plate/flared nozzle/twin-barrel identities remain. No Sim.js, sfx.js,
+North Pole paint, hostile heads/riders, umbrellas, timers, behaviour, world
+writes, RNG, new colours, dependencies or product text changed. No sibling or
+Omarchy writes.
+
+**Review/tool:** extended tools/foe-strips.js with C30 compact consecutive
+cycles, before-left/after-right keys and complete ordinary/Christmas/New Year
+boards at actual native/page size. Checked all new test/helper/fixture names
+were free with test -e. Baseline complete catalogue and saved public assets:
+/tmp/xmas-dressing/foes10-0 (before-public subdirectory). Drafts were held in
+/tmp while the baseline check ran. Rejected the first draft's faint vertical
+turret movement and small nozzle opening; widened both held poses. The final
+recovery breaks the cooling flame into subdued exhaust. Inspected all six
+final side-by-side strips:
+
+- /tmp/xmas-dressing/foes10-5/darts-compare-res1.png
+- /tmp/xmas-dressing/foes10-5/darts-compare-res2.png
+- /tmp/xmas-dressing/foes10-5/turret-compare-res1.png
+- /tmp/xmas-dressing/foes10-5/turret-compare-res2.png
+- /tmp/xmas-dressing/foes10-5/flame-compare-res1.png
+- /tmp/xmas-dressing/foes10-5/flame-compare-res2.png
+
+Also inspected all six matching compact complete cycles; all ordinary
+charge/fire/rest full boards at both scales; Christmas charge at page size;
+New Year charge at native size. The final complete catalogue is in foes10-5.
+Historical Clock Tower pairs retain the four moved complete frames as
+historical-clock-{120,400}-res{1,2}.png in the same directory. These are staged
+raster renders: no claim of live Omarchy/QML inspection.
+
+**Pins deliberately advanced:** original golden files and prior round pins
+remain intact. foe-round10-pins.json independently pins full predecessor and
+successor cycles in both facings and resolutions, plus 168 ordinary complete
+boards (21 biomes × two scales × four clocks); those ordinary boards all
+remain byte-identical. foe-round10-scenes.json records explicit historical
+transitions. Exactly four historical Clock Tower frames move because their
+staged flame is firing at timer zero: the opened nozzle and flowing hot core
+replace its fixed nozzle and striped cone. SHA-256 prefixes:
+
+- c6full/Clock Tower/1/120: 07dc4b7d → f206ec4e.
+- c6full/Clock Tower/1/400: 94a8b954 → e923ad0a.
+- c6full/Clock Tower/2/120: e2889b32 → 81a6f74b.
+- c6full/Clock Tower/2/400: ed6f4105 → ed1f857c.
+
+The successor chain advances only those explicit transitions. C29's tests and
+scene audit recover the exact reviewed C29 renderer first; this normalization
+flows through earlier reference helpers. Independently restoring precisely
+three painters and removing seven helpers recovers the complete baseline
+Draw.js byte for byte, so excluded work cannot hide in that normalization.
+All prior historical assertions remain. No skips, loosened thresholds or
+raw-buffer deepEqual. Complete cycle prefixes:
+
+- darts/res1/left: 7140a163 → ba088995; right: fe6df04f → 3689a33d.
+- darts/res2/left: da520d76 → bb6fc7e5; right: 13620f84 → e1893b95.
+- turret/res1: c8d70cad → 0faf85bb; res2: 58d28ea3 → e2972287 (both facings).
+- flame/res1: 75a1158c → 5927cbfa; res2: 5ef974d9 → 172cf097 (both facings).
+
+**Validation:** baseline full check **1950/1950**, exit **0**, 219.29 s.
+The initial persistent launcher lacked a working directory and failed before
+running tests; it was corrected and the successful baseline above is retained.
+Focused C30 tests **12/12**, exit **0**, 30.68 s: independent reviewed digests,
+visible full-size differences, real timer joins, held charge poses, palette/
+grid/context/world purity, every excluded hazard, all hostile seasonal riders,
+full boards, complete exact source recovery, reproduced historical scene
+transitions, review output, reduced motion and page half-pixel refinement.
+Shared FIFO heavy-run lock and unchanged six-file suite concurrency retained.
+Final source, fixtures and stamps are frozen for full check, fresh coverage,
+CRAP and FPS; final results follow below.
+
+The first full gate was explicitly stopped before editing when review caught
+that the dart's five-pixel arrowhead also needed reserving from the flight
+allowance. No incomplete gate was accepted. Corrected the allowance, added a
+thirteenth test bounding every projectile rectangle in both facings at both
+scales, refreshed cycle pins and re-rendered/re-inspected foes10-5. The
+transient focused launcher printed **13/13** but its parent returned 143;
+final validation uses the persistent job with explicit exits below.
+
+Before the second full gate finished, review of the existing idle-motion
+regression caught the missing original flame pilot. Stopped that gate before
+editing, restored its quiet idle pressure pulse, and added a fourteenth test
+requiring quiet idle motion as well as the existing reduced-motion hold.
+Final renders/pins are foes10-5; neither interrupted full gate is accepted.
+
+Final persistent combined C30/hazards regression: **113/113**, exit **0**,
+30.49 s, including all **14** C30 cases. Quiet idle, progressive warnings,
+release, recovery expiry, throttled fixtures and phase-clock mirrors all pass.
+The four historical transitions and 168 unchanged ordinary frames remain
+exact after the pilot restoration. Final stamps: Draw **937da415**, build
+**0eb59fdf**. Only the final gate results below remain to be recorded.
+
+Final `npm run check`: **1964/1964**, exit **0**, 226.11 s. Fresh coverage:
+**1964/1964**, 477.56 s. `npm run crap -- --changed --threshold 30`:
+exit **0**. Renderer scores: drawFlameCone **10.0**, drawHzDarts **9.0**,
+drawHzFlame **9.0**, twinTurretDrop **7.0**, drawDartVolley **6.0**,
+drawHzTurret **6.0**, dartRackLength **5.0**, flameValvePose **5.0**,
+twinTurretSpread **3.0**, mountedLamp **2.5**. New review helper roundTenReview
+scores **5.0**; all new/changed functions pass the under-30 gate. Source,
+fixtures and stamps stayed frozen through all final gates; only this log was
+completed afterward. The existing crapper cache was copied locally and its
+local editable path corrected; no sibling files were written.
+
+**Performance:** matched `npm run fps -- 8 12 18`, saved baseline public
+assets versus final source, each under the shared heavy-run lock. Before
+and after, every level: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **10/9/11% → 10/9/10%**. Both runs exit **0**.
+No measured frame-rate loss; no CPU speedup claimed against desktop load.
+Logs: /tmp/xmas-dressing/foes10-baseline-check.log,
+foes10-focused-hazards.log, foes10-final-check.log, foes10-final-crap.log,
+foes10-before-fps.log and foes10-after-fps.log. Persistent full-check,
+coverage/CRAP and FPS logs have adjacent explicit .exit files, all zero;
+foes10-prepare.exit records the combined 113-test pass. The two interrupted
+full gates are retained separately and were never accepted as passes.
+
+**Next:** owner review of the held dart rack, spread turret barrels and open
+flame throat in crowded native colonies. No known unresolved art, test or
+frame-rate issue. Live Omarchy/QML remains unverified; raster shots skip text
+and approximate gradients as documented. No merge, push, deploy, production
+request, port 8787 change or sibling/Omarchy write.
