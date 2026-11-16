@@ -14575,3 +14575,175 @@ covers C22 (Spaceship: a ringed planet through observation glazing, solar
 silhouettes, docks, repair drones; reviewed at full frame, both
 resolutions). **Before:** gate 1881/1881; `npm run smoke -- --level 7`
 passed (7–13). **After:** `npm run verify -- --previous 17fc80ec` passed.
+
+## C24 — 2026-11-16 · Coil, split, compress
+
+**Chose:** Tail Call (scorpion), Cloud Distribution (spores) and Context
+Compressor (crusher). Re-rendered the complete catalogue, 8 enemy kinds × 11
+state fixtures and all 48 hazard cycles, at res 1/2. Inspected all native/page
+overviews, then consecutive cycles and actual-size before/after full boards.
+The scorpion's almost fixed tail ended in a detached sting; the rigid spore
+pod released unrelated rows of particles; the crusher jumped to full stroke
+at the charge/fire boundary. The nine C12–C14 choices remain exact.
+Baseline: d7b0d333e0ae77e1f43c23b17c3990b9e7119952.
+
+**Changed (Draw only):** the scorpion coils its connected tail, holds it drawn
+back, accelerates the sting forward over charge ticks 15–21, contacts on fire
+zero, recoils and uncoils through the existing twelve-tick recovery cue. A
+bounded quadratic spine keeps the sting attached to its body throughout.
+The spore pod swells during the first fifteen charge ticks, holds, parts its
+two lobes over ticks 21–29, exhales an irregular falling drift throughout the
+28 fire ticks and closes while the last spores fade. The crusher uses the
+existing ram stroke helper with its own 34-tick charge: lifts, holds, drops
+through the final seven ticks to fire zero, rebounds, then eases upward over
+recovery. Original body/claws, split-pod, twin-ram block and palette roles
+remain; native pixels carry the poses, res 2 refines the tail tip, pod lips
+and crusher edge on the half-pixel grid. Reduced motion holds new secondary
+motion; phase progress still tells the player what is coming.
+
+No Sim.js, sfx.js, North Pole art, enemy head/rider, umbrella, behaviour,
+clock, RNG, world write, dependency or product text changes. Scope tests keep
+all other hazard and enemy fixtures exact, including Santa hats, antlers and
+party cones in both facings. The first draft accidentally removed the
+scorpion's quiet idle breathing; the existing idle test caught it, and the
+final version retains a small tail sway, frozen by reduced motion.
+
+**Review/tool:** extended the existing tools/foe-strips.js with C24 compact
+consecutive cycles, side-by-side key poses and ordinary/Christmas/New Year
+full boards with all eight enemies. Checked the new test, reference helper,
+scene writer and fixture names were free before creation. Retained original
+public assets in /tmp/xmas-dressing/foes4-1/before/public. Complete baseline
+catalogue: foes4-1; first before/after draft: foes4-2; final catalogue: foes4-3.
+All are under /tmp/xmas-dressing. Inspected these final before-left/after-right
+native/page key strips without enlargement:
+
+- /tmp/xmas-dressing/foes4-3/crusher-compare-res1.png
+- /tmp/xmas-dressing/foes4-3/crusher-compare-res2.png
+- /tmp/xmas-dressing/foes4-3/scorpion-compare-res1.png
+- /tmp/xmas-dressing/foes4-3/scorpion-compare-res2.png
+- /tmp/xmas-dressing/foes4-3/spores-compare-res1.png
+- /tmp/xmas-dressing/foes4-3/spores-compare-res2.png
+
+Also inspected the consecutive *-compact-res{1,2}.png cycles (before above,
+after below), ordinary charge full boards, Christmas fire and New Year charge
+full boards. Seasonal head riders retain their original placements. These
+are staged art fixtures through the real raster renderer, with its documented
+gradient approximation, not a live Omarchy/QML session.
+
+**Pins:** no existing golden fixture JSON was rewritten. C24 retains both
+predecessor and reviewed digests in foe-round4-pins.json (complete cycles,
+both resolutions/facings; 168 full-board frames across all 21 biomes). The
+historical source chain restores precisely three painters and removes four
+new helpers, recovering the entire exact predecessor source byte for byte;
+C12–C22 scope assertions still run against their historical art. The separate
+C24 full-board test asserts every before/after frame, including unchanged
+ones. foe-round4-scenes.json advances the existing successor chain only for
+the following independently reproduced scenes; the hazard-beats comparison
+now asserts explicit before and after pins at every specimen clock (an old
+image can repeat at clocks with different new poses). No assertion removed,
+threshold lowered, comparison skipped or buffer diff introduced.
+
+The initial full gate found the intended historical conflicts and the idle
+regression. The second gate passed 1890/1891: the generator had reused a
+mutable Christmas world between before and after, falsely advancing
+Christmas/20/res2. Independent worlds remove that spurious transition;
+that frame remains unchanged. Corrected seasonal tests pass.
+
+Cycle SHA-256 prefixes below apply to both directions:
+- crusher/1: `01edf5c4` → `9fa14efb` — articulated phase poses.
+- crusher/2: `4e01ffcf` → `61981736` — articulated phase poses.
+- scorpion/1: `30b69799` → `a766c2a9` — articulated phase poses.
+- scorpion/2: `e2d01db1` → `1637ee36` — articulated phase poses.
+- spores/1: `4a104d3e` → `378da4d1` — articulated phase poses.
+- spores/2: `738c79ac` → `24d89350` — articulated phase poses.
+
+Full-board transitions (level/res/tick; scorpion on 11, crusher on 18):
+
+- 11/1/120: `71273a39` → `8449b84a`.
+- 11/1/350: `1ba967be` → `aa3a5bbb`.
+- 11/1/400: `6442007e` → `a4cd9175`.
+- 11/1/900: `80e0ab43` → `a9c9d5d0`.
+- 11/2/120: `93593c12` → `6ecacd01`.
+- 11/2/350: `71a879fb` → `17c7d19a`.
+- 11/2/400: `449a01d2` → `9a7fb9af`.
+- 11/2/900: `ef264ddb` → `47a7c45d`.
+- 18/1/120: `64d7ba73` → `3190d34c`.
+- 18/2/120: `cb84a9ed` → `9643ca7b`.
+- 18/2/350: `06afb0f9` → `25b6537b`.
+- 18/2/400: `6d19d9ae` → `1da09150`.
+
+Additional pinned snapshots/aggregates (same three hazard poses only):
+
+- newyear/none/11/1: `6442007e` → `a4cd9175`.
+- aggregates/350,900: `eb599df3` → `774d0a03`.
+- disabled/350,900: `3e97c97f` → `24014fca`.
+- aggregates/120,350: `d44b2e3a` → `f26a0341`.
+- disabled/120,350: `2ddff8e1` → `5e59092e`.
+- newyear/none/11/2: `0625b934` → `76b065c3`.
+- newyear/christmas/11/1: `ee929209` → `5852de1c`.
+- newyear/christmas/11/2: `ce18fcf1` → `9f682098`.
+- newyear/none/18/2: `70a820a6` → `0a74196e`.
+- newyear/christmas/18/2: `ed4635f2` → `c51fee76`.
+- c6full/Subway/2/120: `9a1765da` → `fd976e6b`.
+- c6full/Subway/2/400: `4d4ced59` → `7a4cdd1d`.
+- c6full/Desert/1/120: `91e4b536` → `71f344fb`.
+- c6full/Desert/1/400: `3f0aab36` → `1ce9e5dc`.
+- c6full/Desert/2/120: `ca58761f` → `7d43d0a2`.
+- c6full/Desert/2/400: `2c5b164f` → `e919029f`.
+- office: `d3560325` → `cbee18c4`.
+- hazard-beats/crusher/undefined/0: `c338485d` → `3b9b1a74`.
+- hazard-beats/crusher/undefined/4: `c338485d` → `1e74f9dc`.
+- hazard-beats/crusher/undefined/20: `67fc419c` → `95ee78c4`.
+- hazard-beats/crusher/undefined/60: `43de77db` → `dd78c5f2`.
+- hazard-beats/crusher/1/0: `c338485d` → `3b9b1a74`.
+- hazard-beats/crusher/1/4: `c338485d` → `1e74f9dc`.
+- hazard-beats/crusher/1/20: `67fc419c` → `95ee78c4`.
+- hazard-beats/crusher/1/60: `43de77db` → `dd78c5f2`.
+- hazard-beats/crusher/3/0: `c338485d` → `841a61c6`.
+- hazard-beats/crusher/3/4: `c338485d` → `b8731ac8`.
+- hazard-beats/crusher/3/20: `67fc419c` → `82872782`.
+- hazard-beats/crusher/3/40: `6d4715f1` → `5deb0c98`.
+- hazard-beats/crusher/3/48: `6d4715f1` → `5deb0c98`.
+- hazard-beats/crusher/3/60: `43de77db` → `967edf54`.
+- hazard-beats/crusher/3/70: `c84f6ab5` → `45e87409`.
+- metro/2: `515a8411` → `379575be`.
+
+**Validation:** baseline full check **1881/1881**, exit **0**, 187.84 s.
+Final full check **1891/1891**, exit **0**, 233.83 s. Ten new tests assert
+independent cycle and full-frame digests, substantial native/page changes,
+real phase-boundary joins and recovery expiry, reduced motion, every-theme
+palette/grid/purity/bounded paint, all excluded hazards and seasonal enemy
+riders, exact source recovery, reproducible scene transitions and the review
+writer. Corrected focused New Year tests **10/10**, exit **0**. Full gate
+includes the existing Christmas, New Year and North Pole season tests.
+Digests and bounded byte/call counts only, no raw-buffer deepEqual.
+
+`npm run crap -- --changed --threshold 30` exited **0**, with fresh coverage
+**1891/1891** (447.90 s). New/changed renderer scores: drawSporeDrift **14.1**,
+scorpionTailPose **10**, drawHzScorpion **7**, sporePodPose **6.1**,
+drawScorpionTail **6**, drawHzSpores **5.1**, drawHzCrusher **4**. New review/
+scene/reference helpers at most **8**; all new/changed functions under 30.
+Draw line coverage **99.68%**. Stamps refreshed: Draw **cbc15ea0**, build
+**4074472e**. All full checks, coverage and FPS used the shared FIFO lock,
+with unchanged six-file suite concurrency. Source and fixtures remained frozen
+through the final gates; only this log was completed afterward. Persistent
+systemd user runners retained explicit exits; the first transient baseline
+launcher was interrupted before a result, so the persistent baseline was
+rerun cleanly. The existing crapper cache was copied locally and its editable
+path corrected to this worktree; no sibling files were written.
+
+**Performance:** matched back-to-back `npm run fps -- 8 12 18`, exact saved
+baseline public assets versus final art, under one shared lock. All three
+levels before and after: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **14/13/11% → 11/10/12%**. No measured frame-rate loss;
+no CPU speedup claimed against changing desktop load. Both individual runs
+and the pair exited **0**. Baseline check/FPS logs and explicit exits are in
+foes4-1; final-check, crap, final-before-fps, final-after-fps and fps-pair logs
+and exits are in /tmp/xmas-dressing/foes4-3. The final full check, CRAP and FPS
+pair all exited **0**.
+
+**Next:** owner review of the connected tail release, parting pod and heavy
+crusher stroke in crowded native colonies. No known unresolved test, art or
+performance issue. Live Omarchy/QML remains unverified; visual inspection used
+the real raster renderer and staged full boards. No merge, push, deploy,
+production request, port 8787 change, sibling sync or Omarchy write.

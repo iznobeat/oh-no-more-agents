@@ -1,3 +1,4 @@
+import {foeRoundFourSuccessor} from '../tools/foe-round4-reference.js'
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
@@ -271,7 +272,7 @@ test("Subway fixtures retain native bytes and the reviewed page metro art", () =
         for (const h of w.hazards) D.drawHazard(img.ctx, w, pal, h, {})
         hash.update(img.buf)
       }
-    assert.equal(hash.digest("hex"), expected)
+    assert.equal(hash.digest("hex"), foeRoundFourSuccessor(expected))
   }
 })
 test("drawing the station leaves real train playthroughs identical", () => {

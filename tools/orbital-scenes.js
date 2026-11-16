@@ -1,3 +1,4 @@
+import {foeRoundFourSourceBefore} from './foe-round4-reference.js'
 // C22: explicit transitions for the reviewed Spaceship scenery; retain all prior pins.
 import fs from 'node:fs'
 import {orbitalSourceBefore} from './orbital-art.js'
@@ -76,8 +77,8 @@ function arrivalScenes(out,old,D,P){
  out[office[0]]={label:'office',after:office[1]}
 }
 export function orbitalScenes(){
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=orbitalSourceBefore(source)
- const S=load('Sim.js'),P=load('Palette.js'),D=load('Draw.js'),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
+ const source=foeRoundFourSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=orbitalSourceBefore(source)
+ const S=load('Sim.js'),P=load('Palette.js'),D=renderer(source),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
  try{
   for(const ticks of[120,350,900]){
    const opts={level:7,res:2,page:true,ticks,seed:3}

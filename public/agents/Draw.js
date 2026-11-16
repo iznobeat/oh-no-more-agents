@@ -8049,7 +8049,7 @@ function drawHzCrusher(ctx, w, pal, h, geo) {
   var x0 = geo.x0, x1 = geo.x1, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
     live = geo.live, winding = geo.winding, hot = geo.hot
   // A block on two rams, hanging high or driven down.
-  var drop = hzStroke(geo, tall - 11, 3)
+  var drop = ramTravel(w, h, geo, tall - 11, 34, 7)
   ctx.fillStyle = pal.rigDark
   ctx.fillRect(x0 + 3, y0, 2, 4 + drop)
   ctx.fillRect(x1 - 5, y0, 2, 4 + drop)
@@ -8057,6 +8057,10 @@ function drawHzCrusher(ctx, w, pal, h, geo) {
   ctx.fillRect(x0, y0 + 4 + drop, wide, 7)
   ctx.fillStyle = pal.warn
   ctx.fillRect(x0 + 1, y0 + 5 + drop, wide - 2, 1)
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x0 + 1, y0 + 9.5 + drop, wide - 2, 0.5)
+  }
   hzLamp(ctx, pal, h, geo, geo.cx - 2, y0 + 1)
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.rig)
   drawCrusherLandingDust(ctx,w,pal,h,geo)
@@ -8415,6 +8419,43 @@ function drawHzPacketloss(ctx, w, pal, h, geo) {
 // sting shivers; firing, it comes over and down in front of the claws — the
 // strike happens at the far end from where the tail starts, which is the joke
 // in the name.
+// The sting remains attached throughout the held coil, release and recoil.
+function scorpionTailPose(w, h, g) {
+  var cock = 0, strike = 0
+  if (g.winding) {
+    cock = Math.min(1, h.t / 10)
+    strike = Math.pow(Math.max(0, (h.t - 15) / 6), 2)
+  }
+  if (g.live) { cock = 1; strike = 1 }
+  if (g.cool) { cock = g.cool; strike = g.cool * g.cool }
+  if (!g.winding && !g.live && !g.cool && !w.reducedMotion) cock = Math.sin(g.t * 0.04) * 0.12
+  var recoil = g.live && !w.reducedMotion ? Math.max(0, 1 - Math.abs(h.t - 4) / 4) : 0
+  return { cock: cock, strike: strike, recoil: recoil }
+}
+function drawScorpionTail(ctx, w, pal, g, back, front, floor, dir, pose) {
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  var startX = back, startY = floor - 3
+  var endX = back + dir * (2 - 4 * pose.cock)
+  endX += (front + dir * 3 - endX) * pose.strike - dir * pose.recoil
+  var endY = floor - 7 - 3 * pose.cock
+  endY += (floor - 4 - endY) * pose.strike - pose.recoil
+  var bendX = back - dir * (4 + 2 * pose.cock) + dir * pose.strike * 5
+  var bendY = floor - 13 - pose.cock * 2
+  ctx.fillStyle = pal.rigDark
+  // Fixed bound, contiguous quadratic spine; no disconnected stinger.
+  for (var i = 0; i <= 20; i++) {
+    var t = i / 20, u = 1 - t
+    var x = u * u * startX + 2 * u * t * bendX + t * t * endX
+    var y = u * u * startY + 2 * u * t * bendY + t * t * endY
+    ctx.fillRect(Math.round(x * grid) / grid, Math.round(y * grid) / grid, 2, 2)
+  }
+  ctx.fillStyle = g.show ? g.hot : pal.warn
+  ctx.fillRect(Math.round(endX * grid) / grid, Math.round(endY * grid) / grid, 2, 2)
+  if (grid === 2) {
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(Math.round(endX * 2) / 2, Math.round(endY * 2) / 2, 1.5, 0.5)
+  }
+}
 function drawHzScorpion(ctx, w, pal, h, geo) {
   var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, live = geo.live, winding = geo.winding,
     show = geo.show, hot = geo.hot, t = geo.t
@@ -8428,20 +8469,8 @@ function drawHzScorpion(ctx, w, pal, h, geo) {
   ctx.fillStyle = pal.rig
   ctx.fillRect(front + sdir * 1 - (sdir < 0 ? 2 : 0), floorY - 4, 3, 2)        // claws
   ctx.fillRect(front + sdir * 1 - (sdir < 0 ? 2 : 0), floorY - 1, 3, 1)
-  // The tail: four segments rising from the back. Each phase pushes the hook
-  // further forward over the body.
-  var reach = live ? 1 : (winding ? -0.35 - geo.progress * 0.45 : 0.18 + Math.sin(t * 0.04) * 0.18)
-  ctx.fillStyle = pal.rigDark
-  var tx = back, ty = floorY - 3
-  for (var sg = 0; sg < 4; sg++) {
-    tx += sdir * Math.round(reach * 2) + (sg < 2 ? -sdir : 0)
-    ty -= sg < 3 ? 2 : -1
-    ctx.fillRect(tx, ty, 2, 2)
-  }
-  var stx = live ? front + sdir * 3 : tx + sdir * 2
-  var sty = live ? floorY - 4 : ty + 1
-  ctx.fillStyle = show ? hot : pal.warn
-  ctx.fillRect(stx - (sdir < 0 ? 1 : 0), sty, 2, 2)                           // sting
+  var pose = scorpionTailPose(w, h, geo)
+  drawScorpionTail(ctx, w, pal, geo, back, front, floorY, sdir, pose)
   hzImpact(ctx, pal, h, geo, front, floorY, pal.rig)
 }
 
@@ -8692,25 +8721,51 @@ function drawHzVent(ctx, w, pal, h, geo) {
   hzPressure(ctx, w, pal, h, geo, cx, y1 - 4, pal.bubbleLit)
 }
 
+// Swell, hold the seam under tension, split and exhale, then close.
+function sporePodPose(w, h, g) {
+  var swell = 0, open = 0
+  if (g.winding) {
+    swell = Math.min(1, h.t / 15)
+    open = Math.max(0, (h.t - 21) / 8)
+  }
+  if (g.live) { swell = 1; open = 1 }
+  if (g.cool) { swell = g.cool; open = g.cool }
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { swell: Math.round(swell * 2 * grid) / grid, open: Math.round(open * 3 * grid) / grid }
+}
+function drawSporeDrift(ctx, w, pal, h, g, y) {
+  if (!g.show && !g.cool) return
+  var t = w.reducedMotion ? 0 : h.t
+  ctx.fillStyle = g.hot
+  for (var i = 0; i < 14; i++) {
+    var age = (t + i * 11) % 28
+    var fall = g.live ? (g.tall - 8) * age / 27 : g.cool ? (g.tall - 8) * (1 - g.cool) : g.progress * 4
+    var spread = g.live || g.cool ? g.wide / 2 - 2 : 2 + g.progress * 3
+    var x = g.cx + Math.sin(i * 5 + age * 0.08) * spread
+    var yy = y + fall + i % 3
+    var grid = (w.res || 1) >= 2 ? 2 : 1
+    ctx.globalAlpha = g.cool || 1
+    ctx.fillRect(Math.round(x * grid) / grid, Math.round(Math.min(g.y1 - 1, yy) * grid) / grid, g.live ? 2 : 1, g.live ? 2 : 1)
+  }
+  ctx.globalAlpha = 1
+}
 function drawHzSpores(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, t = geo.t, show = geo.show, hot = geo.hot
-  // A pod that splits, and a drift of spores under it.
+  var cx = geo.cx, y0 = geo.y0, pose = sporePodPose(w, h, geo)
   ctx.fillStyle = pal.rigDark
   ctx.fillRect(cx - 4, y0, 8, 4)
-  ctx.fillStyle = show ? hot : pal.rig
-  ctx.fillRect(cx - 5, y0 + 4, 10, 2)
-  ctx.fillStyle = show ? hot : pal.decorDim
-  ctx.fillRect(cx - 1, y0 + 2, 2, 2 + (geo.winding ? Math.round(geo.progress * 2) : Math.floor(t / 30) % 2))
-  if (show) {
-    ctx.fillStyle = hot
-    for (var sp2 = 0; sp2 < 14; sp2++) {
-      var sy3 = y0 + 6 + ((t + sp2 * 9) % (live ? Math.max(1, tall - 6) : 2 + Math.round(geo.progress * 4)))
-      var sx3 = x0 + ((sp2 * 5 + Math.floor(t / 6)) % Math.max(1, wide))
-      ctx.fillRect(sx3, sy3, live ? 2 : 1, live ? 2 : 1)
-    }
+  ctx.fillRect(cx - 4 - pose.swell, y0 + 2, 8 + pose.swell * 2, 3)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rig
+  ctx.fillRect(cx - 5 - pose.open, y0 + 4 + pose.swell, 5, 2)
+  ctx.fillRect(cx + pose.open, y0 + 4 + pose.swell, 5, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.decorDim
+  ctx.fillRect(cx - 1, y0 + 2, 2, 2 + pose.swell)
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(cx - 4.5 - pose.open, y0 + 5 + pose.swell, 4, 0.5)
+    ctx.fillRect(cx + 0.5 + pose.open, y0 + 5 + pose.swell, 4, 0.5)
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y0 + 6, pal.decor)
+  drawSporeDrift(ctx, w, pal, h, geo, y0 + 7 + pose.swell)
+  hzPressure(ctx, w, pal, h, geo, cx, y0 + 6 + pose.swell, pal.decor)
 }
 
 // --- ice cave -----------------------------------------------------------

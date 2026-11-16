@@ -1,3 +1,4 @@
+import {foeRoundFourSourceBefore} from '../tools/foe-round4-reference.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {orbitalSourceBefore,orbitalSheets} from '../tools/orbital-art.js'
 import {orbitalScenes} from '../tools/orbital-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundFourSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','640ffe8fb092487a2f8adc6adcba2ab5b47972cb:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const pins=JSON.parse(fs.readFileSync('test/fixtures/orbital-pins.json','utf8'))
 const layers=['drawOrbitalViews','drawOrbitalHull','drawOrbitalDocks','drawOrbitalLife']
