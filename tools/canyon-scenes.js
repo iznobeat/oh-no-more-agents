@@ -1,3 +1,4 @@
+import {karstSourceBefore} from './karst-art.js'
 // C20: explicit transitions for the reviewed Desert scenery; retain all prior pins.
 import fs from 'node:fs'
 import {canyonSourceBefore} from './canyon-art.js'
@@ -76,8 +77,8 @@ function arrivalScenes(out,old,D,P){
  out[office[0]]={label:'office',after:office[1]}
 }
 export function canyonScenes(){
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=canyonSourceBefore(source)
- const S=load('Sim.js'),P=load('Palette.js'),D=load('Draw.js'),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
+ const source=karstSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=canyonSourceBefore(source)
+ const S=load('Sim.js'),P=load('Palette.js'),D=renderer(source),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
  try{
   for(const ticks of[120,350,900]){
    const opts={level:11,res:2,page:true,ticks,seed:3}

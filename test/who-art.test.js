@@ -1,3 +1,4 @@
+import {karstSuccessor} from '../tools/karst-reference.js'
 import fs from 'node:fs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -23,7 +24,7 @@ test('native, default, share and WHO-off rendering retain pixels and native text
   const key=`${level}/${res??'default'}/${labels}`,pin=balancePins.who[key],final=last[key],historical=pixels(OLD,w,labels)
   if(pin)assert.equal(historical,pin.before)
   if(final){assert.equal(historical,final.historical);assert.equal(pin?pin.after:historical,final.before)}
-  assert.equal(pixels(D,w,labels),final?final.after:res===2?pagePlain(w):historical,key)
+  assert.equal(pixels(D,w,labels),karstSuccessor(final?final.after:res===2?pagePlain(w):historical),key)
  }}
 })
 test('all twenty biomes and five themes use finite crisp glyphs without changing world or caller options',()=>{

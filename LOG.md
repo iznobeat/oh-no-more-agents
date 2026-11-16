@@ -14244,3 +14244,166 @@ the canyon silhouettes and intentionally sparse saguaro groups. No known
 unresolved art, test or frame-rate issue. Live Omarchy/QML appearance remains
 unverified. No merge, push, deploy, production request, port 8787 change,
 sibling write or Omarchy write.
+
+## C21 — 2026-11-16 · Cavern becomes a limestone hall at both scales
+
+**Chose:** Cavern, after re-rendering all 21 biomes out of season with
+`node tools/shoot.js biomes --ticks 350` and every individual
+`shoot.js level N --ticks 350`, res 1/2, scale 1. Inspected seven native
+three-board and eleven page two-board side-by-side sheets in
+/tmp/xmas-dressing/biome7-audit/res{1,2}/. Excluded Foundry, Frost, Ruins,
+Ice Cave, Factory and Desert. Library's stacks, Jungle's lush silhouettes and
+the revised Ice Cave establish a place immediately. Cavern was the weakest
+eligible complete frame: flat blue native shelves, thin straight background
+pillars and empty dark corridors. Its page mineral curtains and fine rock
+helped, but left much of the board without visible depth. Baseline:
+358734b4e0d21924c097150cae10070d615036bb.
+
+**Changed (Draw only):** broad, uneven flowstone columns with shaded faces,
+fused hanging shoulders and sparse distant stalagmites, plus a low cave roof
+across the sky band. Original native pillars and bands, page curtains and
+folded bedding are drawn over the new distance layer. Sparse small fissures
+texture formerly flat native DIRT inside the cached terrain pass; the page's
+existing material detail gets no second texture. All new paint uses existing
+Palette roles. Original colours, shapes, decor and painters remain; Palette.js
+and its colours are untouched.
+
+Up to three supported stalagmite/mushroom groups, one per corridor, give the
+foreground scale. Small moths open/close their wings and occasional drops fall
+beside them in drawMachines, before colony/hazard paint. Reduced motion holds
+both still. Full reserved envelopes avoid original decor, pits, hazard zones,
+exit and hatch approach. World-keyed WeakMap placements invalidate on terrain
+identity/version; live paint checks current air. No world writes, RNG,
+per-frame board search, new text, actor/umbrella changes, dependencies or
+simulation changes. Sim.js, sfx.js and season.js untouched. Twenty other
+biomes retain exact complete-frame bytes at both scales and three clocks.
+
+**Review/tool:** exact baseline assets retained in
+/tmp/xmas-dressing/biome7-1/before/public/. Inspected rounds 1–3 and final.
+Rejected thin rib-like first columns; broadened their shaded faces. Reduced
+the distant mounds from two to one per corridor and made their faces uneven.
+Replaced the first ambient bats with moths to distinguish life from the
+lethal echo-bat. `node tools/karst-art.js OUT` reproduces twelve full-frame
+before-left/after-right boards: levels 1/41/61, ticks 350/900, res 1/2.
+Also retains ordinary tick-120 and ordinary/Christmas staged historical boards.
+Inspected the complete sheets and individual page/native pairs, without crops
+or enlargement:
+
+- /tmp/xmas-dressing/biome7-1/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome7-1/final/full-res2-sheet.png
+- /tmp/xmas-dressing/biome7-1/final/pinned-res1-sheet.png
+- /tmp/xmas-dressing/biome7-1/final/pinned-res2-sheet.png
+
+The flowstone faces now show at native size, page rock stays quiet, and the
+pale colony/umbrellas and original hazard tells remain clear. Visual review
+used the raster renderer, with its documented middle-stop gradient
+approximation; live Omarchy/QML was not inspected.
+
+**Pins deliberately advanced:** no historical golden JSON was overwritten.
+karst-pins.json independently pins twelve whole predecessor/successor frames;
+karst-scenes.json records explicit scenery transitions. Five removable call
+sites recover the exact predecessor. Earlier C20 source/review helpers strip
+C21 first, keeping the historical assertion chain intact; its existing
+successor chain then advances only the listed scene digests. Two-background
+RGB masks independently prove opaque colony/umbrella and sniper/turret/
+echo-bat colours unchanged through charge/fire/cool poses. Full SHA-256 values
+are retained in the fixtures; prefixes follow:
+- full `1/350/1`: `0825bd3f` → `fd605f92`.
+- full `1/900/1`: `bb24f363` → `3cddd63e`.
+- full `41/350/1`: `d3a37d22` → `5af363f6`.
+- full `41/900/1`: `720241de` → `d05602a5`.
+- full `61/350/1`: `08a361a9` → `f287b1cb`.
+- full `61/900/1`: `a30900b1` → `1940fb09`.
+- full `1/350/2`: `4819b67d` → `bab93e79`.
+- full `1/900/2`: `ce5ba442` → `0b5b949c`.
+- full `41/350/2`: `3ca12435` → `7478996c`.
+- full `41/900/2`: `b8b8d406` → `9ec7efd0`.
+- full `61/350/2`: `efe7b654` → `e54ffc54`.
+- full `61/900/2`: `71fc49ef` → `629f9dd5`.
+- `c21full/1/2/120`: `ad6d84eb` → `5cd1e39a`.
+- `c21full/1/2/350`: `247e2843` → `630d481f`.
+- `c21full/1/2/900`: `47c32422` → `36af4c01`.
+- `aggregates/350,900`: `956dbd8e` → `1fe8d0d1`.
+- `disabled/350,900`: `d0e79fa2` → `4e7d744b`.
+- `aggregates/120,350`: `dbae0b92` → `d5c24cc9`.
+- `disabled/120,350`: `67bba98f` → `372e9693`.
+- `newyear/none/1/1`: `af1d58ca` → `cfa982ad`.
+- `newyear/none/1/2`: `15aab75a` → `d49d3eb4`.
+- `newyear/christmas/1/1`: `eadb8e85` → `ca07b2fa`.
+- `newyear/christmas/1/2`: `d09185cd` → `dc710b8d`.
+- `c6cast/Cavern/2`: `4e86d53b` → `a30f1643`.
+- `c6full/Cavern/1/120`: `4f20fd5c` → `e243c2e6`.
+- `c6full/Cavern/1/400`: `b28a920f` → `df059597`.
+- `c6full/Cavern/2/120`: `c018fb22` → `e594d27a`.
+- `c6full/Cavern/2/400`: `e14e1911` → `f09adc98`.
+- `exitNative`: `a733bb02` → `b1e6b8c5`.
+- `office`: `3cc5fb08` → `8e3f582f`.
+- `report/none/1/1`: `e4d15257` → `cd3e8331`.
+- `report/none/1/2`: `45925e2f` → `457a4866`.
+- `report/christmas/1/1`: `d976648b` → `9e7339f9`.
+- `report/christmas/1/2`: `e8ed4ca6` → `7db92f73`.
+- `who/1/1/false`: `eccfc601` → `de936139`.
+- `who/1/1/true`: `f6945f9c` → `be33e33c`.
+- `who/1/3/false`: `80c045a6` → `337cb797`.
+- `who/1/3/true`: `19501e8a` → `85d905c9`.
+
+The default-resolution WHO hashes alias their res-1 counterparts above.
+Report transitions cover the Cavern scenery behind the unchanged report;
+WHO transitions include live machinery in actor-only scenes. Their original
+text-aware hashes and historical assertions remain independently checked.
+
+**Validation:** baseline `npm run check`: **1860/1860**, exit **0**,
+174.58 s. Its first sandboxed launcher hit child-process EPERM; the escalated
+retry completed normally. Checked `test/karst-art.test.js` and
+`tools/karst-art.js` were free with `test -e` before creation. Ten new tests
+cover twelve independently pinned reviewed frames and a visible-change floor,
+all-biome scope and exact source recovery, all-theme palette/grid/context and
+frozen-world purity, native-only DIRT texture, full supported and reserved
+placement envelopes and cache invalidation, current-air/reduced-motion life
+with a bounded terrain-read budget, opaque colony/umbrella colours,
+reproducible sheets/transitions, varied layouts, and opaque sniper/turret/
+echo-bat tells through charge/fire/cool poses. Digests and bounded loops only;
+no raw-buffer deepEqual.
+
+First focused pass **10/10**. First full gate **1868/1870**: report-background
+and text-aware WHO ledgers needed the explicit scenery transitions above.
+Corrected focused set **29/29**. Moving the native call into drawBackdrop to
+avoid a new drawTerrain branch exposed two original native-component tests;
+returned that helper unchanged and put a small native-only wrapper at the
+terrain call site instead. Exact whole-frame pins did not move. The transient
+launcher for that intermediate check ended with signal 143 before a result;
+no remaining check/FPS children were found. It was not accepted as a gate.
+Persistent user-service validation then passed focused regressions **74/74**
+and `npm run check` **1870/1870**, exit **0**, 187.60 s. The shared FIFO lock
+and six-file full-suite concurrency remain unchanged.
+
+`npm run crap -- --changed --threshold 30` exited **0**, with fresh coverage
+**1870/1870** in 346.18 s. Highest new renderer scores **9.0** (karstSpots,
+92.3% coverage; drawKarstStone, 100%); other new renderer helpers **1–6**,
+100% covered. Changed drawTerrain **29**, drawMachines **24**,
+drawCavernBackdrop **6**. New review/scene helpers at most **8**. All new and
+changed functions remain under 30. Stamps: Draw **32940b1e**, build
+**17fc80ec**. Source/stamps stayed frozen through the green full check,
+coverage and final FPS; only this log completed afterward. The persistent
+biome7-karst-gates user service retained explicit exits, so launcher lifetime
+cannot silently turn an incomplete run into a pass. Existing crapper cache
+was copied locally; no sibling files were written.
+
+**Performance:** matched back-to-back `npm run fps -- 1 41 61 --season none`,
+exact saved baseline public assets versus the unchanged final source, under
+one shared lock. All three levels before and after: **60 median / 60 p5 FPS,
+17 ms worst frame, 0% long tasks**. CPU **9/9/10% → 9/10/10%**; no measured
+frame-rate loss, and no CPU speedup claimed against changing desktop load.
+Both individual runs, the pair and the full persistent gate sequence exited
+**0**. Retained final-before-fps.log/exit, final-after-fps.log/exit,
+fps-final-pair.log/exit and gates.exit in /tmp/xmas-dressing/biome7-1/.
+Baseline check is in biome7-audit/; focused-last, green-check and crap
+logs/explicit exits are in biome7-1/. Earlier attempted check/FPS evidence
+is retained there too.
+
+**Next:** owner review of Cavern's complete native/page limestone halls,
+especially the flowstone faces and sparse foreground groups. No known
+unresolved test, art or frame-rate issue. Live Omarchy/QML appearance remains
+unverified; the raster renderer approximates gradients as documented.
+No merge, push, deploy, production request, port 8787 change, sibling write
+or Omarchy write.

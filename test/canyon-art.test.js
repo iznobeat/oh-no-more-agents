@@ -1,3 +1,4 @@
+import {karstSourceBefore} from '../tools/karst-art.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {canyonSourceBefore,canyonSheets} from '../tools/canyon-art.js'
 import {canyonScenes} from '../tools/canyon-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const source=karstSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','24b1d9b431154f6c5fc256b259b7c81b62bdac7d:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const pins=JSON.parse(fs.readFileSync('test/fixtures/canyon-pins.json','utf8'))
 const layers=['drawCanyonDistance','drawCanyonStone','drawCanyonGarden','drawCanyonLife']
