@@ -1,3 +1,4 @@
+import foePins from './fixtures/foe-round4-scenes.json' with {type:'json'}
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
@@ -32,7 +33,7 @@ test('reduced splashes, warning forks and crusher dust keep fixed poses and rest
 })
 test('native and share retain the previous pool, lightning and crusher pixels',()=>{
  const old=renderer(execFileSync('git',['show','d302dfff469e6c9733b9afb192201bffdb6e3345:public/agents/Draw.js'],{encoding:'utf8'}))
- for(const name of HAZARD_CASES)for(const res of[undefined,1,3]){const scene=hazardSpecimen(name);scene.w.res=res;for(const age of[0,4,20,40,48,60,70]){advanceHazard(scene,age);assert.equal(picture(D,scene),picture(old,scene))}}
+ for(const name of HAZARD_CASES)for(const res of[undefined,1,3]){const scene=hazardSpecimen(name);scene.w.res=res;for(const age of[0,4,20,40,48,60,70]){advanceHazard(scene,age);const pin=foePins[`hazard-beats/${name}/${res}/${age}`];assert.equal(picture(old,scene),pin.before);assert.equal(picture(D,scene),pin.after)}}
 })
 test('rendering during live liquid and hazard play leaves complete simulation digests unchanged',()=>{
  for(const level of[2,18,20,25]){

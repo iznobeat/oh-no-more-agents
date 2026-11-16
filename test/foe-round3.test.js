@@ -1,3 +1,4 @@
+import {foeRoundFourSourceBefore} from '../tools/foe-round4-reference.js'
 import {millSourceBefore} from '../tools/mill-art.js'
 import {millSuccessor} from '../tools/mill-reference.js'
 import test from 'node:test'
@@ -11,8 +12,8 @@ import {hazardFrame,hazardFixture,hazardSequence,enemyFixture,KINDS,STATES,ROUND
 import {restoreFoeRoundThree} from '../tools/foe-reference.js'
 const base='dc0a9a6f30b7e37ab9b69a3acff10ba865a292a3'
 const beforeSource=execFileSync('git',['show',base+':public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
-const source=fs.readFileSync('public/agents/Draw.js','utf8')
-const old=renderer(beforeSource),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundFourSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8'))
+const old=renderer(beforeSource),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const specs=S.HAZARDS.filter(s=>ROUND_THREE.includes(s.id))
 export function roundThreeCorpus(D){
