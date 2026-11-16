@@ -1,3 +1,4 @@
+import {foeRoundFiveSourceBefore} from '../tools/foe-round5-reference.js'
 import {execFileSync} from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import {load,canvas,frame,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {hazardFrame,hazardFixture,hazardSequence,enemyFrame,enemyFixture,KINDS,STATES,roundFourReview} from '../tools/foe-strips.js'
 import {foeRoundFourSourceBefore} from '../tools/foe-round4-reference.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=renderer(source),old=renderer(foeRoundFourSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundFiveSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),old=renderer(foeRoundFourSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
 const specs=S.HAZARDS.filter(s=>['crusher','scorpion','spores'].includes(s.id))
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round4-pins.json','utf8'))

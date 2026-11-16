@@ -8125,29 +8125,45 @@ function drawHzGeyser(ctx, w, pal, h, geo) {
   hzPressure(ctx, w, pal, h, geo, cx, y1 - 3, pal.decorLit)
 }
 
+function rockLoadPose(w, h, g, index) {
+  var fall = 0, squash = 0
+  if (g.winding) fall = Math.min(1, Math.max(0, (h.t - 27 - index) / (8 - index))) * 2
+  if (g.live) {
+    var age = w.reducedMotion ? 8 : Math.max(0, h.t - index * 2)
+    fall = Math.min(g.tall - 7, 2 + age * age * 0.24)
+    squash = fall >= g.tall - 7 ? Math.max(0, 2 - (age - 8) / 2) : 0
+  }
+  if (g.cool) { fall = g.tall - 7; squash = Math.max(0, 2 - (9 - index * 2) / 2) + h.t / 3 }
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { drop: Math.round(fall * grid) / grid, squash: Math.round(Math.max(0, squash) * grid) / grid }
+}
+
 function drawHzRockfall(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, wide = geo.wide, live = geo.live,
-    show = geo.show
+  var x0 = geo.x0, y0 = geo.y0, wide = geo.wide
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 3)                      // cracked slab
+  ctx.fillRect(x0, y0, wide, 3)
   ctx.fillStyle = pal.rig
   for (var cr = 0; cr < wide; cr += 5) ctx.fillRect(x0 + cr, y0 + 3, 3, 1)
   ctx.fillStyle = pal.warn
   ctx.fillRect(x0 + 2, y0 + 1, wide - 4, 1)
-  if (show || geo.cool) {
-    // Rocks on their way down, at staggered heights.
-    ctx.fillStyle = live ? pal.rig : pal.warn
+  if (geo.show || geo.cool) {
     for (var rk = 0; rk < 4; rk++) {
-      var rockX = (h.zx0 + 0.5 + ((rk * 2.3 + (live ? h.fired : 0)) % Math.max(1, h.zx1 - h.zx0 + 1))) * C
-      var ry = live ? (h.zy0 + ((h.t * 0.55 + rk * 3.1) % Math.max(1, h.zy1 - h.zy0 + 1))) * C
-        : (geo.cool ? geo.y1 - 2 : y0 + 3 + (rk % 2) + Math.round(geo.progress * 2))
-      ctx.fillRect(rockX, ry, live ? 4 : 2, live ? 4 : 2)
+      var pose = rockLoadPose(w, h, geo, rk)
+      var x = x0 + 1 + rk * 5, y = y0 + 3 + pose.drop
+      var height = Math.max((w.res || 1) >= 2 ? 0.5 : 1, 4 - pose.squash)
+      ctx.fillStyle = geo.live ? pal.rig : geo.hot
+      if (geo.cool) ctx.fillStyle = pal.rigDark
+      ctx.fillRect(x, y + 4 - height, 4, height)
+      if ((w.res || 1) >= 2) {
+        ctx.fillStyle = pal.rigDark
+        ctx.fillRect(x + 0.5, y + 4 - height, 0.5, height)
+      }
     }
   }
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.rig)
-  if (!show && !geo.cool) {
+  if (!geo.show && !geo.cool) {
     ctx.fillStyle = pal.rig
-    ctx.fillRect(geo.cx, y0 + 4 + Math.floor(geo.t / 24) % 3, 1, 1)
+    ctx.fillRect(geo.cx, y0 + 4 + Math.floor((w.reducedMotion ? 0 : geo.t) / 24) % 3, 1, 1)
   }
 }
 
@@ -8278,19 +8294,44 @@ function drawHzEchobat(ctx, w, pal, h, geo) {
   drawEchoRings(ctx, w, pal, h, geo, y + 4)
 }
 
-function drawHzScarab(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y1 = geo.y1, cx = geo.cx, wide = geo.wide,
-    live = geo.live, t = geo.t, show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y1 - 2, wide, 2)
-  for (var sca = 0; sca < 5; sca++) {
-    var scx = live ? cx + h.dir * ((sca * 7 + t * 2) % (10 * C))
-      : x0 + 2 + sca * 3 + (geo.winding ? Math.round(geo.progress * 2) : Math.floor(t / 30) % 2)
-    ctx.fillStyle = show ? hot : pal.rig
-    ctx.fillRect(scx, y1 - 5 - (sca % 2), 3, 2)
-    ctx.fillRect(scx + 1, y1 - 7 - (sca % 2), 1, 2)
+function scarabLaunchPose(w, h, g, index) {
+  var launch = 0, wing = 0, t = w.reducedMotion && g.live ? 8 : h.t
+  var lag = h.dir > 0 ? 4 - index : index
+  if (g.winding) {
+    wing = Math.min(1, t / 10)
+    launch = Math.min(1, Math.max(0, (t - 12 - lag) / (5 - lag)))
   }
-  hzImpact(ctx, pal, h, geo, cx, y1 - 2, pal.rig)
+  if (g.live) { launch = Math.max(0, 1 - Math.max(0, t - 10) / 9); wing = 1 }
+  if (g.cool) wing = g.cool
+  var age = Math.max(0, t - lag), flight = g.live ? Math.sin(Math.min(1, age / (19 - lag)) * Math.PI) : 0
+  var flap = !w.reducedMotion && g.show && t > 0 && t < 16 ? Math.floor((t + index * 2) / 2) % 2 : 0
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { x: Math.round(flight * (32 + index * 2) * grid) / grid,
+    lift: Math.round((launch * 3 + flight * (3 + index % 3)) * grid) / grid,
+    wing: Math.round(wing * (2 + flap) * grid) / grid }
+}
+
+function drawHzScarab(ctx, w, pal, h, geo) {
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0, geo.y1 - 2, geo.wide, 2)
+  for (var sca = 0; sca < 5; sca++) {
+    var pose = scarabLaunchPose(w, h, geo, sca)
+    var shuffle = !geo.show && !geo.cool && !w.reducedMotion ? Math.floor(geo.t / 30) % 2 : 0
+    var x = geo.x0 + 2 + sca * 3 + h.dir * pose.x + shuffle
+    var y = geo.y1 - 5 - (sca % 2) - pose.lift
+    ctx.fillStyle = geo.show ? geo.hot : pal.rig
+    ctx.fillRect(x, y, 3, 2)
+    ctx.fillRect(x + 1, y - 2, 1, 2)
+    if (pose.wing) {
+      ctx.fillRect(x - pose.wing, y - 1, pose.wing, 1)
+      ctx.fillRect(x + 3, y + 1, pose.wing, 1)
+    }
+    if ((w.res || 1) >= 2) {
+      ctx.fillStyle = pal.rigDark
+      ctx.fillRect(x + 1.5, y, 0.5, 2)
+    }
+  }
+  hzImpact(ctx, pal, h, geo, geo.cx, geo.y1 - 2, pal.rig)
 }
 
 // Staggered impacts span the fire window; settled loads crumble into remnants.
@@ -8505,53 +8546,55 @@ function drawHzHotaisle(ctx, w, pal, h, geo) {
   ctx.globalAlpha = 1
 }
 
-function drawHzSnake(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, wide = geo.wide, live = geo.live,
-    winding = geo.winding, show = geo.show, hot = geo.hot
-  // An S of body along the floor with a wedge head on the end of it, rather
-  // than the vertical post the first version drew — which, with a bright tip
-  // and a muzzle flash, read as a mounted gun and not as an animal at all.
-  var sdir = h.zx0 % 2 === 0 ? 1 : -1
-  var bodyY = y1 - 3
-  ctx.fillStyle = pal.rigDark
-  for (var sb = 0; sb < wide; sb++) {
-    // Two shallow humps: a snake at rest is a curve, and a curve is what
-    // separates it from every straight-edged machine on this board.
-    var hump = Math.round(Math.sin(sb * 0.55) * 1.6)
-    ctx.fillRect(x0 + sb, bodyY - hump, 1, 3)
-  }
-  // Scales along the back, a shade lighter.
-  ctx.fillStyle = pal.rig
-  for (var sc = 0; sc < wide; sc += 2) {
-    var hump2 = Math.round(Math.sin(sc * 0.55) * 1.6)
-    ctx.fillRect(x0 + sc, bodyY - hump2, 1, 1)
-  }
+function snakeStrikePose(w, h, g) {
+  var cock = 0, strike = 0
+  if (g.winding) { cock = Math.min(1, h.t / 10); strike = Math.min(1, Math.max(0, (h.t - 14) / 5)) }
+  if (g.live) { cock = 1; strike = Math.max(0, 1 - Math.max(0, h.t - 3) / 12) }
+  if (g.cool) cock = g.cool
+  if (w.reducedMotion && g.live) strike = 1
+  var breathe = !g.winding && !g.live && !g.cool && !w.reducedMotion ? Math.floor(w.ticks / 30) % 2 : 0
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { x: Math.round((-4 * cock + 13 * strike) * grid) / grid,
+    rise: Math.round((2 + breathe + 6 * cock * (1 - strike)) * grid) / grid }
+}
 
-  // The head, at the end it is facing, raised a little when it is winding up
-  // and thrown forward when it strikes.
-  var hx = sdir > 0 ? x1 - 4 : x0
-  var rear2 = live ? 0 : (winding ? 3 + Math.round(geo.progress * 3) : 2 + Math.floor(geo.t / 30) % 2)
-  var hy = bodyY - rear2 - 2
-  if (winding || live) {
-    // The raised neck curving up out of the coil.
-    ctx.fillStyle = pal.rigDark
-    for (var nk = 0; nk <= rear2 + 2; nk++)
-      ctx.fillRect(hx + (sdir > 0 ? 0 : 3), bodyY - nk, 2, 1)
+function drawSnakeNeck(ctx, w, pal, x, y, hx, hy, dir) {
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  ctx.fillStyle = pal.rigDark
+  for (var i = 0; i <= 16; i++) {
+    var u = i / 16, v = 1 - u
+    var nx = v * v * x + 2 * v * u * (hx - dir * 3) + u * u * hx
+    var ny = v * v * y + 2 * v * u * y + u * u * hy
+    ctx.fillRect(Math.round(nx * grid) / grid, Math.round(ny * grid) / grid, 2, 2)
   }
-  ctx.fillStyle = show ? hot : pal.rig
-  ctx.fillRect(hx, hy, 4, 3)                        // wedge head
+}
+
+function drawHzSnake(ctx, w, pal, h, geo) {
+  var sdir = h.zx0 % 2 === 0 ? 1 : -1, bodyY = geo.y1 - 3
+  ctx.fillStyle = pal.rigDark
+  for (var sb = 0; sb < geo.wide; sb++) {
+    var hump = Math.round(Math.sin(sb * 0.55) * 1.6)
+    ctx.fillRect(geo.x0 + sb, bodyY - hump, 1, 3)
+  }
+  ctx.fillStyle = pal.rig
+  for (var sc = 0; sc < geo.wide; sc += 2) {
+    var hump2 = Math.round(Math.sin(sc * 0.55) * 1.6)
+    ctx.fillRect(geo.x0 + sc, bodyY - hump2, 1, 1)
+  }
+  var pose = snakeStrikePose(w, h, geo)
+  var root = sdir > 0 ? geo.x1 - 4 : geo.x0
+  var hx = root + sdir * pose.x, hy = bodyY - pose.rise - 2
+  if (geo.show || geo.cool) drawSnakeNeck(ctx, w, pal, root + (sdir > 0 ? 0 : 3), bodyY, hx + (sdir > 0 ? 0 : 3), hy + 1, sdir)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rig
+  ctx.fillRect(hx, hy, 4, 3)
   ctx.fillRect(hx + (sdir > 0 ? 4 : -1), hy + 1, 1, 2)
   ctx.fillStyle = pal.eye
-  ctx.fillRect(hx + (sdir > 0 ? 3 : 0), hy + 1, 1, 1)   // eye
-  if (live) {
-    // Struck: the head is thrown out, and the tongue with it.
-    ctx.fillStyle = pal.fireHot
-    ctx.fillRect(hx + (sdir > 0 ? 5 : -6), hy + 1, 6, 1)
-  } else if (winding) {
-    ctx.fillStyle = pal.warn
-    ctx.fillRect(hx + (sdir > 0 ? 5 : -3), hy + 1, 3, 1)  // flicking tongue
+  ctx.fillRect(hx + (sdir > 0 ? 3 : 0), hy + 1, 1, 1)
+  if (geo.show) {
+    ctx.fillStyle = geo.live ? pal.fireHot : pal.warn
+    ctx.fillRect(hx + (sdir > 0 ? 5 : -3), hy + 1, 3, 1)
   }
-  hzImpact(ctx, pal, h, geo, hx, y1 - 1, pal.decorDim)
+  hzImpact(ctx, pal, h, geo, hx, geo.y1 - 1, pal.decorDim)
 }
 
 // --- Trench -------------------------------------------------------------

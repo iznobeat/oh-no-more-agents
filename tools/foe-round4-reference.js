@@ -1,9 +1,11 @@
+import {foeRoundFiveSourceBefore,foeRoundFiveSuccessor} from './foe-round5-reference.js'
 import fs from 'node:fs'
 import {execFileSync} from 'node:child_process'
 let reference
 // Reconstruct the exact C22-era hostile painters for the historical art chain.
 // C24 pins both sides independently, including full boards and seasonal riders.
 export function foeRoundFourSourceBefore(source){
+ source=foeRoundFiveSourceBefore(source)
  reference ||= execFileSync('git',['show','d7b0d333e0ae77e1f43c23b17c3990b9e7119952:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
  for(const name of ['drawHzCrusher','drawHzScorpion','drawHzSpores']){
   const re=new RegExp('function '+name+'\\([^]*?\\n}\\n')
@@ -17,5 +19,5 @@ export function foeRoundFourSourceBefore(source){
 
 export function foeRoundFourSuccessor(previous){
  const pins=JSON.parse(fs.readFileSync(new URL('../test/fixtures/foe-round4-scenes.json',import.meta.url),'utf8'))
- return pins[previous]?.after || previous
+ return foeRoundFiveSuccessor(pins[previous]?.after || previous)
 }
