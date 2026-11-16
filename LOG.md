@@ -14879,3 +14879,130 @@ and no CPU speedup claimed against changing desktop load. The pair exited
 **Next:** owner review of the rearing snake, staggered swarm and continuous
 rockfall in crowded native colonies. Live Omarchy/QML remains unverified.
 No merge, push, deploy, production request, port 8787 change or sibling sync.
+
+## C26 — 2026-11-16 · Drip, unseal, release
+
+**Chose:** Memory Leak (molten), Forced Logout (airlock) and Memory Dump
+(steamvent), after re-rendering the full eight-kind × eleven-state enemy
+catalogue and all 48 hazard cycles at res 1/2. Inspected every overview at
+both scales and consecutive remaining enemy/candidate strips. Molten loads
+teleported through unrelated heights, the airlock's warning stripe hid its
+parting plates, and the vent's full-height column appeared without a connected
+release. The fifteen C12–C14/C24/C25 choices remain exact. Baseline:
+1d4172d5c8db9023f96fc6a7b5d34bb8bdc03b76.
+
+**Changed (Draw only):** four molten drops thicken and stretch under the
+original slab, hold, release three ticks apart on accelerating falls, then
+spread and disappear individually at the floor. Removed the premature floor
+sparks before any drop arrived. Airlock plates unseal two pixels during
+charge, hold, retract over the first three fire ticks and close during the
+existing twelve-tick recovery window. The warning stripe now travels with
+the plates; small falling chevrons make the direction of decompression clear.
+Steam pressure lifts the original cowl on two exposed supports, vents short
+side wisps, releases a rising column over the first three fire ticks, then
+lowers the cap as the column recedes. All three retain their fixture identity
+and palette roles. Whole pixels carry the native poses; page motion uses the
+half-pixel grid for drops, plates and cowl, with a half-pixel cowl seam.
+
+Reduced motion holds live travel, plume flutter and decompression marks;
+phase-progress warnings remain. The inherited airlock lamp's initial three
+fire ticks retain their old discharge flash. No Sim.js, sfx.js, North Pole
+code, enemy head/rider, umbrella, behaviour, timing, RNG, world write,
+dependency or product text changes. No sibling/Omarchy writes.
+
+**Review/tool:** extended tools/foe-strips.js with C26 compact consecutive
+cycles, side-by-side keys and ordinary/Christmas/New Year complete boards.
+Checked all new test/helper/fixture names were free. Saved original public
+assets in /tmp/xmas-dressing/foes6-0/before/public. Complete baseline catalogue:
+/tmp/xmas-dressing/foes6-0; inspected drafts: foes6-1 through foes6-5; final
+complete catalogue: /tmp/xmas-dressing/foes6-6. The first molten draft merged
+all splashes into a bright floor bar; staggered splash decay and a bounded splash width separated the
+follow-through. A final consecutive-frame pass caught touching splashes;
+reduced the spread to keep individual puddles apart at native size. Inspected all six final before-left/after-right key strips:
+
+- /tmp/xmas-dressing/foes6-6/molten-compare-res1.png
+- /tmp/xmas-dressing/foes6-6/molten-compare-res2.png
+- /tmp/xmas-dressing/foes6-6/airlock-compare-res1.png
+- /tmp/xmas-dressing/foes6-6/airlock-compare-res2.png
+- /tmp/xmas-dressing/foes6-6/steamvent-compare-res1.png
+- /tmp/xmas-dressing/foes6-6/steamvent-compare-res2.png
+
+Also inspected consecutive compact cycles at both scales in drafts 2/3/5 and final 6,
+ordinary native charge/fire full boards and Christmas fire/New Year charge
+full boards in final 6. Staged art uses the real raster renderer and its
+previously documented gradient approximation; no live Omarchy/QML claim.
+
+**Pins:** no existing golden fixture JSON overwritten. New
+foe-round6-pins.json retains independent before/after complete-cycle digests
+in both resolutions/facings plus all 168 full boards (21 biomes × two scales
+× four clocks), including unchanged frames. Restoring exactly three painters
+and removing exactly three helpers recovers the baseline Draw source byte
+for byte. C25's source/scene audits use that exact recovered source; the
+historical successor chain advances only the explicit C26 ledger, reproduced
+independently in the new tests. No test removed, threshold lowered, assertion
+skipped or raw-buffer diff introduced.
+
+Complete cycle SHA-256 prefixes (both facings identical):
+
+- molten/res1: `0160ba16` → `a7646c89`; res2: `5020aea1` → `d5784cbb` — suspended loads, connected falls and splashes.
+- airlock/res1: `4d6aee2c` → `4f9d0b7b`; res2: `5152811b` → `d8b27c4d` — traveling plate edges and downward decompression marks.
+- steamvent/res1: `9e633be3` → `8aba468a`; res2: `bac2fa0a` → `a0fb68de` — lifted cowl, growing column and recovery.
+
+Every changed existing scene/aggregate pin (level/res/tick):
+
+- full/4/1/120: `85981d35` → `b5f29eb9` — molten loads and their release.
+- full/4/1/400 and newyear/none/4/1: `1944173e` → `43022092` — same fixture at the later clock.
+- full/4/1/900: `014cd1ce` → `1bfe4aae` — same fixture at the later clock.
+- full/4/2/120: `a9bfec60` → `0bdd4296` — page molten poses.
+- full/4/2/400 and newyear/none/4/2: `8204d775` → `af81d586` — page molten poses.
+- full/4/2/900: `293174d1` → `545a9126` — page molten poses.
+- aggregates/350,900: `774d0a03` → `db081b14`; disabled/350,900: `24014fca` → `7e0973fc` — includes the changed Foundry fixture, with/without historical colony poses.
+- aggregates/120,350: `af52a8c2` → `8dec63b9`; disabled/120,350: `6ac3bdf4` → `05d90c29` — same inclusion at the earlier clocks.
+- newyear/christmas/4/1: `ec8093ca` → `8c42204c`; /4/2: `df8a2e2f` → `9bd8f720` — molten fixture; seasonal riders unchanged.
+- c6full/Foundry/1/120: `421dabc8` → `f3bcfdc5`; /1/400: `591cacaa` → `fae05aff` — molten fixture in seasonal complete boards.
+- c6full/Foundry/2/120: `a0e93b93` → `d9616a5a`; /2/400: `afe80a3e` → `90926e02` — page equivalent.
+- ironworks/4/900/1: `8aa9f728` → `28c1298b`; /4/900/2: `2f77feec` → `e630660b` — molten fixture in the original C15 default-seed complete boards. C15 retains its original historical assertions and separately asserts these explicit current transitions.
+- office: `cbee18c4` → `7a73fced` — same changed Foundry hazard in the full actor aggregate.
+
+**Validation:** baseline full check **1902/1902**, exit **0**, 227.26 s;
+focused C26 tests **12/12**; the combined C26/hazards/Foundry/tower regression
+run **127/127**, exit **0**. Tests cover exact cycles/full boards,
+visible native/page poses, phase joins, recovery expiry, actual reduced-motion
+pixels, page refinement, every-theme palette/grid/purity/bounded paint,
+excluded hazards, all hostile states with seasonal riders, exact source
+restoration, scene-ledger reproduction and review output. The initial
+transient baseline check was terminated (143); the persistent replacement
+completed. Copied the existing crapper cache locally and corrected its editable
+path to this worktree without modifying the sibling. The first full run found a lost ordinary idle drip and uncovered the two
+C15 fixture pins above. Restored native idle dripping and steam exactly;
+added reduced-idle and historical/current Foundry assertions. The original
+tower digest also returned unchanged, so its test is untouched. Final
+gates/performance results follow below.
+
+Final full check **1914/1914**, exit **0**, 248.97 s. Fresh CRAP coverage
+**1914/1914**, exit **0**, 453.95 s;
+`npm run crap -- --changed --threshold 30` exit **0**. Renderer scores:
+drawHzMolten **14.0**, drawHzSteamvent **13.0**, moltenDropPose **11.2**,
+airlockGap **10.4**, steamVentPose **9.4**, drawHzAirlock **5.1**. New review,
+reference and scene helpers are also below 30. Draw line coverage **99.68%**.
+Stamps refreshed: Draw **123458c4**, build **700fcf8d**. Source and fixtures
+stayed frozen throughout the final full check, coverage and FPS; only this
+log was completed afterward. Shared FIFO lock, unchanged six-file suite
+concurrency, bounded drawing recordings and digest comparisons throughout.
+Retained logs/exits: /tmp/xmas-dressing/foes6-before-check.{log,exit},
+foes6-first-check.log, foes6-focused-final.{log,exit}, foes6-check.{log,exit},
+foes6-crap.{log,exit}. Full checks include Christmas, New Year and North Pole.
+
+**Performance:** matched back-to-back `npm run fps -- 8 12 18`, saved
+baseline public assets versus final art, under one shared lock. Before and
+after on every level: **60 median / 60 p5 FPS, 17 ms worst frame, 0% long
+tasks**. CPU **13/11/13% → 16/13/14%**; no measured frame-rate loss, and no
+CPU speedup claimed against changing desktop load. Explicit pair exit **0**.
+Logs: /tmp/xmas-dressing/foes6-final-before-fps.log,
+/tmp/xmas-dressing/foes6-final-after-fps.log and
+/tmp/xmas-dressing/foes6-fps-pair.{log,exit}.
+
+**Next:** owner review of hanging molten loads, parting airlock plates and
+the lifting steam cowl in crowded native colonies. No known remaining test
+or art issue; live Omarchy/QML remains unverified. No merge, push, deploy,
+production request, port 8787 change or sibling sync.
