@@ -14107,3 +14107,140 @@ silhouettes, cable drums), both reviewed at full frame at both resolutions.
 Five biomes reworked from the audit so far: Foundry, Frost, Ruins, Ice Cave,
 Factory. **Before:** gate 1850/1850; `npm run smoke -- --level 8` passed
 (8–14). **After:** `npm run verify -- --previous 9def91c5` passed.
+
+## C20 — 2026-11-16 · Desert becomes canyon country at both scales
+
+**Chose:** Desert, after re-rendering all 21 biomes out of season with
+`node tools/shoot.js biomes --ticks 350` and every individual
+`shoot.js level N --ticks 350`, res 1/2, scale 1. Inspected seven native
+three-board side-by-side sheets and eleven page two-board sheets. Foundry,
+Frost, Ruins, Ice Cave and Factory were excluded. Library's stacks, Subway's
+station and the revised Ruins/Ice Cave immediately establish a place. Desert
+was the weakest eligible full frame: large native sand faces without a
+material texture and empty brown corridors. Its page sediment and relics
+helped, but the old dune fill hid most distant mesas on the lower floors.
+Cavern already had convincing silhouettes and page mineral curtains;
+Spaceship's framing gave it more structure. Baseline:
+24b1d9b431154f6c5fc256b259b7c81b62bdac7d.
+
+**Changed (Draw only):** broad, asymmetric cap-rock buttes and shaded erosion
+gullies bring canyon silhouettes into the visible corridor air; a low skyline
+extends into the sky band. Original sun/glow/rays, dunes, obelisks, cactus,
+palms, grain, ledge caps, sediment bands, wind and mirage painters remain.
+Sparse weathered pockets texture native DIRT in the cached terrain pass;
+there is no new material pattern at page resolution. All additions use existing
+Palette roles; Palette.js and its colours are untouched.
+
+A few large saguaros carry perched wrens that turn/preen and small lizards
+whose tails move. The plants stay cached; animals paint from drawMachines.
+Complete plant/animal envelopes reserve the original decor, hatch approach,
+exit, pits, hazard zones and page relics at both resolutions. Level 11 and 51
+fit one group each; crowded 31 deliberately fits none. At most three groups,
+one per corridor. World-keyed WeakMap placements invalidate on terrain
+identity/version; live paint checks current air and reduced motion freezes
+both animals. No world writes, drawing RNG, per-frame board search, new text,
+actor/umbrella change, dependency or simulation change. Sim.js, sfx.js and
+season.js untouched. Twenty other biomes retain exact complete-frame bytes.
+
+**Review/tool:** all-biome audits are retained in
+/tmp/xmas-dressing/biome6-audit/res{1,2}/. Exact baseline assets are in
+/tmp/xmas-dressing/biome6-11/before/public/. Inspected rounds 1–4; rejected
+regular gravel-like pockets, overly repeated buttes and cap rocks hidden
+behind terrain. Thinned and irregularised native pockets; reduced repetition,
+lowered the mesa tops and strengthened their existing-palette silhouettes.
+`node tools/canyon-art.js OUT` reproduces twelve complete before-left /
+after-right boards: levels 11/31/51, ticks 350/900, res 1/2. Also retains the
+ordinary tick-120 and ordinary/Christmas historical staged boards. Inspected
+final full-frame sheets and individual page pairs without crops or extra scale:
+
+- /tmp/xmas-dressing/biome6-11/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome6-11/final/full-res2-sheet.png
+- /tmp/xmas-dressing/biome6-11/final/pinned-res1-sheet.png
+- /tmp/xmas-dressing/biome6-11/final/pinned-res2-sheet.png
+
+The canyon silhouettes read at native size, page sediment remains quiet,
+and the pale colony, umbrellas and hazard tells remain clear. Visual review
+used the raster renderer, whose gradients use the documented middle-stop
+approximation; live Omarchy/QML was not inspected.
+
+**Pins deliberately advanced:** original golden JSON is retained.
+canyon-pins.json independently pins twelve complete predecessor/successor
+frames; canyon-scenes.json lists explicit scenery transitions. Four removable
+C20 hooks recover the exact predecessor. C19's review/source helpers strip this
+later round before checking their original assertions; the existing successor
+chain then advances only the listed scene digests. All prior assertions remain.
+Two-background RGB masks independently prove opaque colony/umbrella and
+scorpion/piston hazard colours unchanged in complete frames. SHA-256 prefixes
+(full hashes and labels retained in the two fixtures):
+- full `11/350/1`: `c6edbe83` → `3415bb2e`.
+- full `11/900/1`: `419e2fdb` → `78d32c5b`.
+- full `31/350/1`: `c91f7a04` → `478d5dd2`.
+- full `31/900/1`: `a93c2e3d` → `a8000df0`.
+- full `51/350/1`: `eeaf0bcb` → `9d2af5d0`.
+- full `51/900/1`: `73374a1d` → `80340a5c`.
+- full `11/350/2`: `02f60bde` → `80d0db6b`.
+- full `11/900/2`: `fbb03fa8` → `55ca29bf`.
+- full `31/350/2`: `9c4ab9de` → `c6756741`.
+- full `31/900/2`: `35e3001b` → `11fa4988`.
+- full `51/350/2`: `39ccd03b` → `61c664c4`.
+- full `51/900/2`: `205801b6` → `440b161c`.
+- `c20full/11/2/120`: `8c3d7059` → `93593c12`.
+- `c20full/11/2/350`: `b32a042a` → `71a879fb`.
+- `c20full/11/2/900`: `4766f72b` → `ef264ddb`.
+- `aggregates/350,900`: `64d438ae` → `956dbd8e`.
+- `disabled/350,900`: `24f62210` → `d0e79fa2`.
+- `aggregates/120,350`: `8c506e6b` → `dbae0b92`.
+- `disabled/120,350`: `1d39dcbc` → `67bba98f`.
+- `newyear/none/11/1`: `21944c64` → `6442007e`.
+- `newyear/none/11/2`: `bc4cc277` → `0625b934`.
+- `newyear/christmas/11/1`: `3602ed12` → `ee929209`.
+- `newyear/christmas/11/2`: `120590db` → `ce18fcf1`.
+- `c6full/Desert/1/120`: `9735a566` → `91e4b536`.
+- `c6full/Desert/1/400`: `c6029684` → `3f0aab36`.
+- `c6full/Desert/2/120`: `89989f51` → `ca58761f`.
+- `c6full/Desert/2/400`: `1c0fca13` → `2c5b164f`.
+- `exitNative`: `7fb69321` → `a733bb02`.
+- `office`: `562ae9b4` → `3cc5fb08`.
+
+**Validation:** baseline `npm run check`: **1850/1850**, exit **0**,
+166.95 s. Its first sandboxed launcher hit child-process EPERM; the normal
+escalated retry completed. Checked `test/canyon-art.test.js` and
+`tools/canyon-art.js` were free with `test -e` before creation. Ten new tests
+cover twelve independently pinned reviewed frames and a visible-change floor,
+all-biome scope and exact source recovery, all-theme palette/grid/context and
+frozen-world purity, native-only DIRT texture and static art, full supported
+and reserved placement footprints and cache invalidation, current-air clipping,
+reduced motion and bounded terrain reads, opaque colony/umbrella colours,
+reproducible sheets/transitions, varied layouts and relic clearance, and opaque
+scorpion/piston tells through charge/fire/cool poses. Digests and bounded
+byte/call loops only; no raw-buffer deepEqual.
+
+Initial focused pass: 9/10; corrected a test that selected hazardless layouts,
+using actual scorpion/piston levels 11/51 and requiring nonempty opaque masks.
+No art change for the correction. Final focused regression: **28/28**,
+exit **0**. Final `npm run check`: **1860/1860**, exit **0**, 172.45 s.
+Source/stamps frozen through the full gates; only this log completed afterward.
+Shared FIFO heavy-run lock and unchanged six-file suite concurrency retained.
+
+**Performance:** matched back-to-back `npm run fps -- 11 31 51 --season none`,
+exact baseline assets against the unchanged final art, under one shared lock.
+All three levels before and after: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **9/9/10% → 9/9/9%**. Pair exit **0**. No measured
+frame-rate or CPU regression. Retained matched-before-fps.log,
+matched-after-fps.log and fps-pair.exit in /tmp/xmas-dressing/biome6-11/;
+the initial baseline run is before-fps.log/exit there too. Baseline check
+log/exit are in /tmp/xmas-dressing/biome6-audit/; final check and CRAP
+logs/explicit exits are in /tmp/xmas-dressing/biome6-11/.
+
+`npm run crap -- --changed --threshold 30` exited **0**, fresh coverage
+**1860/1860**, 362.64 s. Highest new renderer scores **9.0**
+(canyonSpots, 92.3% coverage; drawCanyonStone, 100%); other new renderer
+helpers **1–7**, all 100% covered. Changed drawTerrain **29**, drawMachines
+**24**. New review/scene helpers at most **8**; all changed/new functions
+under 30. Stamps: Draw **cc470531**, build **cd909043**.
+
+**Next:** owner review of the complete native/page Desert sheets, especially
+the canyon silhouettes and intentionally sparse saguaro groups. No known
+unresolved art, test or frame-rate issue. Live Omarchy/QML appearance remains
+unverified. No merge, push, deploy, production request, port 8787 change,
+sibling write or Omarchy write.

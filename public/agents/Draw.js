@@ -212,6 +212,7 @@ function drawTerrain(ctx, w, pal) {
   drawAntiqueHall(ctx, w, pal)
   drawIronworksHall(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
+  drawCanyonDistance(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
   drawDataHall(ctx, w)
   drawReadingHall(ctx, w)
@@ -253,6 +254,7 @@ function drawTerrain(ctx, w, pal) {
   drawAntiqueStone(ctx, w, pal)
   drawCryoFacets(ctx, w, pal)
   drawMillBlocks(ctx, w, pal)
+  drawCanyonStone(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -276,6 +278,7 @@ function drawTerrain(ctx, w, pal) {
   drawAntiqueGarden(ctx, w, pal)
   drawCryoGarden(ctx, w, pal)
   drawMillDrums(ctx, w, pal)
+  drawCanyonGarden(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2371,6 +2374,7 @@ function drawMachines(ctx, w, pal) {
   drawAntiqueLife(ctx, w, pal)
   drawCryoLife(ctx, w, pal)
   drawMillLife(ctx, w, pal)
+  drawCanyonLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -27370,4 +27374,143 @@ function drawMillSpokes(ctx,pal,b,t) {
   ctx.fillStyle=tilt<2?pal.decorLit:pal.decorDim;ctx.fillRect(b.x+22,b.y-11,2,2)
   // A short loose cable end winds around the drum; never crosses its reserve.
   ctx.fillStyle=pal.decorDim;ctx.fillRect(b.x+17,b.y-9,3,1);ctx.fillRect(b.x+19,b.y-9,1,4+tilt)
+}
+
+// C20: canyon country. Retain the dunes, sun, sediment bands and old cacti;
+// broad far-wall buttes and a few reserved saguaros give the open air scale.
+function drawCanyonDistance(ctx,w,pal) {
+  if(w.biome!=="Desert")return
+  ctx.save()
+  var C=w.k.CELL,top=w.k.SKY*C,wide=w.k.COLS*C
+  // A low skyline remains visible even behind the special's card.
+  ctx.fillStyle=pal.backLit
+  for(var ridge=0;ridge<wide;ridge+=83) {
+    ctx.fillRect(ridge,top-6,65,6);ctx.fillRect(ridge+16,top-13,34,7)
+    ctx.fillRect(ridge+20,top-15,26,2)
+  }
+  var sun=40+Math.floor(backRng(w)()*(wide-80))
+  for(var row=0;row<w.corridors.length;row++) {
+    var floor=w.corridors[row].floorY*C
+    for(var x=12+(row%2)*37;x<wide-35;x+=157) {
+      if(floor-52<top+80 && Math.abs(x+30-sun)<75)continue
+      drawCanyonButte(ctx,pal,x,floor,24+(row%2)*4)
+    }
+  }
+  ctx.restore()
+}
+function drawCanyonButte(ctx,pal,x,y,h) {
+  // Asymmetric, broad cap rock and talus shoulders, with recessed gullies.
+  ctx.fillStyle=pal.dirtShade
+  ctx.fillRect(x+19,y-h,37,4);ctx.fillRect(x+15,y-h+4,43,8)
+  ctx.fillRect(x+9,y-h+12,53,h-12);ctx.fillRect(x+4,y-17,65,17)
+  ctx.fillRect(x-3,y-8,79,8)
+  ctx.fillStyle=pal.backLit
+  ctx.fillRect(x+45,y-h+4,13,8);ctx.fillRect(x+49,y-h+12,13,h-12)
+  ctx.fillRect(x+55,y-17,14,17);ctx.fillRect(x+62,y-8,14,8)
+  ctx.fillRect(x+24,y-h+8,3,13);ctx.fillRect(x+22,y-h+17,3,11)
+  ctx.fillStyle=pal.decorDim;ctx.globalAlpha=0.85
+  ctx.fillRect(x+18,y-h+4,38,2);ctx.fillRect(x+9,y-18,40,2)
+  ctx.globalAlpha=1;ctx.fillStyle=pal.backDim
+  ctx.fillRect(x+52,y-h+13,4,15);ctx.fillRect(x+57,y-14,3,14)
+}
+function drawCanyonStone(ctx,w,pal) {
+  if(w.biome!=="Desert" || (w.res||1)>=2)return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  // Native's bare sand faces alone: small weathered pockets and short joints,
+  // inside each existing material band. Page sediment already has its texture.
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=2;x<k.COLS-2;x++) {
+    var at=y*k.COLS+x,h=((x*73856093)^(y*19349663)^(w.level*83492791))>>>0
+    if(w.terrain[at]!==k.DIRT || w.terrain[at-k.COLS]!==k.DIRT || h%37!==0)continue
+    ctx.fillStyle=pal.dirtShade
+    ctx.fillRect(x*C,y*C+1,3,1);ctx.fillRect(x*C+1,y*C+2,3,1)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x*C,y*C+2,1,1)
+    ctx.fillStyle=pal.dirtEdge;ctx.globalAlpha=0.2
+    ctx.fillRect(x*C+1,y*C+3,2,1);ctx.globalAlpha=1
+  }
+  ctx.restore()
+}
+var CANYON_CACHE=new WeakMap()
+function canyonReserved(w) {
+  var boxes=abyssReserved(w),C=w.k.CELL
+  if(w.hatch)boxes.push({x:w.hatch.x*C-18,y:0,width:36,height:64})
+  // Preserve the original page obelisks, including their broad plinths.
+  for(var i=0;i<w.corridors.length;i++) {
+    var b=desertRelic(w,i)
+    boxes.push({x:b.x-11,y:b.y-b.high,width:26,height:b.high})
+  }
+  return boxes
+}
+function canyonSpots(w) {
+  var old=CANYON_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=canyonReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var x=25+(row*47+w.level*3)%59;x<w.k.COLS*C-30;x++) {
+      if(!canyonSupport(w,x,y) || !alpineClear(w,x-3,y-34,28,34,boxes))continue
+      spots.push({x:x,y:y,seed:row*29+x});break
+    }
+    if(spots.length===3)break
+  }
+  CANYON_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function canyonSupport(w,x,y) {
+  for(var dx=0;dx<23;dx++)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
+  return true
+}
+function drawCanyonGarden(ctx,w,pal) {
+  if(w.biome!=="Desert")return
+  ctx.save()
+  var spots=canyonSpots(w)
+  for(var i=0;i<spots.length;i++)drawCanyonCactus(ctx,pal,spots[i])
+  ctx.restore()
+}
+function drawCanyonCactus(ctx,pal,b) {
+  var x=b.x,y=b.y
+  ctx.fillStyle=pal.decorDim
+  ctx.fillRect(x+9,y-26,6,26);ctx.fillRect(x+10,y-28,4,2)
+  ctx.fillRect(x+2,y-15,8,5);ctx.fillRect(x+1,y-22,4,10)
+  ctx.fillRect(x+14,y-19,7,4);ctx.fillRect(x+18,y-25,4,9)
+  ctx.fillStyle=pal.decor
+  ctx.fillRect(x+10,y-26,2,25);ctx.fillRect(x+2,y-21,1,8)
+  ctx.fillRect(x+18,y-24,1,7)
+  ctx.fillStyle=pal.backDim
+  ctx.fillRect(x+14,y-24,1,24);ctx.fillRect(x+20,y-23,2,7)
+  ctx.fillStyle=pal.decorLit
+  ctx.fillRect(x+10,y-27,3,1);ctx.fillRect(x+2,y-22,2,1)
+  ctx.fillStyle=pal.dirtShade;ctx.fillRect(x+4,y-2,17,2)
+}
+function drawCanyonLife(ctx,w,pal) {
+  if(w.biome!=="Desert")return
+  ctx.save()
+  var spots=canyonSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    if(!alpineClear(w,b.x-3,b.y-34,28,34,[]))continue
+    drawCanyonWren(ctx,pal,b,Math.floor((t+b.seed)/18)%6)
+    drawCanyonLizard(ctx,pal,b,Math.floor((t+b.seed)/11)%4)
+  }
+  ctx.restore()
+}
+function drawCanyonWren(ctx,pal,b,pose) {
+  var x=b.x+10,y=b.y-30,turn=pose<3?0:1
+  ctx.fillStyle=pal.backDim
+  ctx.fillRect(x-2,y,7,3);ctx.fillRect(x-4,y-1,3,1)
+  ctx.fillRect(x+3+turn,y-2,3,3)
+  ctx.fillStyle=pal.decorLit
+  ctx.fillRect(x-1,y+1,4,1);ctx.fillRect(x+5+turn,y-1,2,1)
+  ctx.fillStyle=pal.dirtShade
+  ctx.fillRect(x,y-1,3,pose===2?1:2)
+  if(pose===2)ctx.fillRect(x-1,y-3,1,3)
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x+4+turn,y-2,1,1)
+}
+function drawCanyonLizard(ctx,pal,b,pose) {
+  var x=b.x+3,y=b.y-4
+  ctx.fillStyle=pal.backDim
+  ctx.fillRect(x,y,7,2);ctx.fillRect(x+6,y-1,3,2)
+  ctx.fillRect(x-3,y+1,3,1);ctx.fillRect(x-5,y+(pose<2?0:1),2,1)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+1,y,5,1)
+  ctx.fillRect(x+1,y+2,1,1);ctx.fillRect(x+5,y+2,1,1)
 }
