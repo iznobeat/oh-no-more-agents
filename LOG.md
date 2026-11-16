@@ -15794,3 +15794,14 @@ Earlier failed gate/audit logs remain alongside them for accountability.
 especially the exposed paired rollers. Future rounds should review only the
 remaining unselected tells and stop when none needs work. No merge, push,
 deployment, production requests, port 8787 changes, sibling or Omarchy writes.
+
+## 493 — 2026-11-16 · Deploy: mounted sniper, grinder, sweeper
+
+**Deployed** build c7bdb578 (Worker version 574d2222), replacing f192a4df;
+covers C32 (the mounted sniper extends, holds and recoils; the grinder's
+rollers rise and turn inward; the sweeper's head lowers and its shutters
+part). Checked the sweeper against the Sim before merging: the beam now ends
+where `catchSweep` catches (same clock and formula); the old lean was
+decoration. 39 tells improved. **Before:** gate 1993/1993; `npm run smoke --
+--level 20` passed (20–26). **After:** `npm run verify -- --previous
+f192a4df` passed.
