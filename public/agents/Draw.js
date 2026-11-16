@@ -211,6 +211,7 @@ function drawTerrain(ctx, w, pal) {
   drawAlpineSky(ctx, w, pal)
   drawAntiqueHall(ctx, w, pal)
   drawIronworksHall(ctx, w, pal)
+  drawKarstNativeVault(ctx, w, pal)
   drawBackdrop(ctx, w, pal)
   drawCanyonDistance(ctx, w, pal)
   drawNorthVillagePage(ctx, w)
@@ -255,6 +256,7 @@ function drawTerrain(ctx, w, pal) {
   drawCryoFacets(ctx, w, pal)
   drawMillBlocks(ctx, w, pal)
   drawCanyonStone(ctx, w, pal)
+  drawKarstStone(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -279,6 +281,7 @@ function drawTerrain(ctx, w, pal) {
   drawCryoGarden(ctx, w, pal)
   drawMillDrums(ctx, w, pal)
   drawCanyonGarden(ctx, w, pal)
+  drawKarstGarden(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2375,6 +2378,7 @@ function drawMachines(ctx, w, pal) {
   drawCryoLife(ctx, w, pal)
   drawMillLife(ctx, w, pal)
   drawCanyonLife(ctx, w, pal)
+  drawKarstLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -18428,6 +18432,7 @@ function drawCavernBackdrop(ctx, w, pal) {
   ctx.save()
   var wide = w.k.COLS * w.k.CELL, tall = w.k.ROWS * w.k.CELL
   ctx.fillStyle = pal.hatchMouth; ctx.fillRect(0, 0, wide, tall)
+  drawKarstVault(ctx, w, pal)
   // Long folded bedding behind the whole cave, including the hatch's void.
   ctx.globalAlpha = 0.3
   for (var y = -10; y < tall; y += 19) {
@@ -27513,4 +27518,145 @@ function drawCanyonLizard(ctx,pal,b,pose) {
   ctx.fillRect(x-3,y+1,3,1);ctx.fillRect(x-5,y+(pose<2?0:1),2,1)
   ctx.fillStyle=pal.decor;ctx.fillRect(x+1,y,5,1)
   ctx.fillRect(x+1,y+2,1,1);ctx.fillRect(x+5,y+2,1,1)
+}
+
+// C21: limestone halls. Existing curtains, pillars, grain and decor stay;
+// broad flowstone silhouettes supply depth before the original back painters.
+function drawKarstVault(ctx,w,pal) {
+  if(w.biome!=="Cavern")return
+  ctx.save()
+  var C=w.k.CELL,wide=w.k.COLS*C,top=w.k.SKY*C
+  for(var x=15;x<wide;x+=117) {
+    var seed=cavernHash(x,7,w.level),span=39+seed%24
+    drawKarstColumn(ctx,pal,x,top, w.k.ROWS*C,span,seed)
+  }
+  for(var i=0;i<w.corridors.length;i++) {
+    var floor=w.corridors[i].floorY*C
+    var bx=46+(i*61+w.level*7)%(wide-100)
+    drawKarstMound(ctx,pal,bx,floor,19+i%3*6)
+  }
+  // An enclosed roof above the hatch also establishes the native cave.
+  ctx.fillStyle=pal.back
+  for(var roof=0;roof<wide;roof+=23) {
+    var depth=4+cavernHash(roof,0,w.level)%12
+    ctx.fillRect(roof,0,25,depth)
+    ctx.fillStyle=pal.backLit;ctx.fillRect(roof+2,depth-2,17,2);ctx.fillStyle=pal.back
+  }
+  ctx.restore()
+}
+function drawKarstColumn(ctx,pal,x,top,bottom,span,seed) {
+  for(var y=top;y<bottom;y+=2) {
+    var fold=Math.floor(4*Math.sin(y/31+seed%13)),neck=Math.floor(span*(0.56+0.2*Math.cos(y/47+seed%7)))
+    ctx.fillStyle=pal.backLit;ctx.fillRect(x+fold,y,neck,2)
+    ctx.fillStyle=pal.back;ctx.fillRect(x+fold+neck-6,y,6,2)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x+fold+3,y,Math.max(3,Math.floor(neck/3)),2)
+    ctx.fillStyle=pal.backDim;ctx.fillRect(x+fold+neck-2,y,2,2)
+  }
+  // Unequal fused curtains and a broad shoulder, never a repeated crystal fan.
+  for(var lobe=0;lobe<3;lobe++) {
+    var height=20+(seed>>>(lobe*4))%25
+    for(var row=0;row<height;row+=2) {
+      var half=Math.max(1,7-Math.floor(row/6))
+      ctx.fillStyle=pal.backLit;ctx.fillRect(x-5+lobe*9-half,top+row,half*2,2)
+      ctx.fillStyle=pal.back;ctx.fillRect(x-5+lobe*9,top+row,half,2)
+    }
+  }
+}
+function drawKarstStone(ctx,w,pal) {
+  if(w.biome!=="Cavern" || (w.res||1)>=2)return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=1;x<k.COLS-1;x++) {
+    var at=y*k.COLS+x,h=cavernHash(x,y,w.level)
+    if(w.terrain[at]!==k.DIRT || w.terrain[at-k.COLS]!==k.DIRT || h%19!==0)continue
+    ctx.fillStyle=pal.dirtShade;ctx.fillRect(x*C,y*C,1,2);ctx.fillRect(x*C+1,y*C+2,2,1)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x*C+1,y*C+3,2,1)
+  }
+  ctx.restore()
+}
+var KARST_CACHE=new WeakMap()
+function karstReserved(w) {
+  var boxes=abyssReserved(w),C=w.k.CELL
+  if(w.hatch)boxes.push({x:w.hatch.x*C-18,y:0,width:36,height:64})
+  return boxes
+}
+function karstSpots(w) {
+  var old=KARST_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=karstReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var x=22+(row*47+w.level*3)%59;x<w.k.COLS*C-29;x++) {
+      if(!karstSupport(w,x,y) || !alpineClear(w,x-2,y-32,27,32,boxes))continue
+      spots.push({x:x,y:y,seed:row*29+x});break
+    }
+    if(spots.length===3)break
+  }
+  KARST_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function karstSupport(w,x,y) {
+  for(var dx=0;dx<23;dx++)if(!w.terrain[Math.floor(y/w.k.CELL)*w.k.COLS+Math.floor((x+dx)/w.k.CELL)])return false
+  return true
+}
+function drawKarstGarden(ctx,w,pal) {
+  if(w.biome!=="Cavern")return
+  ctx.save()
+  var spots=karstSpots(w)
+  for(var i=0;i<spots.length;i++)drawKarstGroup(ctx,pal,spots[i])
+  ctx.restore()
+}
+function drawKarstGroup(ctx,pal,b) {
+  var x=b.x,y=b.y
+  for(var spire=0;spire<2;spire++) {
+    var h=spire?12:21,cx=x+5+spire*11
+    for(var row=0;row<h;row++) {
+      var half=1+Math.floor(row/5),yy=y-h+row
+      ctx.fillStyle=pal.decorDim;ctx.fillRect(cx-half,yy,half*2+1,1)
+      ctx.fillStyle=pal.backLit;ctx.fillRect(cx+1,yy,half,1)
+      ctx.fillStyle=pal.decor;ctx.fillRect(cx-half,yy,1,1)
+    }
+  }
+  ctx.fillStyle=pal.backLit;ctx.fillRect(x,y-2,22,2)
+  // Two fleshy caps on pale stems, in the existing blue cave palette.
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+13,y-7,1,6);ctx.fillRect(x+19,y-5,1,4)
+  ctx.fillStyle=pal.decorLit;ctx.fillRect(x+10,y-8,7,2);ctx.fillRect(x+12,y-9,3,1)
+  ctx.fillRect(x+17,y-6,6,1);ctx.fillRect(x+18,y-7,3,1)
+  ctx.fillStyle=pal.dirtShade;ctx.fillRect(x+11,y-6,5,1)
+}
+function drawKarstLife(ctx,w,pal) {
+  if(w.biome!=="Cavern")return
+  ctx.save()
+  var spots=karstSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    if(!alpineClear(w,b.x-2,b.y-32,27,32,[]))continue
+    drawKarstMoth(ctx,pal,b,Math.floor((t+b.seed)/13)%4)
+    var age=(t+b.seed)%91
+    if(age<23) {
+      ctx.fillStyle=pal.decor;ctx.fillRect(b.x+23,b.y-29+Math.floor(age*age/22),1,2)
+    }
+  }
+  ctx.restore()
+}
+function drawKarstMoth(ctx,pal,b,pose) {
+  var x=b.x+9,y=b.y-27,wing=pose<2?3:1
+  ctx.fillStyle=pal.decorDim
+  ctx.fillRect(x-wing-1,y-2,wing,4);ctx.fillRect(x+2,y-2,wing,4)
+  ctx.fillRect(x-wing,y+2,wing,2);ctx.fillRect(x+1,y+2,wing,2)
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x,y-1,2,5)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x-1,y-3,1,1);ctx.fillRect(x+2,y-3,1,1)
+}
+
+function drawKarstMound(ctx,pal,x,y,h) {
+  for(var row=0;row<h;row++) {
+    var half=2+Math.floor(row*0.72),bend=Math.floor(3*Math.sin(row/9)+row*0.18)
+    ctx.fillStyle=pal.backLit;ctx.fillRect(x-half+bend,y-h+row,half*2,1)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x-half+bend,y-h+row,Math.max(2,Math.floor(half/3)),1)
+    ctx.fillStyle=pal.back;ctx.fillRect(x+Math.floor(half/2)+bend,y-h+row,Math.max(1,Math.floor(half/2)),1)
+  }
+}
+
+function drawKarstNativeVault(ctx,w,pal) {
+  if(!cavernPage(w))drawKarstVault(ctx,w,pal)
 }

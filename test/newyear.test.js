@@ -1,3 +1,4 @@
+import {karstSuccessor} from '../tools/karst-reference.js'
 import {alpineSuccessor} from '../tools/alpine-reference.js'
 import ironPins from './fixtures/ironworks-scenes.json' with {type:'json'}
 import test from 'node:test'
@@ -50,7 +51,7 @@ test('all biomes retain exact Christmas and out-of-season full frames at both re
         wa.done=wb.done=true;wa.doneTicks=wb.doneTicks=30
         const report=JSON.parse(fs.readFileSync(new URL('./fixtures/colony-last-pins.json',import.meta.url),'utf8')).reports[`${mode}/${level}/${res}`]
         assert.equal(hash(christmasFrame(oldD,a,wa,res).buf),report.before)
-        assert.equal(hash(christmasFrame(D,b,wb,res).buf),report.after)
+        assert.equal(hash(christmasFrame(D,b,wb,res).buf),karstSuccessor(report.after))
       }
     }
   }
