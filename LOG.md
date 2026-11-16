@@ -15805,3 +15805,128 @@ where `catchSweep` catches (same clock and formula); the old lean was
 decoration. 39 tells improved. **Before:** gate 1993/1993; `npm run smoke --
 --level 20` passed (20–26). **After:** `npm run verify -- --previous
 f192a4df` passed.
+## C33 — 2026-11-16 · Extend, open, tension
+
+**Chose:** Token Sprayer (mounted gun), Hall Monitor (sentry) and Dependency
+Trap (tripwire). Re-rendered the complete 88 hostile kind/state fixtures and
+48 hazard cycles at res 1/2, inspected all twelve hazard overviews, both hostile
+overviews and all sixteen hostile contact sheets, then the three complete
+candidate cycles at both scales. None was selected in C12–C14/C24–C32. The
+sprayer held a fixed barrel, the sentry held a fixed lens through its 34-tick
+warning, and the wire never changed shape before discharge. These still read
+less clearly than the remaining fan, packet field, polisher and always-live
+fixtures. Baseline: abd55d1a61a798af3cecd8444ac6a81cbc5e359f.
+
+**Changed (Draw only):** the sprayer extends its attached barrel/collar four
+native pixels over seven of its sixteen charge ticks, holds, recoils on each
+six-tick burst of the existing 24-tick fire window, then retracts over the
+existing twelve-tick recovery cue. Muzzle and rounds follow the barrel;
+unrelated pressure wisps are removed. The sentry opens two iris leaves three
+pixels above/below its fixed lens over twelve charge ticks, holds, releases a
+brief flash, then closes. The beam does not sweep or turn: its origin now uses
+catchFired's exact `(zx0 + zx1) / 2` cell midpoint, and its far end uses the
+Sim-provided reach and facing (the old graphic was two pixels right of that
+origin). The wire retains its full fixed line and posts while two attached
+contact arms pull inward and rise four pixels over eight of twenty charge
+ticks. They hold through fire and return during recovery. Its live sparks use
+the phase clock; no invented moving lethal reach. Existing gun/drum, lens/box,
+post/wire identities and colours remain. Whole pixels carry every preparation;
+half-pixel barrel, shutters and contacts refine res 2. Reduced motion holds
+secondary bursts, sparks and lamps while retaining phase preparation/recovery.
+No Sim.js, sfx.js, North Pole drawing, actor heads/riders, umbrellas, world
+writes, timing, behaviour, RNG, text or dependency changes.
+
+**Review/tool:** extended tools/foe-strips.js with roundThirteenReview:
+consecutive complete cycles, before-left/after-right eight-key strips, plus
+ordinary/Christmas/New Year full boards at both actual resolutions. Checked
+all new test/helper/fixture paths free with test -e. Full before catalogue and
+saved assets: /tmp/xmas-dressing/foes13-0 (before-public subdirectory). First
+comparisons: foes13-1. The initial wire sliders were still faint at native
+size, so raised the attached contacts; accepted review: foes13-2. Inspected:
+
+- /tmp/xmas-dressing/foes13-2/gun-compare-res1.png
+- /tmp/xmas-dressing/foes13-2/gun-compare-res2.png
+- /tmp/xmas-dressing/foes13-2/sentry-compare-res1.png
+- /tmp/xmas-dressing/foes13-2/sentry-compare-res2.png
+- /tmp/xmas-dressing/foes13-2/tripwire-compare-res1.png
+- /tmp/xmas-dressing/foes13-2/tripwire-compare-res2.png
+
+Also inspected all six compact complete cycles, ordinary full charge/fire/rest
+pairs at native size and charge at page size, Christmas charge res 2 and New
+Year charge res 1. These are staged raster fixtures; live Omarchy/QML remains
+unverified. render.js skips text and approximates runtime gradients.
+
+**Pins deliberately advanced:** original golden files remain intact. New
+foe-round13-pins.json independently pins before/after complete cycles in both
+facings/scales and 168 ordinary boards across all 21 biomes. New
+foe-round13-scenes.json independently reproduces historical transitions; C32
+now explicitly restores its reviewed source first, and its resolver advances
+through C33. Restoring only three painters and removing six helpers recovers
+the complete predecessor source byte for byte. No skipped tests, widened
+thresholds or raw-buffer deepEqual. Every moved historical digest (prefixes):
+
+- full/18/1/400 and newyear/none/18/1: 19800b36 → bdb4ef09.
+- full/18/2/400: 1da09150 → 2bbd8d71.
+- newyear/none/18/2: 0a74196e → b4c2a8c3.
+- newyear/christmas/18/1: db4f18be → a69f25a1.
+- newyear/christmas/18/2: c51fee76 → 6b2d2a14.
+- c6full/Subway/1/120: cd8115aa → 6cec24e8.
+- c6full/Subway/1/400: 51efad69 → 7d3311c5.
+- c6full/Subway/2/120: fd976e6b → 5476ca85.
+- c6full/Subway/2/400: 7a4cdd1d → 6c1d49a0.
+
+These sampled Subway boards contain the selected mounted fixtures; the explicit
+scope tests keep every other hazard, hostile state and Santa/party/antler
+rider exact. All other historical scene/aggregate digests remain identical.
+Complete cycle pins (left/right equal except the directional sentry):
+
+- gun res1: 41683ea3 → 3b770edf; res2: 4e44c46f → 22c30512.
+- sentry left res1: ffc421f0 → 8a290022; res2: 4a44d2f9 → c6061d2a.
+- sentry right res1: 471f82df → cedc0b19; res2: db2b8dfd → 6bac0c7b.
+- tripwire res1: 067e47ba → b887dee4; res2: 5ae61801 → b3261873.
+
+**Validation so far:** baseline npm run check **1993/1993**, exit **0**,
+251.31 s on retry. First baseline process and two unbounded digest-generation
+processes ended 143 without a result; bounded 2 GB generation completed.
+Baseline npm run fps -- 8 12 18 against saved before-public assets: all levels
+**60 median / 60 p5, 17 ms worst, 0% long tasks**, CPU **10/8/10%**, exit **0**.
+Final Draw stamp b732f3fe, build d2914252. Local existing crapper cache copied
+and only its local editable path corrected. Final gate results follow below.
+
+**Next:** owner review of native/page barrel, shutter and raised-contact pairs;
+keep later rounds limited to unselected tells that actually need work. No merge,
+push, deployment, production requests, port 8787 change, sibling or Omarchy write.
+
+Focused C32/C33/hazards: **127/128**, exit **1**; the only failure caught two
+inherited page fine-pass status lamps still blinking under reduced motion.
+Froze precisely those sentry/tripwire lamps and retained an exact source
+restoration for both expressions. Focused C33 retry: **14/14**, exit **0**.
+Ordinary reviewed cycle and scene pins remain exact; final ordinary review
+is also retained in /tmp/xmas-dressing/foes13-3. Final Draw stamp **7fe50014**,
+build **d89c3f94** supersedes the first stamp above. Source, fixtures and stamps
+freeze for the full check, fresh coverage/CRAP and matched FPS gates.
+
+**Final gates:** npm run check **2007/2007**, exit **0**, 290.47 s; fresh
+coverage **2007/2007**, exit **0**, 666.96 s. npm run crap -- --changed
+--threshold 30 **exit 0**. Changed renderer scores: drawSentryBeam **7.0**,
+drawHzTripwire **6.1**, sprayerBarrelDrop **6.0**, drawSprayerRounds **5.4**,
+drawHzSentry **5.0**, sentryShutterOpen **5.0**, tripwireTension **5.0**,
+drawHzGun **4.0**, drawTripwireCoil **1.0**. roundThirteenReview **5.0**;
+all new/changed functions pass below 30. Six-file concurrency and the shared
+FIFO heavy-run lock retained. Only this log changed after the final gates.
+
+**Performance:** matched npm run fps -- 8 12 18 before/after, both exit **0**.
+Every level in both runs: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **10/8/10% → 10/9/10%**. No measured frame-rate loss;
+no CPU speed claim against desktop load. Final inspected comparison paths
+also exist in /tmp/xmas-dressing/foes13-3 with the same six filenames listed
+above; ordinary pixels match foes13-2 exactly. No known unresolved art, test
+or performance issue; live QML remains outside this raster review.
+
+Logs: /tmp/xmas-dressing/foes13-before-check.log (interrupted),
+foes13-before-check-retry.log, foes13-before-fps.log, foes13-focused.log
+(retained failing lamp check), foes13-focused-retry.log, foes13-final-check.log,
+foes13-final-crap.log and foes13-after-fps.log.
+
+**Next:** owner review of foes13-3's native/page barrel, shutter and raised
+contacts; stop future rounds when no unselected tell still needs improvement.
