@@ -14555,3 +14555,15 @@ especially the large ringed planet and quiet suspended docks. No known
 unresolved test, art or frame-rate issue. Live Omarchy/QML remains unverified;
 the raster renderer approximates gradients as documented. No merge, push,
 deploy, production request, port 8787 change, sibling write or Omarchy write.
+
+## 486 — 2026-11-16 · Biome audit: the ninth round not merged; the series closed
+
+C23 (Codex, branch `codex/biome-audit9`, commit 29bf32d) chose the
+Skyscraper and added a moonlit city, Art Deco framing, sunburst fittings,
+planters and pigeons. Reviewed at full frame at both resolutions: the
+changes barely read (a faint moon, small planters), and the sunburst
+fittings in the foundation read as stray Y marks. The Skyscraper was already
+one of the richer boards at page resolution; by the ninth round Codex was
+choosing among biomes that no longer look weak. Not merged, branch deleted.
+Eight biomes were reworked by the audit (Foundry, Frost, Ruins, Ice Cave,
+Factory, Desert, Cavern, Spaceship); the series stops here.
