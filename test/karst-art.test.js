@@ -1,3 +1,4 @@
+import {orbitalSourceBefore} from '../tools/orbital-art.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {karstSourceBefore,karstSheets} from '../tools/karst-art.js'
 import {karstScenes} from '../tools/karst-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const source=orbitalSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','358734b4e0d21924c097150cae10070d615036bb:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const pins=JSON.parse(fs.readFileSync('test/fixtures/karst-pins.json','utf8'))
 const layers=['drawKarstNativeVault','drawKarstVault','drawKarstStone','drawKarstGarden','drawKarstLife']

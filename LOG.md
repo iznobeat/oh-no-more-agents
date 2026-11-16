@@ -14418,3 +14418,140 @@ reviewed at full frame at both resolutions; the colony still reads. Seven
 biomes reworked from the audit so far. **Before:** gate 1870/1870; `npm run
 smoke -- --level 1` passed (1–7). **After:** `npm run verify -- --previous
 4efda3eb` passed.
+
+## C22 — 2026-11-16 · Spaceship becomes an orbital observation deck
+
+**Chose:** Spaceship, after re-rendering all 21 biomes out of season with
+`shoot.js biomes --ticks 350` and every individual `shoot.js level N
+--ticks 350`, res 1/2, scale 1. Inspected seven native three-board and eleven
+page two-board full-frame comparisons in /tmp/xmas-dressing/biome8-audit/.
+Excluded the seven previously revised biomes. Library's stacks, Jungle's
+lush layered silhouettes and the revised Ice Cave establish a place at once.
+Spaceship's flat native shelves, sparse portholes and dark empty bays read
+as a generic room; even its better page pipes supplied hardware rather than
+a view of space. Baseline: 640ffe8fb092487a2f8adc6adcba2ab5b47972cb.
+
+**Changed (Draw only):** one large crescent planet with a tilted dust ring,
+broad observation glazing, distant solar wings, sparse stars and an orbital
+limb in the sky band. Original ribs, pipes, portholes, panel shapes and decor
+paint afterward. Sparse recessed fasteners sit inside native DIRT in the
+cached terrain pass; the existing page hull material gets no second texture.
+Every new colour is an existing Palette role; Palette.js is untouched.
+
+Up to three suspended charging docks, one per corridor, give the hull a
+working scale. Small repair drones hover, turn twin rotors and hang grippers
+from drawMachines, before the colony and hazards. Reduced motion freezes
+their pose. Complete footprints reserve original decor, hazard zones, hatch,
+exit, pits and both transporter envelopes. The dock and visible-crescent
+placements live in world-keyed WeakMaps, invalidated by terrain identity and
+version. Live paint checks current air; no per-frame board search, world
+writes, RNG, new text, actor/umbrella changes or dependencies. Sim.js, sfx.js
+and season.js untouched. Twenty other biomes retain exact complete-frame
+bytes at both scales and ticks 120/350/900.
+
+**Review/tool:** saved exact baseline public assets in
+/tmp/xmas-dressing/biome8-7/before/. Inspected rounds 1–6 and final. Rejected
+the first faint repeated windows and small planets, which read as gauges.
+Made one large ringed planet and chose among three positions by visible
+crescent area, so terrain cannot hide the main addition. The first dock
+motion envelope was too tall for the corridors and conservative generic
+reservations covered all gaps between grates: replaced these with complete
+fitting-specific footprints and a smaller suspended envelope. Final native
+and page views now read as a ship passing a planet at full frame.
+
+`node tools/orbital-art.js OUT` reproduces twelve before-left/after-right
+full frames: levels 7/27/47, ticks 350/900, res 1/2. Also retains tick-120,
+ordinary/Christmas and C6 staged historical scenes. Inspected without crops
+or enlargement:
+
+- /tmp/xmas-dressing/biome8-7/final/full-res1-sheet.png
+- /tmp/xmas-dressing/biome8-7/final/full-res2-sheet.png
+- /tmp/xmas-dressing/biome8-7/final/pinned-res1-sheet.png
+- /tmp/xmas-dressing/biome8-7/final/pinned-res2-sheet.png
+
+Visual review used the raster renderer, with its documented middle-stop
+gradient approximation. Live Omarchy/QML appearance remains unverified.
+
+**Pins deliberately advanced:** historical golden JSON remains intact.
+orbital-pins.json independently pins all twelve predecessor/successor full
+frames; orbital-scenes.json records the explicit scenery transitions below.
+Four removable call sites recover the exact predecessor. Earlier C21 art
+and scene helpers strip C22 first, preserving the historical assertion chain;
+the successor chain then advances only these listed digests. Independent
+two-background RGB masks check opaque colony/umbrella colours and darts,
+crusher, airlock, flame, lasergrid and packetloss tells in charge/fire/cool
+poses on levels 127/167/207/247/327. Full SHA-256 values are in the fixtures;
+prefixes follow:
+- full `7/350/1`: `872668e3` → `4a65377b`.
+- full `7/900/1`: `ca0d31bc` → `4e41698f`.
+- full `27/350/1`: `7b002c5d` → `202c79ca`.
+- full `27/900/1`: `6cf59ecc` → `28eff973`.
+- full `47/350/1`: `f7664e86` → `21078a21`.
+- full `47/900/1`: `d983ed23` → `a05b43d7`.
+- full `7/350/2`: `4c45abe3` → `e1f0ad80`.
+- full `7/900/2`: `575cba4c` → `4b7cdf9b`.
+- full `27/350/2`: `573aaf1f` → `276347dc`.
+- full `27/900/2`: `63b0b858` → `dbca1898`.
+- full `47/350/2`: `69be6c13` → `71048d7f`.
+- full `47/900/2`: `b1a484da` → `ee71aabd`.
+- `c22full/7/2/120`: `d8f9c232` → `5615f84b`.
+- `c22full/7/2/350`: `3b9bd5b5` → `8eb76469`.
+- `c22full/7/2/900`: `2abff496` → `cff3a4b9`.
+- `aggregates/350,900`: `1fe8d0d1` → `eb599df3`.
+- `disabled/350,900`: `4e7d744b` → `3e97c97f`.
+- `aggregates/120,350`: `d5c24cc9` → `d44b2e3a`.
+- `disabled/120,350`: `372e9693` → `2ddff8e1`.
+- `newyear/none/7/1`: `e208c1f5` → `3fe65805`.
+- `newyear/none/7/2`: `1e068bba` → `e14ddff9`.
+- `newyear/christmas/7/1`: `c8b24cbd` → `dde7e8c9`.
+- `newyear/christmas/7/2`: `6d9405db` → `3078c77a`.
+- `c6full/Spaceship/1/120`: `f01411b5` → `025e08ab`.
+- `c6full/Spaceship/1/400`: `bd93df8f` → `9291d4ac`.
+- `c6full/Spaceship/2/120`: `dee5d7fa` → `73adb20b`.
+- `c6full/Spaceship/2/400`: `9493447b` → `55216600`.
+- `exitNative`: `b1e6b8c5` → `2f040d9f`.
+- `office`: `8e3f582f` → `d3560325`.
+
+**Validation:** baseline `npm run check` **1870/1870**, exit **0**,
+188.31 s. The sandboxed first launcher hit subprocess EPERM; its normal
+escalated retry completed. Checked test/orbital-art.test.js,
+tools/orbital-art.js and tools/orbital-scenes.js were free with `test -e`
+before creation. Eleven new tests cover twelve independently pinned reviewed
+frames and a visible-change floor, all-biome isolation and exact source
+recovery, all-theme palette/grid/context and frozen-world purity, native-only
+DIRT fasteners, complete reserved/support envelopes and cache invalidation,
+current-air/reduced-motion animation and bounded live terrain reads, opaque
+colony/umbrella colours, reproducible sheets/transitions, varied layouts,
+all six actual ship hazard kinds through charge/fire/cool, and cached
+visible-crescent placement. Digests and bounded loops only, no raw-buffer
+deepEqual. Corrected the first focused test's wrong biome palette and
+hazardless fixture levels; no art change for those corrections.
+
+Focused C21/C22 regressions **21/21**, exit **0**. Full `npm run check`
+**1881/1881**, exit **0**, 187.92 s. `npm run crap -- --changed --threshold 30`
+exited **0**, fresh coverage **1881/1881**, 408.55 s. Highest new renderer
+score **10.0** (drawOrbitalHull, 100% coverage), orbitalSpots **9.0**
+(92.3%), drawOrbitalLife **5.4** (75%), remaining new renderer helpers **1–6**,
+100% covered. Changed drawTerrain **29**, drawMachines **24**. New review
+and scene helpers at most **8**; all new/changed functions under 30.
+Stamps: Draw **b6896526**, build **f28a68d3**. Source/stamps remained frozen
+through the green full check, coverage and matched FPS; only this log was
+completed afterward. The full check, coverage and FPS pair used the shared
+FIFO heavy-run lock and unchanged six-file suite concurrency. The persistent
+biome8-orbital-gates service retained explicit exits. Existing crapper cache
+was copied locally, without writing sibling files.
+
+**Performance:** matched back-to-back `npm run fps -- 7 27 47 --season none`,
+exact saved baseline public assets versus final art under one shared lock.
+All three levels before and after: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **13/12/11% → 14/12/11%**; no measured frame-rate loss,
+and no CPU speedup claimed against changing desktop load. Both individual
+FPS runs, the pair and the complete gate sequence exited **0**. Baseline
+check log/exit are in biome8-audit/; focused-final, check, crap, before-fps,
+after-fps, fps-pair and gates explicit exits/logs are in biome8-7/.
+
+**Next:** owner review of the complete native/page observation decks,
+especially the large ringed planet and quiet suspended docks. No known
+unresolved test, art or frame-rate issue. Live Omarchy/QML remains unverified;
+the raster renderer approximates gradients as documented. No merge, push,
+deploy, production request, port 8787 change, sibling write or Omarchy write.

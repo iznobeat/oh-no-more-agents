@@ -202,6 +202,7 @@ function drawTerrain(ctx, w, pal) {
 
   drawCryoVault(ctx, w, pal)
   if (iceCavePage(w)) drawGlacierBackdrop(ctx, w)
+  drawOrbitalViews(ctx, w, pal)
   if (spaceshipPage(w)) drawSpaceshipBackdrop(ctx, w, pal)
   if (ruinsPage(w)) drawRuinsTemple(ctx, w, pal)
   drawMillHall(ctx, w, pal)
@@ -257,6 +258,7 @@ function drawTerrain(ctx, w, pal) {
   drawMillBlocks(ctx, w, pal)
   drawCanyonStone(ctx, w, pal)
   drawKarstStone(ctx, w, pal)
+  drawOrbitalHull(ctx, w, pal)
   drawTerrainLight(ctx, w, pal)
   if (frostPage(w)) drawFrostSurfaces(ctx, w)
   drawNorthSnowMass(ctx, w, pal)
@@ -282,6 +284,7 @@ function drawTerrain(ctx, w, pal) {
   drawMillDrums(ctx, w, pal)
   drawCanyonGarden(ctx, w, pal)
   drawKarstGarden(ctx, w, pal)
+  drawOrbitalDocks(ctx, w, pal)
   drawDecor(ctx, w, pal)
   drawExitBack(ctx, w, pal)
   drawSea(ctx, w, pal)
@@ -2379,6 +2382,7 @@ function drawMachines(ctx, w, pal) {
   drawMillLife(ctx, w, pal)
   drawCanyonLife(ctx, w, pal)
   drawKarstLife(ctx, w, pal)
+  drawOrbitalLife(ctx, w, pal)
   drawIronworksLife(ctx, w, pal)
   drawCloudWeather(ctx, w, pal)
   drawWaterLife(ctx, w, pal)
@@ -27659,4 +27663,169 @@ function drawKarstMound(ctx,pal,x,y,h) {
 
 function drawKarstNativeVault(ctx,w,pal) {
   if(!cavernPage(w))drawKarstVault(ctx,w,pal)
+}
+
+// C22: observation decks. Original ribs, portholes, plating and props paint
+// above the distant views. Native fasteners fill the page-detail gap only.
+function drawOrbitalViews(ctx,w,pal) {
+  if(w.biome!=="Spaceship")return
+  ctx.save()
+  var C=w.k.CELL,wide=w.k.COLS*C
+  // A low orbital limb visible above the roof, behind the hatch and HUD.
+  for(var x=0;x<wide;x+=8) {
+    var y=12+Math.floor((x-wide/2)*(x-wide/2)/6000)
+    ctx.fillStyle=pal.backLit;ctx.fillRect(x,y,8,3)
+    ctx.fillStyle=pal.back;ctx.fillRect(x,y+3,8,5)
+  }
+  drawOrbitalPlanet(ctx,pal,orbitalPlanetX(w),126)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C-32
+    var bx=38+(row%2)*91+(w.level*3)%23
+    drawOrbitalWindow(ctx,pal,bx,y,row+w.level)
+  }
+  ctx.restore()
+}
+function drawOrbitalWindow(ctx,pal,x,y,seed) {
+  // Panoramic glass, with the planet beyond it and original ribs in front.
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x,y+3,2,24);ctx.fillRect(x+212,y+3,2,24)
+  ctx.fillRect(x+3,y,208,2);ctx.fillRect(x+3,y+28,208,2)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+5,y+2,204,1)
+  for(var star=0;star<12;star++) {
+    ctx.fillStyle=star%3?pal.backLit:pal.decorDim
+    ctx.fillRect(x+9+(star*23+seed*7)%196,y+7+(star*11+seed)%16,1,1)
+  }
+  ctx.fillStyle=pal.back;ctx.fillRect(x+18,y+10,29,9)
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x+15,y+14,35,1)
+  ctx.fillRect(x+32,y+8,1,15)
+}
+function drawOrbitalPlanet(ctx,pal,x,y) {
+  // One large crescent beyond the cutaway hull, rather than a row of gauges.
+  for(var row=-72;row<=72;row++) {
+    var half=Math.floor(Math.sqrt(73*73-row*row)),left=x-half
+    ctx.fillStyle=pal.dirtShade;ctx.fillRect(left,y+row,half*2,1)
+    var crescent=Math.max(2,Math.floor(half*0.34))
+    ctx.fillStyle=pal.decor;ctx.fillRect(left,y+row,crescent,1)
+    ctx.fillStyle=pal.decorLit;ctx.fillRect(left,y+row,2,1)
+    if((row+74)%17<3) {
+      ctx.fillStyle=pal.back;ctx.fillRect(left+crescent+3,y+row,Math.max(1,half-7),1)
+    }
+  }
+  // A tilted dust ring crosses the lower hemisphere, with a dark near edge.
+  for(var dx=-96;dx<97;dx+=3) {
+    var yy=y+14+Math.floor(dx/5)
+    ctx.fillStyle=pal.decorDim;ctx.fillRect(x+dx,yy,3,3)
+    ctx.fillStyle=pal.backDim;ctx.fillRect(x+dx,yy+3,3,2)
+  }
+}
+function drawOrbitalHull(ctx,w,pal) {
+  if(w.biome!=="Spaceship" || (w.res||1)>=2)return
+  ctx.save()
+  var k=w.k,C=k.CELL
+  for(var y=k.SKY+1;y<k.ROWS-1;y++)for(var x=4;x<k.COLS-4;x++) {
+    var at=y*k.COLS+x
+    if(w.terrain[at]!==k.DIRT || w.terrain[at-k.COLS]!==k.DIRT)continue
+    if(x%9!==2 || y%5!==2)continue
+    ctx.fillStyle=pal.dirtShade;ctx.fillRect(x*C,y*C,3,2)
+    ctx.fillStyle=pal.dirtEdge;ctx.fillRect(x*C,y*C,1,1)
+  }
+  ctx.restore()
+}
+var ORBITAL_CACHE=new WeakMap()
+function orbitalReserved(w) {
+  var boxes=karstReserved(w).slice(0,1+w.hazards.length+w.pits.length),C=w.k.CELL
+  if(w.hatch)boxes.push({x:w.hatch.x*C-18,y:0,width:36,height:64})
+  for(var d=0;d<w.decor.length;d++)boxes.push(orbitalDecorBox(w.decor[d],C))
+  // Transporter envelopes must remain unmistakable at both ends.
+  for(var i=0;i<w.pads.length;i++) {
+    var p=w.pads[i]
+    boxes.push({x:p.ax*C-8,y:p.ay*C-22,width:24,height:30})
+    boxes.push({x:p.bx*C-8,y:p.by*C-22,width:24,height:30})
+  }
+  return boxes
+}
+function orbitalSpots(w) {
+  var old=ORBITAL_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.spots
+  var spots=[],C=w.k.CELL,boxes=orbitalReserved(w)
+  for(var row=0;row<w.corridors.length;row++) {
+    var y=w.corridors[row].floorY*C
+    for(var x=27+(row*47+w.level*3)%59;x<w.k.COLS*C-30;x++) {
+      if(!karstSupport(w,x,y) || !alpineClear(w,x-2,y-24,27,20,boxes))continue
+      spots.push({x:x,y:y,seed:row*29+x});break
+    }
+    if(spots.length===3)break
+  }
+  ORBITAL_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,spots:spots})
+  return spots
+}
+function drawOrbitalDocks(ctx,w,pal) {
+  if(w.biome!=="Spaceship")return
+  ctx.save()
+  var spots=orbitalSpots(w)
+  for(var i=0;i<spots.length;i++)drawOrbitalDock(ctx,pal,spots[i])
+  ctx.restore()
+}
+function drawOrbitalDock(ctx,pal,b) {
+  var x=b.x,y=b.y-4
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x,y-14,22,14)
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x,y-14,22,2);ctx.fillRect(x,y-14,2,14)
+  ctx.fillStyle=pal.back;ctx.fillRect(x+3,y-11,16,9)
+  ctx.fillStyle=pal.rigDark;ctx.fillRect(x+5,y-9,9,5)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+6,y-8,6,1)
+  ctx.fillStyle=pal.steelShade;ctx.fillRect(x+16,y-10,2,7)
+  ctx.fillStyle=pal.backLit;ctx.fillRect(x+3,y-1,19,1)
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x+20,y-17,2,4);ctx.fillRect(x+15,y-18,7,2)
+}
+function drawOrbitalLife(ctx,w,pal) {
+  if(w.biome!=="Spaceship")return
+  ctx.save()
+  var spots=orbitalSpots(w),t=w.reducedMotion?0:w.ticks
+  for(var i=0;i<spots.length;i++) {
+    var b=spots[i]
+    if(!alpineClear(w,b.x-2,b.y-24,27,20,[]))continue
+    var pose=Math.floor((t+b.seed)/17)%4
+    drawOrbitalDrone(ctx,pal,b,pose)
+  }
+  ctx.restore()
+}
+function drawOrbitalDrone(ctx,pal,b,pose) {
+  var x=b.x+5,y=b.y-23+(pose<2?0:1)
+  // A squat repair drone: twin rotors and a hanging gripper, never a weapon.
+  ctx.fillStyle=pal.backDim;ctx.fillRect(x,y,9,5)
+  ctx.fillStyle=pal.decorDim;ctx.fillRect(x+1,y-1,7,2)
+  ctx.fillStyle=pal.decor;ctx.fillRect(x+2,y+1,4,1)
+  ctx.fillStyle=pal.backLit;ctx.fillRect(x-3,y+1,3,2);ctx.fillRect(x+9,y+1,3,2)
+  ctx.fillStyle=pal.decorDim
+  ctx.fillRect(x-4+(pose%2),y,4,1);ctx.fillRect(x+9,y,4-pose%2,1)
+  ctx.fillRect(x+3,y+5,1,3);ctx.fillRect(x+2,y+7,1,2);ctx.fillRect(x+5,y+7,1,2)
+}
+
+function orbitalDecorBox(d,C) {
+  if(d.kind==="window")return {x:d.x*C-1,y:d.y*C-1,width:(d.size+2)*C+2,height:(d.size+1)*C+2}
+  if(d.kind==="grate")return {x:d.x*C,y:(d.y+1)*C-2,width:14,height:2}
+  if(d.kind==="strip")return {x:d.x*C-6,y:d.y*C,width:16,height:2}
+  if(d.kind==="hang")return {x:d.x*C-8,y:d.y*C-2,width:20,height:d.size*C+10}
+  return {x:d.x*C-8,y:d.y*C-14,width:22,height:20}
+}
+
+var ORBITAL_VIEW_CACHE=new WeakMap()
+function orbitalPlanetX(w) {
+  var old=ORBITAL_VIEW_CACHE.get(w)
+  if(old && old.version===w.terrainVersion && old.terrain===w.terrain)return old.x
+  var x=90,best=-1,wide=w.k.COLS*w.k.CELL
+  for(var n=0;n<3;n++) {
+    var candidate=Math.floor(wide*(0.225+n*0.225)),score=orbitalCrescentAir(w,candidate)
+    if(score>best){best=score;x=candidate}
+  }
+  ORBITAL_VIEW_CACHE.set(w,{version:w.terrainVersion,terrain:w.terrain,x:x})
+  return x
+}
+function orbitalCrescentAir(w,x) {
+  var score=0
+  for(var dy=-72;dy<=72;dy+=2) {
+    var half=Math.floor(Math.sqrt(73*73-dy*dy))
+    for(var dx=-half;dx<-half+Math.max(2,Math.floor(half*0.34));dx+=2)
+      if(mechanismAir(w,x+dx,126+dy))score++
+  }
+  return score
 }
