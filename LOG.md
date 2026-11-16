@@ -14747,3 +14747,11 @@ crusher stroke in crowded native colonies. No known unresolved test, art or
 performance issue. Live Omarchy/QML remains unverified; visual inspection used
 the real raster renderer and staged full boards. No merge, push, deploy,
 production request, port 8787 change, sibling sync or Omarchy write.
+
+## 488 — 2026-11-16 · Deploy: scorpion, spore pod and crusher tells
+
+**Deployed** build 4074472e (Worker version aa683812), replacing f28a68d3;
+covers C24 (reviewed in its strips: the scorpion's tail coils over its back
+before the strike, the spore pod swells and splits, the crusher holds then
+drops). **Before:** gate 1891/1891; `npm run smoke -- --level 10` passed
+(10–16). **After:** `npm run verify -- --previous f28a68d3` passed.
