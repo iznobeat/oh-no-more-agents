@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import {renderer} from '../tools/gag-art.js'
+import {foeRoundFourteenSourceBefore,foeRoundFourteenSuccessor} from '../tools/foe-round14-reference.js'
 import test from "node:test"
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
@@ -160,19 +163,22 @@ test("original Trench materials, spires, sea, kelp, fish, snow, pits, hazards an
   for (const [resolutions, expected] of [
     [[undefined, 1], "e3bace3d5c5c296a59c936fbea4673619a993b89ccafddf11adc39a25c7cd634"], [[2], "ab546b94d0e3b4adeafc8e2c955ee7439865fd1904d9fc205e956e49fff3fc1f"]
   ]) {
-    const hash = createHash("sha256")
-    for (const name of Object.keys(THEMES)) for (const level of levels)
-      for (const res of resolutions) for (const ticks of [0, 77, 240]) {
-        const { w, pal } = sample(level, name); w.res = res; w.ticks = ticks
-        const img = canvas(400, 248, themeOf(name).background)
-        D.drawBackdrop(img.ctx, w, pal); D.drawTerrainMaterials(img.ctx, w, pal)
-        D.drawDecor(img.ctx, w, pal); D.drawSea(img.ctx, w, pal)
-        D.drawWaterLife(img.ctx, w, pal); D.drawAmbience(img.ctx, w, pal); D.drawPits(img.ctx, w, pal)
-        D.drawExitBack(img.ctx, w, pal); D.drawEnemyHatch(img.ctx, w, pal, {})
-        for (const h of w.hazards) D.drawHazard(img.ctx, w, pal, h, {})
-        hash.update(img.buf)
-      }
-    assert.equal(hash.digest("hex"), expected)
+    const old=renderer(foeRoundFourteenSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')))
+    for(const [draw,pin]of[[old,expected],[D,foeRoundFourteenSuccessor(expected)]]){
+      const hash = createHash("sha256")
+      for (const name of Object.keys(THEMES)) for (const level of levels)
+        for (const res of resolutions) for (const ticks of [0, 77, 240]) {
+          const { w, pal } = sample(level, name); w.res = res; w.ticks = ticks
+          const img = canvas(400, 248, themeOf(name).background)
+          draw.drawBackdrop(img.ctx, w, pal); draw.drawTerrainMaterials(img.ctx, w, pal)
+          draw.drawDecor(img.ctx, w, pal); draw.drawSea(img.ctx, w, pal)
+          draw.drawWaterLife(img.ctx, w, pal); draw.drawAmbience(img.ctx, w, pal); draw.drawPits(img.ctx, w, pal)
+          draw.drawExitBack(img.ctx, w, pal); draw.drawEnemyHatch(img.ctx, w, pal, {})
+          for (const h of w.hazards) draw.drawHazard(img.ctx, w, pal, h, {})
+          hash.update(img.buf)
+        }
+      assert.equal(hash.digest("hex"), pin)
+    }
   }
 })
 

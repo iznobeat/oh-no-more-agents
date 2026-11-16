@@ -1,3 +1,4 @@
+import {foeRoundFourteenSourceBefore} from '../tools/foe-round14-reference.js'
 import {execFileSync} from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import {renderer} from '../tools/gag-art.js'
 import {hazardFrame,hazardFixture,hazardSequence,enemyFixture,KINDS,STATES,roundThirteenReview} from '../tools/foe-strips.js'
 import {foeRoundThirteenSourceBefore} from '../tools/foe-round13-reference.js'
 import {foeRoundThirteenScenes} from '../tools/foe-round13-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=renderer(source),old=renderer(foeRoundThirteenSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundFourteenSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),old=renderer(foeRoundThirteenSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
 const specs=S.HAZARDS.filter(s=>['gun','sentry','tripwire'].includes(s.id))
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round13-pins.json','utf8'))

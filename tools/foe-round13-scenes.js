@@ -1,3 +1,4 @@
+import {foeRoundFourteenSourceBefore} from './foe-round14-reference.js'
 import {ironworksCorpus} from './ironworks-art.js'
 import {HAZARD_CASES,hazardSpecimen,advanceHazard} from './hazard-beat-art.js'
 import {foeRoundThirteenSourceBefore} from './foe-round13-reference.js'
@@ -103,7 +104,7 @@ function metroSnapshot(draw,S,P,resolutions){
  return h.digest('hex')
 }
 export function foeRoundThirteenScenes(){
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=foeRoundThirteenSourceBefore(source)
+ const source=foeRoundFourteenSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=foeRoundThirteenSourceBefore(source)
  const S=load('Sim.js'),P=load('Palette.js'),D=renderer(source),old=renderer(before),out={},random=Math.random;Math.random=()=>0.5
  try{
   for(const[key,pin]of Object.entries(cyclePins.scenes))if(pin.before!==pin.after)out[pin.before]={label:'full/'+key,after:pin.after}

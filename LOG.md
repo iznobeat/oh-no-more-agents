@@ -15930,3 +15930,144 @@ foes13-final-crap.log and foes13-after-fps.log.
 
 **Next:** owner review of foes13-3's native/page barrel, shutter and raised
 contacts; stop future rounds when no unselected tell still needs improvement.
+
+## C34 — 2026-11-16 · Open the fan, brace the buffer, part the fissure
+
+**Chose:** Hot Aisle (hotaisle), Buffer Cleaner (polisher) and Memory Pressure
+(vent). Re-rendered all 88 hostile kind/state fixtures and all 48 hazard cycles
+at res 1/2. Inspected all twelve hazard overviews, both hostile overviews, all
+sixteen hostile contact sheets, and complete candidate cycles at both scales.
+None was selected in C12–C14/C24–C33. The fan warning stayed inside its tiny
+rotor, the buffer's handle and deck barely reacted, and the vent jumped from
+a low bubble trickle to a full-height plume. Packet Loss's growing density,
+Current's directional streamlines, the always-live brazier/fence and the
+hostile states already read clearly enough to leave alone. Baseline:
+fe891415d168b38bc8110e47977b9b396e0a46d4.
+
+**Changed (Draw only):** the fan's attached shutters part four native pixels
+over ten of its 26 charge ticks, hold, and close over the existing twelve-tick
+recovery. Three connected blades accelerate through charge and decelerate in
+recovery. The blast uses catchFired's exact `(zx0 + zx1) / 2` midpoint, facing
+and ten-cell reach: its persistent core and travelling streaks remain inside
+those endpoints. The buffer leans its attached handle four pixels and raises
+its deck two over nine of its 22 charge ticks, holds, then lowers over the
+last four charge ticks. Its pad works under that braced handle during the
+existing 30 fire ticks, then the handle returns through recovery. Its existing
+world-clock floor travel stays intact. The vent's stone lips open three pixels
+over ten of 28 charge ticks, hold, and its bubbles rise from that same slit
+through the final eight charge ticks, reaching full height at fire zero.
+Bubble travel uses a continuous phase clock across charge/fire/rest; lips and
+plume settle during recovery. The existing fan/housing, buffer/handle/pad and
+fissure/bubble identities and palette colours remain. Native pixels carry the
+poses; res 2 adds half-pixel shutters, grip and stone edges. Reduced motion
+freezes secondary rotor, travel, pad and bubble motion while retaining the
+persistent phase preparation and recovery. No Sim.js, sfx.js, North Pole art,
+actor heads/riders, umbrellas, world writes, RNG, timing, behaviour, text or
+dependency changes.
+
+**Review/tool:** extended tools/foe-strips.js with roundFourteenReview:
+complete consecutive cycles, eight-key before-left/after-right comparisons
+and ordinary/Christmas/New Year full boards at both resolutions. Checked all
+new test/helper/fixture paths free with test -e first. Full before catalogue
+and saved assets: /tmp/xmas-dressing/foes14-0 (before-public subdirectory).
+Initial revision: /tmp/xmas-dressing/foes14-1; accepted corrected idle version:
+/tmp/xmas-dressing/foes14-2. Inspected all six compact
+complete cycles and these native/page pairs:
+
+- /tmp/xmas-dressing/foes14-2/hotaisle-compare-res1.png
+- /tmp/xmas-dressing/foes14-2/hotaisle-compare-res2.png
+- /tmp/xmas-dressing/foes14-2/polisher-compare-res1.png
+- /tmp/xmas-dressing/foes14-2/polisher-compare-res2.png
+- /tmp/xmas-dressing/foes14-2/vent-compare-res1.png
+- /tmp/xmas-dressing/foes14-2/vent-compare-res2.png
+
+Also inspected ordinary full charge/fire/rest pairs at native size, charge at
+page size, Christmas charge res 2 and New Year charge res 1. These are staged
+raster fixtures, not live QML verification; render.js skips text and
+approximates runtime gradients.
+
+**Pins:** four direct biome snapshots deliberately advance below, retaining
+separate assertions of their original bytes with the restored predecessor
+painters. The independent C34 audit also reproduces seasonal, arrival, WHO,
+hazard-beat, Metro, Ironworks and aggregate scenes unchanged. All 168 sampled
+ordinary boards across 21 biomes remain identical. New foe-round14-pins.json
+pins the changed complete cycles independently at both facings and scales:
+
+- hotaisle left res1: 98f39af9 → ced3b042; res2: cb2f65a3 → 16444f74.
+- hotaisle right res1: 6a01efaa → 1791f26e; res2: 631baad7 → 237cdd03.
+- polisher res1 (both facings): 8b2dfd97 → 9c54b0a6; res2: 93e8b121 → d314cff3.
+- vent res1 (both facings): 9d955a7c → beff9a97; res2: 1c0541c3 → 8cbb593d.
+
+The direct all-theme biome snapshots include the selected fan/vent fixtures on
+levels outside the original scene audit. Their reviewed transitions are:
+
+- Data Center default/native: ca7e136e → a6fb0d7b (fan shutters/blades and blast).
+- Data Center page: 55088e5a → d48b437b (same, plus half-pixel hub).
+- Trench default/native: e3bace3d → 91fcb99e (vent lips and phase-based bubbles).
+- Trench page: ab546b94 → a057084d (same, plus half-pixel stone lips).
+
+The original four SHA-256 literals still run against the exact predecessor;
+the current painter additionally checks these explicit successor hashes.
+
+C33's tests and audit explicitly recover their exact reviewed source first;
+its successor resolver includes C34's identity ledger. Restoring exactly the
+three painters and removing six helpers recovers the complete predecessor
+source byte for byte. Every other hazard and hostile fixture with Santa,
+party and antler riders stays exact. No skipped tests, weakened thresholds or
+raw-buffer deepEqual.
+
+**Validation so far:** baseline npm run check **2007/2007**, exit **0**,
+266.78 s. First tool session ended 143 without a result; a detached retry did
+not survive its shell, so the successful retry used a monitored session.
+Baseline npm run fps -- 8 12 18: **60 median / 60 p5** at every level,
+**17 ms** worst frame, **0%** long tasks, CPU **10/9/11%**, exit **0**.
+Focused C34 **14/14**, exit **0**, 31.46 s: independent cycle/scene pins,
+visible native/page changes, phase keys, every-theme palette/grid/call bounds,
+read-only/RNG-free paint, exact unrelated art/riders, source restoration,
+review writer, reduced motion, page refinement and exact Sim blast endpoints.
+Copied the existing local crapper cache and corrected only its local editable
+path. Draw stamp **969b3610**, build **e6d8d8fe**. Source, fixtures and stamps
+freeze for the final check, fresh coverage/CRAP and matched FPS gates.
+
+**Next:** owner review of the native/page shutter, braced handle and fissure
+pairs; future rounds should leave clear motion alone. No merge, push,
+deployment, production requests, port 8787 change, sibling or Omarchy write.
+
+First full gate: **2018/2021**, exit **1**, 305.98 s. It caught the missing
+quiet vent idle bubbles and the two direct biome snapshot tests (each pins
+default/native and page). Restored the existing idle pressure cue outside
+reduced motion and added an independent audit of both biome corpora; retained
+the exact original assertions alongside the four reviewed transitions above.
+The corrected ordinary charge/fire/rest and seasonal pairs retain foes14-1's
+pixels. Re-inspected the corrected vent complete cycles and pairs at res 1/2
+in foes14-2. Focused C34/hazards/Data Center/Trench retry: **131/131**, exit **0**,
+35.85 s. No tests weakened. Final frozen gates follow below.
+
+**Final gates:** corrected npm run check **2021/2021**, exit **0**, 300.28 s;
+fresh coverage **2021/2021**, exit **0**, 756.33 s. npm run crap -- --changed
+--threshold 30 **exit 0**. Renderer scores: drawHzHotaisle **13.1**,
+drawVentBubbles **10.0**, drawPolisherPad **8.0**, drawHotAisleBlast **7.0**,
+drawHzVent/hotAisleShutter/polisherBrace/ventPressurePose **5.0** each,
+drawHzPolisher **4.2**. New biomeSnapshot **9.0**, foeRoundFourteenScenes
+**7.1**, roundFourteenReview **5.0**, source restoration/successor **3.0**.
+Every new/changed function stays below 30. The shared FIFO lock and six-file
+concurrency were retained; the corrected check queued behind another
+worktree's soak. Only this log changed after the final gates.
+
+**Performance:** matched npm run fps -- 8 12 18 before/after, both exit **0**.
+Every level in both runs: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **10/9/11% → 19/16/14%**. No measured frame-rate loss;
+the higher CPU readings are recorded without a CPU performance claim. They
+were not isolated from desktop/thermal load. Final inspected comparisons are
+in /tmp/xmas-dressing/foes14-2, with the six filenames listed above; full
+catalogue and original public assets remain in foes14-0. Live Omarchy/QML is
+unverified; the native/page raster review has no known unresolved art issue.
+
+Logs: /tmp/xmas-dressing/foes14-baseline-check.log (successful baseline),
+foes14-before-fps.log, foes14-focused.log, foes14-final-check.log (retained
+three-failure gate), foes14-focused-retry.log, foes14-final-check-retry.log,
+foes14-final-crap.log and foes14-after-fps.log.
+
+**Next:** owner review of foes14-2's shutter, braced handle and fissure pairs;
+leave the four clear, unselected hazard cycles alone unless actual motion
+review identifies a concrete problem.
