@@ -15006,3 +15006,14 @@ Logs: /tmp/xmas-dressing/foes6-final-before-fps.log,
 the lifting steam cowl in crowded native colonies. No known remaining test
 or art issue; live Omarchy/QML remains unverified. No merge, push, deploy,
 production request, port 8787 change or sibling sync.
+
+## 489 — 2026-11-16 · Deploy: snakes, scarabs, rockfall, molten drops, airlocks, steam
+
+**Deployed** build 700fcf8d (Worker version dda6ed3b), replacing 4074472e;
+covers C25 (snake rears before the lunge, scarabs wind up and fly staggered,
+rockfall loosens, falls and settles) and C26 (molten drops hang then fall,
+airlock plates unseal and retract, steam vents lift their cowl before the
+plume), reviewed in their strips. Six rounds of foe and hazard animation so
+far: 21 tells improved. **Before:** gate 1914/1914; `npm run smoke --
+--level 13` passed (13–20). **After:** `npm run verify -- --previous
+4074472e` passed.
