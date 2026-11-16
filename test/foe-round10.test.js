@@ -1,3 +1,4 @@
+import {foeRoundElevenSourceBefore} from '../tools/foe-round11-reference.js'
 import {execFileSync} from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import {renderer} from '../tools/gag-art.js'
 import {hazardFrame,hazardFixture,hazardSequence,enemyFixture,KINDS,STATES,roundTenReview} from '../tools/foe-strips.js'
 import {foeRoundTenSourceBefore} from '../tools/foe-round10-reference.js'
 import {foeRoundTenScenes} from '../tools/foe-round10-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=renderer(source),old=renderer(foeRoundTenSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundElevenSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),old=renderer(foeRoundTenSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
 const specs=S.HAZARDS.filter(s=>['turret','darts','flame'].includes(s.id))
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round10-pins.json','utf8'))
