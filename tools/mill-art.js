@@ -1,3 +1,4 @@
+import {canyonSourceBefore} from './canyon-art.js'
 // C19 complete-frame review: before left, after right, out of season.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -7,10 +8,10 @@ import {load,frame,stack,side,writePNG} from './render.js'
 import {renderer,season} from './gag-art.js'
 import {christmasWorld,christmasFrame} from './christmas-art.js'
 import {reviewWorld} from './christmas-round5-art.js'
-export function millSourceBefore(source){return source.replace(/^  drawMill(?:Hall|Blocks|Drums|Life)\(ctx, w, pal\)\n/gm,'')}
+export function millSourceBefore(source){return canyonSourceBefore(source).replace(/^  drawMill(?:Hall|Blocks|Drums|Life)\(ctx, w, pal\)\n/gm,'')}
 export function millSheets(out){
  fs.mkdirSync(out,{recursive:true})
- const source=fs.readFileSync('public/agents/Draw.js','utf8'),before=renderer(millSourceBefore(source)),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
+ const source=canyonSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=renderer(millSourceBefore(source)),D=renderer(source),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
  Math.random=()=>0.5
  try{for(const res of[1,2]){
   const rows=[]

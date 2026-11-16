@@ -1,3 +1,4 @@
+import {canyonSourceBefore} from '../tools/canyon-art.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {millSourceBefore,millSheets} from '../tools/mill-art.js'
 import {millScenes} from '../tools/mill-scenes.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
+const source=canyonSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','ffe87fa6a3d9dbcc991ddf046457fe0a47f1f492:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const pins=JSON.parse(fs.readFileSync('test/fixtures/mill-pins.json','utf8'))
 const layers=['drawMillHall','drawMillBlocks','drawMillDrums','drawMillLife']
