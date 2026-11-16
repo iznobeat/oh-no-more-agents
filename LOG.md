@@ -14567,3 +14567,11 @@ one of the richer boards at page resolution; by the ninth round Codex was
 choosing among biomes that no longer look weak. Not merged, branch deleted.
 Eight biomes were reworked by the audit (Foundry, Frost, Ruins, Ice Cave,
 Factory, Desert, Cavern, Spaceship); the series stops here.
+
+## 487 — 2026-11-16 · Deploy: the Spaceship's observation deck
+
+**Deployed** build f28a68d3 (Worker version 358ed681), replacing 17fc80ec;
+covers C22 (Spaceship: a ringed planet through observation glazing, solar
+silhouettes, docks, repair drones; reviewed at full frame, both
+resolutions). **Before:** gate 1881/1881; `npm run smoke -- --level 7`
+passed (7–13). **After:** `npm run verify -- --previous 17fc80ec` passed.
