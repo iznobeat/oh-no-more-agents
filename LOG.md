@@ -15648,3 +15648,149 @@ lower before the discharge, the Tesla coil's crown lifts as its coils
 charge), reviewed in their strips. 36 tells improved across the foe/hazard
 rounds. **Before:** gate 1978/1978; `npm run smoke -- --level 15` passed
 (15–22). **After:** `npm run verify -- --previous 393f9679` passed.
+
+## C32 — 2026-11-16 · Extend the rifle, expose the rollers, lower the collector
+
+**Chose:** Long Context (mounted sniper hazard, not C12's hostile sniper),
+Fine-Tuner (grinder) and Garbage Collector (sweeper). Re-rendered the complete
+88 hostile kind/state fixtures and 48 hazard cycles at res 1/2. Inspected
+all twelve hazard overviews, both hostile overviews and all sixteen hostile
+contact sheets, then nine remaining candidate cycles and the chosen complete
+cycles at both scales. None was selected in C12–C14/C24–C31. Long Context held
+a fixed barrel through its 44-tick warning; the grinder's sliding tooth pixels
+did not read as two rollers; the sweeper had no mechanical preparation beyond
+its moving sight dots. Baseline: 3310a0986421a92f1007154eed93028ac2654d15.
+
+**Changed (Draw only):** the mounted rifle extends four native pixels over
+its first twelve charge ticks and holds, with exposed slide, attached scope
+and cocking lug. The existing ten-tick shot recoils three pixels at release,
+returns over six ticks, then retracts over the twelve-tick recovery cue. Sight
+and shot connect to the moving muzzle and original target; a brief release
+flash replaces unrelated pressure wisps. The grinder raises two connected
+six-tooth rollers four pixels over eight of its 24 charge ticks, holds the
+raised pose while rotation accelerates, turns them inward throughout its
+30-tick fire and coasts while lowering in recovery. Its tray, centre seam,
+palette and quiet idle teeth remain. The sweeper lowers its eight-pixel head
+four pixels on an attached neck over ten of 26 charge ticks, holds with parted
+outlet shutters, fires immediately to the floor, then retracts over recovery.
+Whole pixels carry the new poses; scope, hubs, carriage position and shutters
+refine the half-pixel page grid. Original rail/head, rifle/housing and paired
+roller identities and colours stay.
+
+An early /tmp draft drove the collector sideways from phase time. Reading
+catchSweep caught that mismatch before acceptance: its real catch position is
+on w.ticks. Final carriage retains that exact sine clock; beam ends at the
+actual Sim catch position, replacing the old outward lean. A regression checks
+every fire tick, both scales and both motion preferences. Reduced motion holds
+idle travel, roller rotation and recoil/flash; the collector's live/warning
+sweep remains essential information about its actual moving danger. Phase
+preparation/recovery remains readable. No Sim.js, sfx.js, North Pole painting,
+actor heads/riders, umbrellas, timing, behaviour, RNG or world writes changed.
+
+**Review/tool:** tools/foe-strips.js now includes roundTwelveReview: compact
+consecutive complete cycles, before-left/after-right eight-key strips and
+ordinary/Christmas/New Year complete boards at both actual resolutions. New
+test/helper/fixture paths were checked free with test -e. Before catalogue and
+saved public assets: /tmp/xmas-dressing/foes12-0 (before-public subdirectory).
+Drafts: foes12-1 and foes12-2. The first grinder still read as a slab, so replaced
+its raised strips with two connected, visibly opposed toothed drums; quiet
+idle paint was then retained. Final complete catalogue: foes12-3. Inspected:
+
+- /tmp/xmas-dressing/foes12-3/sniper-compare-res1.png
+- /tmp/xmas-dressing/foes12-3/sniper-compare-res2.png
+- /tmp/xmas-dressing/foes12-3/grinder-compare-res1.png
+- /tmp/xmas-dressing/foes12-3/grinder-compare-res2.png
+- /tmp/xmas-dressing/foes12-3/sweeper-compare-res1.png
+- /tmp/xmas-dressing/foes12-3/sweeper-compare-res2.png
+
+Also inspected chosen compact cycles at both scales, all six ordinary full
+charge/fire/recovery pairs, Christmas charge at res 2 and New Year charge at
+res 1. These are staged raster renders, not live QML inspection. No known
+unresolved visual issue; runtime Canvas gradients keep render.js's documented
+approximation.
+
+**Pins deliberately advanced:** old golden files remain intact; explicit
+C32 predecessor/successor transitions flow through the existing resolver.
+Earlier C31 tests/audit recover their exact reviewed source, as previous rounds
+do; replacing precisely three painters and removing six helpers independently
+recovers the whole baseline Draw.js byte for byte. New foe-round12-pins.json
+pins complete cycles in both facings/scales plus 168 ordinary boards over all
+21 biomes. New foe-round12-scenes.json independently reproduces every historical
+scene transition. No skips, widened thresholds or raw-buffer comparisons.
+Each moved historical scene/aggregate (SHA-256 prefixes):
+
+- full/1/1/120: deae6c32 → 49857fdf; full/1/1/350: 547e890f → cef1f398.
+- full/1/2/0: ff2f24cc → 19fe7dc9; full/1/2/120: 5cd1e39a → 10e84c16;
+  full/1/2/350: 630d481f → 2cbc4df5.
+- aggregates/350,900: db081b14 → df0b20a4; disabled/350,900:
+  7e0973fc → 6f71a0fd; aggregates/120,350: 8dec63b9 → fa862dea;
+  disabled/120,350: 05d90c29 → 41c8d4dc.
+- newyear/none/1/1: cfa982ad → 941b7213; newyear/none/1/2:
+  d49d3eb4 → 394c9a09; newyear/christmas/1/1: ca07b2fa → 427b84c3;
+  newyear/christmas/1/2: dc710b8d → 67c24699.
+- c6full/Cavern/1/120: e243c2e6 → 853b7269; c6full/Cavern/1/400:
+  df059597 → 8ae0dd83; c6full/Cavern/2/120: e594d27a → a4ec0e99;
+  c6full/Cavern/2/400: f09adc98 → 1941a1c6.
+- office: 7a73fced → 12b771a9.
+
+These are exactly the sampled boards containing the selected mounted hazard
+and their enclosing aggregates; rider/colony pixels remain independently exact.
+Native rifle's moved lamp/omitted wisps and page-carriage alignment also affect
+its quiet sampled frames. All other historical ledger entries stay identical.
+Complete cycle digest changes and final validation follow below.
+
+**Validation so far:** baseline npm run check **1978/1978**, exit **0**,
+240.76 s. Initial focused C31/C32/hazards **127/128**: all art/mechanical checks
+passed; C32's new audit initially restored its own source before comparing.
+Corrected that source selection and regenerated its ledger, retaining the
+failing log. No rendering changes followed final visual review. Baseline FPS
+first queued process ended 143 without measurements; the clean retry against
+saved before-public assets exited 0: levels 8/12/18 all **60 median / 60 p5,
+17 ms worst, 0% long tasks**, CPU **10/9/10%**. Local .crapper cache copied and
+its local editable path corrected. Final Draw stamp e0d6d4f0, build c7bdb578.
+
+Complete-cycle pins (both facings equal): sniper res1 **8173e6cf → 7e638ae7**,
+res2 **53779271 → 7f4a303d**; grinder res1 **c084a44f → 4a1ed232**,
+res2 **a284e23e → 208b4303**; sweeper res1 **0a2f824b → 5d66c4b9**,
+res2 **1a214bc7 → 057f2817**. All fifteen new tests passed, exit 0,
+31.27 s. The first full gate was **1992/1993**, exit 1, 249.56 s:
+only WHO's legacy native/default/share frame check failed. Its custom frame
+hash includes fillText calls as well as pixels and was missing from the scene
+audit. Added the exact WHO fixture reproduction, retaining text-call assertions
+and old golden files; four additional digest transitions (default and native
+res1 share their digest):
+
+- who/1/{default,1}/false: de936139 → e9cf8a2d.
+- who/1/{default,1}/true: be33e33c → ef6c6062.
+- who/1/3/false: 337cb797 → bdc6684f.
+- who/1/3/true: 85d905c9 → 68bc5252.
+
+These contain the same selected hazard at the custom tick-200 colony snapshot;
+no label or text drawing changed. Full ledger now accounts for all 22 moved
+historical digests. Source/stamps and reviewed images remain unchanged.
+Matched final FPS already passed, exit 0: levels 8/12/18 all **60 median /
+60 p5, 17 ms worst, 0% long tasks**, CPU **13/12/13%** versus baseline
+**10/9/10%**. No measured frame-rate loss; CPU differences are not claimed as
+a speed change against desktop load.
+
+**Final gates:** focused C32/WHO **24/24**, exit **0**, 32.41 s. Final
+`npm run check` **1993/1993**, exit **0**, 292.73 s, including every season
+test. `npm run crap -- --changed --threshold 30` **exit 0**, fresh coverage
+**1993/1993**, 671.75 s. Changed renderer scores: drawHzSweeper **9.0**,
+drawMountedSniperSight **8.0**, sweeperCarriage **7.8**, grinderRollerPose
+**6.1**, drawHzSniper **6.0**, mountedSniperSlide **6.0**, drawGrinderIdle
+**4.1**, drawGrinderRoller **4.0**, drawHzGrinder **3.0**. New review helper
+roundTwelveReview **5.0**, exact WHO scene audit **13.0**; every new/changed
+function stays below 30. Six-file concurrency and FIFO heavy-run lock retained;
+no simultaneous heavy runs. Source, fixtures and stamps stayed frozen through
+final gates; only this log was completed afterward.
+
+Logs: /tmp/xmas-dressing/foes12-before-check.log,
+foes12-focused-final.log, foes12-who-final.log, foes12-final-check2.log,
+foes12-final-crap.log, foes12-before-fps-retry.log, foes12-after-fps.log.
+Earlier failed gate/audit logs remain alongside them for accountability.
+
+**Next:** owner review of the three native/page comparisons in foes12-3,
+especially the exposed paired rollers. Future rounds should review only the
+remaining unselected tells and stop when none needs work. No merge, push,
+deployment, production requests, port 8787 changes, sibling or Omarchy writes.

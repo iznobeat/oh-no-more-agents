@@ -7969,32 +7969,44 @@ function drawTeslaCharge(ctx, w, pal, h, g, top) {
 }
 
 // --- snipe: one target, a long way off, one shot then a long reload -----
+function mountedSniperSlide(w, h, g) {
+  var slide = 0
+  if (g.winding) slide = 4 * Math.min(1, h.t / 12)
+  if (g.live) slide = 4 - (w.reducedMotion ? 0 : 3 * Math.max(0, 1 - h.t / 6))
+  if (g.cool) slide = 4 * g.cool * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(slide * grid) / grid
+}
+
 function drawHzSniper(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, tall = geo.tall, live = geo.live,
-    show = geo.show, hot = geo.hot
+  var x0 = geo.x0, y0 = geo.y0, slide = mountedSniperSlide(w, h, geo)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y0 + 2, 4, tall - 4)              // housing
-  ctx.fillRect(x0 + 4, y0 + 4, 7, 3)                 // barrel
+  ctx.fillRect(x0, y0 + 2, 4, geo.tall - 4)       // fixed housing
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0 + 4, y0 + 1, 4, 3)                 // scope
-  ctx.fillStyle = h.phase === "rest" ? pal.rigDark : pal.warn
-  ctx.fillRect(x0 + 1, y0 + 3, 1, tall - 6)
-  if (show && h.lineTo >= 0) {
-    // The sight, then the shot. One pixel high while it is only looking, and
-    // it reaches all the way to whoever it has picked out.
-    var tx = h.lineTo * C
-    var ty = h.lineY * C
-    var sy = y0 + 5
-    ctx.fillStyle = hot
-    var n2 = Math.max(1, Math.round(Math.abs(tx - (x0 + 11))))
-    for (var q = 0; q <= n2; q += live ? 1 : 3) {
-      var qx = (x0 + 11) + (tx - (x0 + 11)) * (q / n2)
-      var qy = sy + (ty - sy) * (q / n2)
-      ctx.fillRect(Math.round(qx), Math.round(qy), live ? 2 : 1, live ? 2 : 1)
-    }
+  ctx.fillRect(x0 + 4, y0 + 5, slide, 1)         // exposed slide, attached to housing
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(x0 + 4 + slide, y0 + 4, 7, 3)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(x0 + 4 + slide, y0 + 1, 4, 3)     // scope rides the barrel
+  if (slide) {
+    ctx.fillRect(x0 + 3 + slide, y0 + 7, 2, 2)   // cocking lug below the carriage
+    if (w.res === 2) { ctx.fillStyle = pal.rig; ctx.fillRect(x0 + 4.5 + slide, y0 + 1.5, 3, 0.5) }
   }
-  hzLamp(ctx, pal, h, geo, x0 + 4, y0 + 2)
-  hzPressure(ctx, w, pal, h, geo, x0 + 11, y0 + 5, pal.rig)
+  ctx.fillStyle = h.phase === "rest" ? pal.rigDark : pal.warn
+  ctx.fillRect(x0 + 1, y0 + 3, 1, geo.tall - 6)
+  if (geo.show && h.lineTo >= 0) drawMountedSniperSight(ctx, w, h, geo, x0 + 11 + slide, y0 + 5)
+  mountedLamp(ctx, w, pal, h, geo, x0, y0 + 2)
+}
+
+function drawMountedSniperSight(ctx, w, h, g, muzzle, sy) {
+  var tx = h.lineTo * g.C, ty = h.lineY * g.C
+  var n = Math.max(1, Math.round(Math.abs(tx - muzzle)))
+  ctx.fillStyle = g.hot
+  for (var q = 0; q <= n; q += g.live ? 1 : 3) {
+    var x = muzzle + (tx - muzzle) * q / n, y = sy + (ty - sy) * q / n
+    ctx.fillRect(Math.round(x), Math.round(y), g.live ? 2 : 1, g.live ? 2 : 1)
+  }
+  if (g.live && !w.reducedMotion && h.t < 3) hzTri(ctx, muzzle + 1, sy - 1, 3, 3, 1)
 }
 
 // --- beam: keeps its own schedule ---------------------------------------
@@ -8037,25 +8049,42 @@ function drawLaserColumn(ctx, w, h, g, x, top) {
   }
 }
 
+function sweeperCarriage(w, h, g) {
+  var drop = 0
+  if (g.winding) drop = 4 * Math.min(1, h.t / 10)
+  if (g.live) drop = 4
+  if (g.cool) drop = 4 * g.cool * g.cool
+  // The sideways sweep is gameplay: catchSweep uses this exact world clock.
+  var clock = w.reducedMotion && !g.show ? 0 : g.t
+  var run = 0.5 + 0.5 * Math.sin(clock * 0.05), grid = w.res === 2 ? 2 : 1
+  return { x: Math.round((g.wide - 8) * run * grid) / grid,
+    drop: Math.round(drop * grid) / grid, target: g.x0 + (g.wide - g.C) * run }
+}
+
 function drawHzSweeper(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, t = geo.t, show = geo.show, hot = geo.hot
-  // A head that travels along a rail, with the beam raking after it.
-  var rail = x0 + Math.round((wide - 8) * (0.5 + 0.5 * Math.sin(t * 0.05)))
+  var pose = sweeperCarriage(w, h, geo), rail = geo.x0 + pose.x, top = geo.y0 + pose.drop
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 2)                      // the rail
+  ctx.fillRect(geo.x0, geo.y0, geo.wide, 2)
+  ctx.fillRect(rail + 3, geo.y0 + 2, 2, pose.drop)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(rail, y0, 8, 5)                       // the head
+  ctx.fillRect(rail, top, 8, 5)
   ctx.fillStyle = geo.cool ? pal.fire : pal.warn
-  ctx.fillRect(rail + 1, y0 + 1, 6, 1)
-  if (show) {
-    ctx.fillStyle = hot
-    for (var sv = 0; sv < tall - 5; sv++) {
-      var lean = Math.round(sv * Math.sin(t * 0.05) * 0.5)
-      if (live || sv % 5 === 0) ctx.fillRect(rail + 3 + lean, y0 + 5 + sv, live ? 3 : 1, 1)
+  ctx.fillRect(rail + 1, top + 1, 6, 1)
+  if (pose.drop) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(rail, top + 4, 2, 2)
+    ctx.fillRect(rail + 6, top + 4, 2, 2)           // parted shutters expose the beam outlet
+    if (w.res === 2) { ctx.fillStyle = pal.rig; ctx.fillRect(rail + 0.5, top + 4.5, 1, 0.5); ctx.fillRect(rail + 6.5, top + 4.5, 1, 0.5) }
+  }
+  if (geo.show) {
+    ctx.fillStyle = geo.hot
+    var length = geo.y1 - top - 5
+    for (var row = 0; row < length; row++) {
+      var beamX = rail + 3 + (pose.target - rail - 3) * row / Math.max(1, length - 1)
+      if (geo.live || row % 5 === 0) ctx.fillRect(Math.round(beamX), top + 5 + row, geo.live ? 3 : 1, 1)
     }
   }
-  hzLamp(ctx, pal, h, geo, rail + 2, y0 + 1)
+  mountedLamp(ctx, w, pal, h, geo, rail + 2, top + 1)
 }
 
 function drawHzTripwire(ctx, w, pal, h, geo) {
@@ -8197,22 +8226,52 @@ function drawHzSawblade(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1 - 3, pal.warn)
 }
 
-function drawHzGrinder(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, cx = geo.cx, wide = geo.wide, live = geo.live,
-    t = geo.t, show = geo.show, hot = geo.hot
-  // Two toothed rollers side by side, turning inward.
+function grinderRollerPose(w, h, g) {
+  var lift = 0, turn = 0
+  if (g.winding) { lift = 4 * Math.min(1, h.t / 8); turn = h.t * h.t / 96 }
+  if (g.live) { lift = 4; turn = 529 / 96 + h.t * 0.75 }
+  if (g.cool) { lift = 4 * g.cool * g.cool; turn = 529 / 96 + 29 * 0.75 + 4.5 * (1 - g.cool * g.cool) }
+  if (w.reducedMotion) turn = 0
+  var grid = w.res === 2 ? 2 : 1
+  return { lift: Math.round(lift * grid) / grid, turn: Math.floor(turn) % 4 }
+}
+
+function drawGrinderRoller(ctx, w, pal, g, x, width, y, turn, dir) {
+  var cx = x + Math.floor(width / 2), cy = y + 2
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y1 - 6, wide, 6)
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(cx - 1, y1 - 6, 2, 6)
-  ctx.fillStyle = show ? hot : pal.warn
-  for (var gr = 0; gr < wide; gr += 4) {
-    var turn = live ? t * 2 : t * 0.08 + (geo.winding ? h.t * (0.42 + geo.progress * 0.5) : 0)
-    var off = (Math.floor(turn) + gr) % 4
-    ctx.fillRect(x0 + gr + (gr < wide / 2 ? off : 3 - off), y1 - 7, 2, live ? 4 : 2)
+  ctx.fillRect(x + 2, y - 1, width - 4, 6)
+  ctx.fillRect(x, y + 1, width, 2)
+  ctx.fillStyle = g.show ? g.hot : pal.warn
+  for (var tooth = 0; tooth < 6; tooth++) {
+    var angle = (tooth + dir * turn / 4) * Math.PI / 3
+    ctx.fillRect(cx + Math.round(Math.cos(angle) * 4) - 1, cy + Math.round(Math.sin(angle) * 3) - 1, 2, 2)
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y1 - 3)
-  hzImpact(ctx, pal, h, geo, cx, y1 - 6, pal.warn)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(cx - 1, cy - 1, 3, 2)
+  if (w.res === 2) { ctx.fillStyle = pal.rig; ctx.fillRect(cx - 0.5, cy - 0.5, 2, 0.5) }
+}
+
+function drawGrinderIdle(ctx, w, pal, g) {
+  var turn = w.reducedMotion ? 0 : g.t * 0.08
+  ctx.fillStyle = pal.warn
+  for (var tooth = 0; tooth < g.wide; tooth += 4) {
+    var off = (Math.floor(turn) + tooth) % 4
+    ctx.fillRect(g.x0 + tooth + (tooth < g.wide / 2 ? off : 3 - off), g.y1 - 7, 2, 2)
+  }
+}
+
+function drawHzGrinder(ctx, w, pal, h, geo) {
+  var pose = grinderRollerPose(w, h, geo), y = geo.y1 - 6 - pose.lift, width = (geo.wide - 2) / 2
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0, geo.y1 - 6, geo.wide, 6)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.cx - 1, geo.y1 - 6, 2, 6)
+  if (geo.show || geo.cool) {
+    drawGrinderRoller(ctx, w, pal, geo, geo.x0, width, y, pose.turn, 1)
+    drawGrinderRoller(ctx, w, pal, geo, geo.cx + 1, width, y, pose.turn, -1)
+  } else drawGrinderIdle(ctx, w, pal, geo)
+  mountedLamp(ctx, w, pal, h, geo, geo.cx - 2, geo.y1 - 3)
+  hzImpact(ctx, pal, h, geo, geo.cx, y, pal.warn)
 }
 
 // --- cycle: never triggers, never stops ---------------------------------
