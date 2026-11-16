@@ -7949,19 +7949,39 @@ function drawHzTripwire(ctx, w, pal, h, geo) {
 }
 
 // --- plate: armed by being stood on -------------------------------------
-function drawHzSpikes(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, wide = geo.wide, live = geo.live,
-    show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y1 - 3, wide, 3)                  // the plate
-  ctx.fillStyle = pal.warn
-  ctx.fillRect(x0 + 1, y1 - 2, wide - 2, 1)
-  if (show || geo.cool) {
-    ctx.fillStyle = hot
-    for (var sp = x0 + 2; sp < x1 - 1; sp += 4) hzTri(ctx, sp, y1 - 3, 2, hzStroke(geo, 10, 4), -1)
+function spikeRackPose(w, h, g) {
+  // Sim's sixteen-tick tell: show the teeth, crouch, hold, then release.
+  var height = 0, drop = 0
+  if (g.winding) {
+    height = 3
+    drop = Math.min(1, h.t / 4)
+    if (h.t >= 11) { var q = (h.t - 11) / 4; height = 3 + 7 * q * q; drop = 1 - q }
   }
-  hzLamp(ctx, pal, h, geo, geo.cx - 2, y1 - 2)
-  hzImpact(ctx, pal, h, geo, geo.cx, y1 - 3, pal.rig)
+  if (g.live) height = w.reducedMotion ? 10 : 10 + (h.t < 4 ? Math.sin(h.t * Math.PI / 4) : 0)
+  if (g.cool) height = 10 * g.cool * g.cool
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { height: Math.round(height * grid) / grid, drop: Math.round(drop * grid) / grid }
+}
+
+function drawHzSpikes(ctx, w, pal, h, geo) {
+  var p = spikeRackPose(w, h, geo), base = geo.y1 - 3 + p.drop
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0, geo.y1 - 3, geo.wide, 3)
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(geo.x0 + 1, geo.y1 - 2 + p.drop, geo.wide - 2, 1)
+  if (p.height) {
+    ctx.fillStyle = geo.hot
+    for (var x = geo.x0 + 2; x < geo.x1 - 1; x += 4) {
+      hzTri(ctx, x, base, 2, p.height, -1)
+      if ((w.res || 1) >= 2) {
+        ctx.fillStyle = pal.rigDark
+        ctx.fillRect(x + 0.5, base - p.height + 2, 0.5, Math.max(0, p.height - 2))
+        ctx.fillStyle = geo.hot
+      }
+    }
+  }
+  hzLamp(ctx, pal, h, w.reducedMotion ? { t: 400, winding: geo.winding, progress: geo.progress, cool: geo.cool, show: geo.show, hot: geo.hot, live: geo.live } : geo, geo.cx - 2, geo.y1 - 2)
+  if (!w.reducedMotion) hzImpact(ctx, pal, h, geo, geo.cx, geo.y1 - 3, pal.rig)
 }
 
 // Whole-pixel jaw spread is the tell; the last three charge ticks snap it shut.
@@ -9071,37 +9091,53 @@ function drawHzStamper(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, cx, y1, pal.rig)
 }
 
-function drawHzFlywheel(ctx, w, pal, h, geo) {
-  var y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, t = geo.t, hot = geo.hot
-  // A wheel that idles and then runs up. Dormant it turns slowly, live it
-  // blurs into a disc and throws its spokes out as a ring.
-  var fr = Math.min(wide, tall) / 2 - 1
-  var fcx = cx, fcy = y0 + tall / 2
-  var rate = live ? 0.42 : 0.04
-  var angle = t * rate + (winding ? h.t * (0.04 + geo.progress * 0.15) : 0)
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(fcx - fr - 1, fcy - 1, fr * 2 + 2, 2)      // the shaft
-  ctx.fillStyle = winding ? hot : pal.rig
-  for (var sp = 0; sp < 6; sp++) {
-    var sa = angle + sp * Math.PI / 3
-    ctx.fillRect(Math.round(fcx + Math.cos(sa) * fr) - 1,
-                 Math.round(fcy + Math.sin(sa) * fr) - 1, 2, 2)
+function flywheelAngle(w, h, g) {
+  // Integral of speed, rather than clock * changing speed (which jumps).
+  if (w.reducedMotion) return 0
+  var offset = 0
+  if (g.winding) offset = 0.38 * h.t * h.t / 52
+  if (g.live) offset = 4.94 + 0.38 * h.t
+  if (g.cool) {
+    var q = Math.min(1, h.t / 12), end = 16 * Math.PI / 3, travel = end - 13.3
+    offset = 13.3 + 4.56 * q + (3 * travel - 9.12) * q * q + (4.56 - 2 * travel) * q * q * q
   }
-  ctx.fillStyle = live ? hot : pal.rigDark
-  ctx.fillRect(fcx - 2, fcy - 2, 4, 4)                    // the hub
-  if (live) {
+  return g.t * 0.04 + offset
+}
+
+function drawFlywheelSpokes(ctx, w, pal, g, cx, cy, radius, angle) {
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  ctx.fillStyle = g.winding ? g.hot : pal.rig
+  for (var sp = 0; sp < 6; sp++) {
+    var a = angle + sp * Math.PI / 3
+    // Preserve the six outer tips; connect them to the same shaft under load.
+    if (g.show || g.cool) for (var r = 2; r < radius; r++)
+      ctx.fillRect(Math.round((cx + Math.cos(a) * r) * grid) / grid,
+                   Math.round((cy + Math.sin(a) * r) * grid) / grid, 1, 1)
+    ctx.fillRect(Math.round(cx + Math.cos(a) * radius) - 1,
+                 Math.round(cy + Math.sin(a) * radius) - 1, 2, 2)
+  }
+}
+
+function drawHzFlywheel(ctx, w, pal, h, geo) {
+  var fr = Math.min(geo.wide, geo.tall) / 2 - 1, cx = geo.cx, cy = geo.y0 + geo.tall / 2
+  var angle = flywheelAngle(w, h, geo)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(cx - fr - 1, cy - 1, fr * 2 + 2, 2)
+  drawFlywheelSpokes(ctx, w, pal, geo, cx, cy, fr, angle)
+  ctx.fillStyle = geo.live ? geo.hot : pal.rigDark
+  ctx.fillRect(cx - 2, cy - 2, 4, 4)
+  if (geo.live) {
     ctx.globalAlpha = 0.4
-    ctx.fillStyle = hot
+    ctx.fillStyle = geo.hot
     for (var rg = 0; rg < 10; rg++) {
-      var ra = t * rate * 1.6 + rg * Math.PI / 5
-      ctx.fillRect(Math.round(fcx + Math.cos(ra) * (fr + 3)) - 1,
-                   Math.round(fcy + Math.sin(ra) * (fr + 3)) - 1, 2, 2)
+      var ra = angle + rg * Math.PI / 5
+      ctx.fillRect(Math.round(cx + Math.cos(ra) * (fr + 3)) - 1,
+                   Math.round(cy + Math.sin(ra) * (fr + 3)) - 1, 2, 2)
     }
     ctx.globalAlpha = 1
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y0)
-  hzImpact(ctx, pal, h, geo, cx, y0 + tall / 2, pal.warn)
+  hzLamp(ctx, pal, h, w.reducedMotion ? { t: 400, winding: geo.winding, progress: geo.progress, cool: geo.cool, show: geo.show, hot: geo.hot, live: geo.live } : geo, cx - 2, geo.y0)
+  if (!w.reducedMotion) hzImpact(ctx, pal, h, geo, cx, cy, pal.warn)
 }
 
 function steamVentPose(w, h, g) {
@@ -9148,33 +9184,49 @@ function drawHzSteamvent(ctx, w, pal, h, geo) {
     hzPressure(ctx, w, pal, h, geo, cx, y, pal.decorLit)
 }
 
-function drawHzSprinkler(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, t = geo.t, show = geo.show
-  // A pipe run with heads on it. Between times it is plumbing; live, it is
-  // the reason nobody keeps paper on their desk any more.
-  ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0 + 1, wide, 3)                       // the main
-  ctx.fillStyle = pal.rig
-  for (var sk = 0; sk < 4; sk++) {
-    var skx = x0 + 4 + Math.round(sk * (wide - 8) / 3)
-    ctx.fillRect(skx - 1, y0 + 4, 3, 3)                   // and its heads
-  }
-  if (show) {
-    ctx.fillStyle = live ? pal.poolLip : pal.decorLit
-    for (var sw2 = 0; sw2 < 4; sw2++) {
-      var swx = x0 + 4 + Math.round(sw2 * (wide - 8) / 3)
-      var reach = live ? tall - 8 : 2 + Math.round(geo.progress * 6)
-      for (var sd = 0; sd < reach; sd += 3) {
-        var spread = Math.round(sd * 0.35)
-        ctx.globalAlpha = live ? 0.8 - sd / (tall * 1.6) : 0.4
-        ctx.fillRect(swx - spread + ((t + sd * 3) % 5) - 2, y0 + 7 + sd, 1, 2)
-        ctx.fillRect(swx + spread - ((t + sd * 5) % 5) + 1, y0 + 7 + sd, 1, 2)
-      }
+function sprinklerPose(w, h, g) {
+  var drop = 0, reach = 0, top = 0
+  if (g.winding) { drop = Math.min(3, h.t / 4); reach = 2 + Math.min(5, h.t / 4) }
+  if (g.live) { drop = 3; reach = Math.min(g.tall - 8, 7 + h.t * 4) }
+  if (g.cool) { drop = 3 * g.cool; reach = g.tall - 8; top = (1 - g.cool) * (g.tall - 8) }
+  if (w.reducedMotion && g.live) reach = g.tall - 8
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { drop: Math.round(drop * grid) / grid, reach: Math.round(reach * grid) / grid, top: Math.round(top) }
+}
+
+function drawSprinklerRain(ctx, w, pal, h, g, p) {
+  var clock = w.reducedMotion ? 0 : h.t
+  ctx.fillStyle = g.live || g.cool ? pal.poolLip : pal.decorLit
+  for (var head = 0; head < 4; head++) {
+    var x = g.x0 + 4 + Math.round(head * (g.wide - 8) / 3)
+    for (var d = p.top; d < p.reach; d += 3) {
+      var spread = Math.round(d * 0.35), fall = (clock + head * 2 + d) % 3
+      ctx.globalAlpha = g.live ? 0.8 - d / (g.tall * 1.6) : 0.5
+      ctx.fillRect(x - spread, g.y0 + 7 + d + fall, 1, 2)
+      ctx.fillRect(x + spread + 1, g.y0 + 7 + d + fall, 1, 2)
     }
-    ctx.globalAlpha = 1
   }
-  hzPressure(ctx, w, pal, h, geo, geo.cx, y0 + 7, pal.poolLip)
+  ctx.globalAlpha = 1
+}
+
+function drawHzSprinkler(ctx, w, pal, h, geo) {
+  var p = sprinklerPose(w, h, geo)
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(geo.x0, geo.y0 + 1, geo.wide, 3)
+  if (geo.show || geo.cool) drawSprinklerRain(ctx, w, pal, h, geo, p)
+  for (var i = 0; i < 4; i++) {
+    var x = geo.x0 + 4 + Math.round(i * (geo.wide - 8) / 3)
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x, geo.y0 + 4, 1, 3 + p.drop)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(x - 1, geo.y0 + 4 + p.drop, 3, 3)
+    if ((w.res || 1) >= 2 && geo.show) {
+      ctx.fillStyle = pal.decorLit
+      ctx.fillRect(x - 0.5, geo.y0 + 6 + p.drop, 2, 0.5)
+    }
+  }
+  if (!geo.show && !geo.cool && !w.reducedMotion)
+    hzPressure(ctx, w, pal, h, geo, geo.cx, geo.y0 + 7, pal.poolLip)
 }
 
 function drawHzPolisher(ctx, w, pal, h, geo) {

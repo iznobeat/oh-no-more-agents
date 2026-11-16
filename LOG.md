@@ -15258,3 +15258,116 @@ after sample also held 60/60 and 17 ms on all three levels.
 exposed cutter rack in crowded native colonies. No known remaining art or test
 issue; live Omarchy/QML remains unverified. No merge, push, deploy, production
 request, port 8787 change or sibling sync.
+
+## C29 — 2026-11-16 · Crouch, spin up, rain down
+
+**Chose:** Edge Cases (spikes), Spin Up (flywheel) and Rate Limiter
+(sprinkler), after re-rendering all 88 hostile kind/state fixtures and all
+48 hazard cycles at res 1/2. Inspected every native/page hazard overview,
+both hostile overviews and consecutive hostile contact sheets, then the three
+candidate cycles and complete ordinary/seasonal boards. None was selected in
+C12–C14/C24–C28. Spikes climbed as one nearly solid block; the flywheel's
+unconnected tips changed position without a readable speed-up; sprinkler
+rain jumped from a short dribble to full reach and disappeared at rest.
+Baseline: 3db2196c64a3188dbbb7759d76e5cf3dc7b54f75.
+
+**Changed (Draw only):** the spike rack shows its teeth, compresses one pixel,
+holds, then accelerates through charge ticks 11–15 to meet fire zero. A brief
+one-pixel extension settles in four ticks; the teeth withdraw during recovery.
+The flywheel keeps its six outer tips, shaft, hub and live outer ring; connected
+spokes make rotation readable under load. Its angle integrates increasing speed
+across the 26 charge ticks, joins the 22-tick fire phase without a jump and
+coasts over twelve recovery ticks into its original idle orientation modulo
+the six identical spokes. Sprinkler collars lower on connected stems, hold
+above a short spray, release the full spray over the first three fire ticks,
+then rise while the last drops drain down the zone. All three retain the
+original fixture identity and palette roles. Whole pixels carry the native
+motion; res 2 adds half-pixel tooth faces, spoke positions and collar edges.
+
+Reduced motion holds secondary extension, wheel rotation and live rainfall;
+charge progress stays visible. Original idle wheel tips and sprinkler pilot
+still move quietly without reduced motion. No Sim.js, sfx.js, North Pole
+paint, hostile heads/riders, umbrellas, timers, behaviour, RNG, world writes,
+new colours, dependencies or product text changed. No sibling/Omarchy writes.
+
+**Review/tool:** extended the existing tools/foe-strips.js with C29 compact
+consecutive cycles, before-left/after-right keys and complete native/page
+ordinary/Christmas/New Year boards. Added reproducible eight-consecutive-frame
+contact sheets for every hostile kind/state. Checked each new test/helper/
+fixture name with test -e before creating it. Baseline full catalogue and saved
+public assets: /tmp/xmas-dressing/foes9-0 (before-public subdirectory). First
+review: foes9-1. Final complete catalogue, 583 files: foes9-2. Inspected:
+
+- /tmp/xmas-dressing/foes9-2/spikes-compare-res1.png
+- /tmp/xmas-dressing/foes9-2/spikes-compare-res2.png
+- /tmp/xmas-dressing/foes9-2/flywheel-compare-res1.png
+- /tmp/xmas-dressing/foes9-2/flywheel-compare-res2.png
+- /tmp/xmas-dressing/foes9-2/sprinkler-compare-res1.png
+- /tmp/xmas-dressing/foes9-2/sprinkler-compare-res2.png
+
+Also inspected all three final consecutive compact cycles at both scales,
+ordinary charge/fire/rest native/page full boards,
+Christmas charge page and New Year charge native boards. Comparisons retain
+before and after together at actual display pixels. These are staged raster
+renders; live Omarchy/QML remains unverified.
+
+**Pins:** no existing golden file or historical pixel digest was overwritten;
+no existing pin moved. foe-round9-pins.json independently pins complete before/
+after cycles at both scales/facings and 168 ordinary complete-board pairs
+(21 biomes × two scales × four clocks). Those ordinary boards all remain exact;
+the independent historical scene/aggregate audit also found no changed digest.
+C28 tests explicitly recover their exact reviewed renderer; that normalization
+flows through the earlier reference chain. Restoring precisely three painters
+and removing five helpers recovers the entire baseline Draw source byte for
+byte, independently tested. All historical assertions remain. No skips, lower
+pixel thresholds or raw-buffer deepEqual. Complete cycle SHA-256 prefixes
+(both facing fixtures are identical):
+
+- spikes/res1: 234f5eea → b899f2ee; res2: 8d671723 → dc17afef — compression, accelerated extension and withdrawing teeth.
+- flywheel/res1: e8c90126 → 4a9ad3ee; res2: 3e64e766 → d6993572 — connected spokes, continuous speed-up and coast-down.
+- sprinkler/res1: 784a14ad → 5bd5bd05; res2: 9bb60d22 → 37c2de98 — lowering collars, connected release and draining recovery.
+
+**Validation:** baseline full check **1938/1938**, exit **0**, 225.04 s.
+Initial focused C29 run **12/12**, exit **0**, 31.23 s. Strengthened the wheel
+phase-join test afterward; exact floating-point equality differed by 4e-15
+radians, so the angle assertion now uses 1e-12 tolerance. Pixel digest equality
+remains exact. Stopped the in-progress full check and queued coverage/FPS
+before editing that assertion. The corrected join test passed. Final gates
+run sequentially in a persistent systemd user job with explicit exit files;
+source and fixtures stay frozen throughout. Shared FIFO heavy-run lock and
+unchanged six-file suite concurrency retained; all pixel loops are bounded.
+Tests cover exact reviewed cycles, visible changes at both scales, real timer
+joins and angular acceleration, theme/palette/grid/context/world purity,
+excluded hazards, every hostile state with Santa/party/antler riders, complete
+boards, exact source recovery, historical scene reproduction, review output,
+reduced motion, half-pixel refinement and persistent charge warnings.
+
+Final `npm run check`: **1950/1950**, exit **0**, 225.83 s. Fresh coverage
+**1950/1950**, 466.25 s. `npm run crap -- --changed --threshold 30`: exit
+**0**. Renderer scores: drawHzSprinkler **10.0**, spikeRackPose **9.5**,
+drawHzSpikes **8.8**, sprinklerPose **8.7**, drawFlywheelSpokes **8.1**,
+drawSprinklerRain **7.1**, drawHzFlywheel **6.2**, flywheelAngle **5.2**.
+New review helpers enemyContacts and roundNineReview score **5.0** each;
+all new/changed functions pass the under-30 gate. Stamps: Draw **390c9835**,
+build **393f9679**. Source/fixtures stayed frozen through the full check,
+fresh coverage, scoring and FPS; only this log was completed afterward.
+Copied the existing crapper cache locally and corrected its local editable
+path; no sibling files were written.
+
+**Performance:** matched `npm run fps -- 8 12 18`, saved baseline public
+assets versus final source, each under the shared heavy-run lock. Before
+and after, all three levels: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **11/10/11% → 11/9/10%**. No measured frame-rate loss;
+no CPU speedup claimed against desktop load. Both persistent FPS runs exit
+**0**. An initial tool-shell FPS launcher ended with 143; the retained baseline
+is its successful persistent rerun against the exact saved assets.
+Logs: /tmp/xmas-dressing/foes9-baseline-check.log, foes9-focused.log,
+foes9-focused-final.log (the floating-point assertion), foes9-final-check.log,
+foes9-final-crap.log, foes9-before-fps.log and foes9-after-fps.log. Persistent
+check/CRAP/FPS logs have adjacent explicit .exit files, all zero.
+
+**Next:** owner review of the rack's compressed warning, rotor speed-up and
+lowering sprinkler collars in crowded native colonies. No known remaining art,
+test or frame-rate issue. Live Omarchy/QML remains unverified; raster shots
+skip text and approximate gradients as documented. No merge, push, deploy,
+production request, port 8787 change or sibling sync.

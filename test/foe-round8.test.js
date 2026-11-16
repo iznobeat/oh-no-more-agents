@@ -1,3 +1,4 @@
+import {foeRoundNineSourceBefore} from '../tools/foe-round9-reference.js'
 import {execFileSync} from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import {load,canvas,frame,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
 import {hazardFrame,hazardFixture,hazardSequence,enemyFixture,KINDS,STATES,roundEightReview} from '../tools/foe-strips.js'
 import {foeRoundEightSourceBefore} from '../tools/foe-round8-reference.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8'),D=renderer(source),old=renderer(foeRoundEightSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
+const source=foeRoundNineSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),old=renderer(foeRoundEightSourceBefore(source)),S=load('Sim.js'),P=load('Palette.js')
 const specs=S.HAZARDS.filter(s=>['vinelock','blackice','shredder'].includes(s.id))
 const hash=b=>createHash('sha256').update(b).digest('hex')
 const pins=JSON.parse(fs.readFileSync('test/fixtures/foe-round8-pins.json','utf8'))
