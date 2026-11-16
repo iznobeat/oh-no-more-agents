@@ -7780,64 +7780,148 @@ function drawHzSentry(ctx, w, pal, h, geo) {
   hzLamp(ctx, pal, h, geo, cx - 2, y0 + 1)
 }
 
-function drawHzTurret(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0 + 1, y0, wide - 2, 4)
-  ctx.fillRect(cx - 4, y0 + 4, 3, 5)             // twin barrels
-  ctx.fillRect(cx + 2, y0 + 4, 3, 5)
-  ctx.fillStyle = pal.warn
-  ctx.fillRect(x0 + 1, y0 + 1, wide - 2, 1)
-  if (show) {
-    ctx.fillStyle = hot
-    var beam = live ? tall - 9 : 1 + Math.round(geo.progress * 4)
-    ctx.fillRect(cx - 3, y0 + 9, live ? 2 : 1, beam)
-    ctx.fillRect(cx + 3, y0 + 9, live ? 2 : 1, beam)
+function twinTurretSpread(w, h, g) {
+  var spread = 0
+  if (g.winding) spread = 3 * Math.min(1, h.t / 7) * (1 - Math.pow(Math.max(0, (h.t - 12) / 5), 2))
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(spread * grid) / grid
+}
+
+function twinTurretDrop(w, h, g, barrel) {
+  var drop = 0
+  if (g.winding) drop = -2 * Math.min(1, h.t / 5) + 5 * Math.pow(Math.max(0, (h.t - 12) / 5), 2)
+  if (g.live) {
+    var kick = w.reducedMotion ? 0 : Math.max(0, 1 - ((h.t + barrel * 3) % 6) / 3)
+    drop = 3 - kick * 2 * Math.min(1, (19 - h.t) / 3)
+    if (h.t === 0) drop = 3
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y0 + 1)
-  hzPressure(ctx, w, pal, h, geo, cx, y0 + 9, pal.rig)
+  if (g.cool) drop = 3 * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(drop * grid) / grid
+}
+
+function mountedLamp(ctx, w, pal, h, g, x, y) {
+  hzLamp(ctx, pal, h, w.reducedMotion ? Object.assign({}, g, { t: 0 }) : g, x, y)
+}
+
+function dartRackLength(w, h, g) {
+  var length = 2
+  if (g.winding) length += 4 * Math.min(1, h.t / 8)
+  if (g.live) length = 6
+  if (g.cool) length += 4 * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(length * grid) / grid
+}
+
+function drawDartVolley(ctx, w, pal, h, g, mouth, row) {
+  // Ten fire ticks; reserve the six-pixel sleeve and five-pixel dart.
+  var age = w.reducedMotion ? 5 : h.t, travel = Math.max(0, age - row) / 9 * (11 * g.C - 6 - 5)
+  var tip = mouth + Math.round(travel) * h.dir, y = g.y0 + 3 + row * 3
+  ctx.fillStyle = g.hot
+  ctx.fillRect(h.dir > 0 ? tip : tip - 5, y, 5, 1)
+  // An arrowhead and short fins keep the flight legible at native size.
+  ctx.fillRect(h.dir > 0 ? tip + 4 : tip - 5, y - 1, 1, 3)
+  if (w.res === 2) {
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(h.dir > 0 ? tip : tip - 1, y - 0.5, 1, 2)
+  }
+}
+
+function flameValvePose(w, h, g) {
+  var open = 0, length = 0
+  if (g.winding) { open = 3 * Math.min(1, h.t / 12); length = 2 + 4 * Math.pow(Math.max(0, (h.t - 23) / 6), 2) }
+  if (g.live) { open = 3; length = g.tall - 7 }
+  if (g.cool) { open = 3 * g.cool; length = (g.tall - 7) * g.cool }
+  var grid = w.res === 2 ? 2 : 1
+  return { open: Math.round(open * grid) / grid, length: Math.round(length) }
+}
+
+function drawFlameCone(ctx, w, pal, h, g, pose) {
+  var t = w.reducedMotion ? 0 : h.t, cooling = g.cool > 0
+  for (var row = 0; row < pose.length; row++) {
+    if (cooling && row > 2 && (row + t) % 4 === 0) continue
+    var half = Math.max(1, Math.round((g.wide / 2) * (0.25 + row / g.tall * (g.live || cooling ? 1.5 : 0.5))))
+    ctx.fillStyle = cooling ? pal.rigDark : pal.fire
+    ctx.fillRect(g.cx - half, g.y0 + 7 + row, half * 2, 1)
+    ctx.fillStyle = cooling ? pal.rig : pal.fireHot
+    var core = Math.max(1, half - 2 - Math.floor((row + t) % 4 / 3))
+    ctx.fillRect(g.cx - core, g.y0 + 7 + row, core * 2, 1)
+  }
+}
+
+function drawHzTurret(ctx, w, pal, h, geo) {
+  var y0 = geo.y0, cx = geo.cx
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0 + 1, y0, geo.wide - 2, 4)
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(geo.x0 + 1, y0 + 1, geo.wide - 2, 1)
+  for (var i = 0; i < 2; i++) {
+    var pivot = cx - 4 + i * 6, x = pivot + (i * 2 - 1) * twinTurretSpread(w, h, geo), drop = twinTurretDrop(w, h, geo, i), muzzle = y0 + 9 + drop
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(Math.min(pivot, x), y0 + 3, 3 + Math.abs(x - pivot), 1)
+    ctx.fillRect(x, y0 + 3, 3, 6 + drop)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(x, y0 + 4 + drop, 3, 5)
+    ctx.fillStyle = geo.show ? geo.hot : pal.warn
+    ctx.fillRect(x, muzzle - 2, 3, 1)
+    if (w.res === 2) {
+      ctx.fillStyle = pal.rigDark
+      ctx.fillRect(x + 0.5, muzzle - 0.5, 2, 0.5)
+    }
+    if (geo.show) {
+      ctx.fillStyle = geo.hot
+      if (geo.live) ctx.fillRect(x + 1, muzzle, 2, Math.max(0, geo.y1 - muzzle))
+      else ctx.fillRect(x + 1, muzzle, 1, 1 + Math.round(geo.progress * 3))
+    }
+  }
+  mountedLamp(ctx, w, pal, h, geo, cx - 2, y0 + 1)
 }
 
 function drawHzDarts(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, cx = geo.cx, tall = geo.tall,
-    live = geo.live, show = geo.show, hot = geo.hot
+  var x0 = geo.x0, y0 = geo.y0, length = dartRackLength(w, h, geo)
+  var outlet = h.dir > 0 ? x0 + 5 : x0, mouth = outlet + length * h.dir
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y0, 5, tall)                  // wall plate
-  ctx.fillStyle = pal.rigDark
-  for (var dh = 0; dh < 3; dh++) ctx.fillRect(x0 + 5, y0 + 3 + dh * 5, 2, 2)
+  ctx.fillRect(x0, y0, 5, geo.tall)
   ctx.fillStyle = pal.warn
-  ctx.fillRect(x0 + 1, y0 + 2, 1, tall - 4)
-  if (show) {
-    ctx.fillStyle = hot
-    // Darts in flight: short dashes marching away from the plate.
-    for (var dd = 0; dd < 3; dd++) {
-      var dartTravel = live ? ((h.t * 4 + dd * 13) % (11 * C)) * h.dir : 0
-      var dx2 = live ? cx + dartTravel : x0 + 5 + Math.floor(geo.progress * 2)
-      ctx.fillRect(dx2, y0 + 3 + dd * 3, live ? 5 : 2, 1)
+  ctx.fillRect(x0 + 1, y0 + 2, 1, geo.tall - 4)
+  for (var row = 0; row < 3; row++) {
+    var y = y0 + 3 + row * 3, x = h.dir > 0 ? outlet : mouth
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x, y - 1, length, 3)
+    ctx.fillStyle = geo.winding ? geo.hot : pal.rig
+    ctx.fillRect(x, y, length, 1)
+    if (geo.live) drawDartVolley(ctx, w, pal, h, geo, mouth, row)
+    else if (geo.winding) {
+      ctx.fillStyle = geo.hot
+      ctx.fillRect(h.dir > 0 ? mouth - 2 : mouth, y - 1, 2, 3)
+    }
+    if (w.res === 2) {
+      ctx.fillStyle = pal.warn
+      ctx.fillRect(x, y + 0.5, length, 0.5)
     }
   }
-  hzLamp(ctx, pal, h, geo, x0, y0 + 1)
-  hzPressure(ctx, w, pal, h, geo, x0 + 5, y0 + 6, pal.rig)
+  mountedLamp(ctx, w, pal, h, geo, x0, y0 + 1)
 }
 
 function drawHzFlame(ctx, w, pal, h, geo) {
-  var y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, t = geo.t, show = geo.show
+  var y0 = geo.y0, cx = geo.cx, pose = flameValvePose(w, h, geo)
   ctx.fillStyle = pal.rig
   ctx.fillRect(cx - 4, y0, 8, 3)
-  hzTri(ctx, cx, y0 + 3, 3, 4, 1)                // flared nozzle
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(cx - 2, y0 + 3, 4, 3)
+  ctx.fillStyle = pal.rig
+  hzTri(ctx, cx - pose.open, y0 + 3, 3, 4, 1)
+  hzTri(ctx, cx + pose.open, y0 + 3, 3, 4, 1)
   ctx.fillStyle = pal.warn
   ctx.fillRect(cx - 3, y0 + 1, 6, 1)
-  if (show) {
-    // A cone that widens as it falls, with a hotter core.
-    for (var f = 0; f < (live ? tall - 7 : 2 + Math.round(geo.progress * 4)); f++) {
-      var fw = Math.round((wide / 2) * (0.25 + (f / tall) * (live ? 1.5 : 0.5)))
-      ctx.fillStyle = f % 3 === Math.floor(t / 3) % 3 ? pal.fireHot : pal.fire
-      ctx.fillRect(cx - fw, y0 + 7 + f, fw * 2, 1)
-    }
+  if (geo.show || geo.cool) drawFlameCone(ctx, w, pal, h, geo, pose)
+  if (!geo.show && !geo.cool && !w.reducedMotion) hzPressure(ctx, w, pal, h, geo, cx, y0 + 7, pal.fire)
+  if (pose.open) {
+    var edge = w.res === 2 ? 0.5 : 0
+    ctx.fillStyle = geo.show ? geo.hot : pal.rigDark
+    ctx.fillRect(cx - pose.open - edge, y0 + 5, 1, 2 - edge)
+    ctx.fillRect(cx + pose.open - edge, y0 + 5, 1, 2 - edge)
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y0 + 7, pal.fire)
 }
 
 function drawHzTesla(ctx, w, pal, h, geo) {
