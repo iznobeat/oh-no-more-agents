@@ -15135,3 +15135,12 @@ initial baseline also held 60/60 with 17 ms worst frames. Logs:
 braced shark jaw in crowded native colonies. No known remaining test or art
 issue; live Omarchy/QML remains unverified. No merge, push, deploy,
 production request, port 8787 change or sibling sync.
+
+## 490 — 2026-11-16 · Deploy: geyser, frost jet and shark
+
+**Deployed** build 7888079a (Worker version b2235a02), replacing 700fcf8d;
+covers C27 (geyser builds pressure then rises and settles, frost jet opens
+its collar before the discharge, the Loan Shark braces with open jaws before
+a continuous lunge — its warning had been colour only), reviewed in its
+strips. **Before:** gate 1926/1926; `npm run smoke -- --level 17` passed
+(17–24). **After:** `npm run verify -- --previous 700fcf8d` passed.
