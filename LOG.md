@@ -15930,3 +15930,12 @@ foes13-final-crap.log and foes13-after-fps.log.
 
 **Next:** owner review of foes13-3's native/page barrel, shutter and raised
 contacts; stop future rounds when no unselected tell still needs improvement.
+
+## 494 — 2026-11-16 · Deploy: sprayer, sentry, tripwire
+
+**Deployed** build d89c3f94 (Worker version 9d136124), replacing c7bdb578;
+covers C33 (the Token Sprayer's barrel extends, holds and recoils; the Hall
+Monitor's lens opens its shutters and its beam follows the Sim's midpoint and
+reach; the tripwire's contact arms rise and tension). 42 tells improved.
+**Before:** gate 2007/2007, CRAP green; `npm run smoke -- --level 14`
+passed (14–21). **After:** `npm run verify -- --previous c7bdb578` passed.
