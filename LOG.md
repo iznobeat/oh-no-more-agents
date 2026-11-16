@@ -14407,3 +14407,14 @@ unresolved test, art or frame-rate issue. Live Omarchy/QML appearance remains
 unverified; the raster renderer approximates gradients as documented.
 No merge, push, deploy, production request, port 8787 change, sibling write
 or Omarchy write.
+
+## 485 — 2026-11-16 · Deploy: the Desert's canyons, the Cavern's halls
+
+**Deployed** build 17fc80ec (Worker version 22c5270c), replacing 4efda3eb;
+covers C20 (Desert: canyon silhouettes, saguaros, wrens and lizards) and C21
+(Cavern — level 1, the first board anyone sees: flowstone columns, a cave
+roof, fissures, stalagmite and mushroom groups, moths and drips), both
+reviewed at full frame at both resolutions; the colony still reads. Seven
+biomes reworked from the audit so far. **Before:** gate 1870/1870; `npm run
+smoke -- --level 1` passed (1–7). **After:** `npm run verify -- --previous
+4efda3eb` passed.
