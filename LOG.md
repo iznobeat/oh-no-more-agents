@@ -15017,3 +15017,121 @@ plume), reviewed in their strips. Six rounds of foe and hazard animation so
 far: 21 tells improved. **Before:** gate 1914/1914; `npm run smoke --
 --level 13` passed (13–20). **After:** `npm run verify -- --previous
 4074472e` passed.
+
+## C27 — 2026-11-16 · Build pressure, open wide, bite
+
+**Chose:** Vaporware (geyser), Cold Start (frostjet) and Loan Shark (shark),
+after re-rendering the full eight-kind × eleven-state hostile catalogue and
+all 48 hazard cycles at res 1/2. Inspected every hazard overview at both
+scales, both hostile overviews, consecutive hostile states and the three
+candidate cycles. None was selected in C12–C14/C24–C26. The geyser jumped
+from a tiny warning blob to its full plume; the frost nozzle barely moved
+before a solid cone appeared; the shark's warning was mostly a red mouth,
+then its strike snapped backward from the charge position. Baseline:
+0a817f23c0c323d43ebbe0e7936d4d4b544e31b4.
+
+**Changed (Draw only):** the geyser's centre grate lifts on attached supports,
+a narrow column builds pressure and holds, then grows to the original flared
+plume over three fire ticks. Stepped shoulders and a rising core animate the
+release; the column subsides during the existing twelve-tick recovery. The
+frost valve retracts inside its housing, its collar opens above and below
+the bore, and a short condensed jet holds before the connected three-tick
+release. Moving bands travel down the original-width cone; recovery shrinks
+it in the existing cool colour. The shark draws back, lowers its tail and
+opens a toothed jaw before lunging from that same position. The first ten
+fire ticks carry the run, the jaw closes at the end, and the twelve-tick
+recovery returns it to its patrol. Its bob eases into and out of the braced
+pose. The original asymmetric body, fins, gills, eye and palette roles remain.
+Whole pixels carry native poses; pressure caps, valve travel, shark travel,
+jaw and tail use the half-pixel grid at page resolution.
+
+Reduced motion freezes plumes, live travel, tail and inherited pressure
+wisps, while retaining phase-progress warnings. Idle steam and patrol remain
+exact at native scale; reduced idle is still. No Sim.js, sfx.js, North Pole
+code, hostile heads/riders, umbrellas, timing, behaviour, RNG, dependencies,
+world writes or product text changed. No sibling/Omarchy writes.
+
+**Review/tool:** extended tools/foe-strips.js with C27 compact consecutive
+cycles, side-by-side keys and ordinary/Christmas/New Year complete boards.
+Checked the new test/helper/fixture names were free with test -e. Complete
+baseline catalogue: /tmp/xmas-dressing/foes7-0; saved original public assets
+in its before-public directory. Drafts 1/2 were rendered outside the tree
+while the baseline gate ran. Draft 1's pressure warnings were too small;
+draft 2 enlarged them. Draft 3 exposed the need for a more visible frost
+collar at native size and a smoother shark bob; draft 4 is final. Inspected
+all six final before-left/after-right key strips:
+
+- /tmp/xmas-dressing/foes7-4/geyser-compare-res1.png
+- /tmp/xmas-dressing/foes7-4/geyser-compare-res2.png
+- /tmp/xmas-dressing/foes7-4/frostjet-compare-res1.png
+- /tmp/xmas-dressing/foes7-4/frostjet-compare-res2.png
+- /tmp/xmas-dressing/foes7-4/shark-compare-res1.png
+- /tmp/xmas-dressing/foes7-4/shark-compare-res2.png
+
+Also inspected consecutive compact cycles at native/page scale in drafts
+1/2, final key strips in 3/4, ordinary charge/fire/rest native boards,
+Christmas fire native/page boards and Christmas/New Year native charge
+boards. Full catalogues retained in 0, 3 and 4. These are staged shots using
+the real raster renderer and its documented gradient approximation; no live
+Omarchy/QML claim.
+
+**Pins:** no existing golden file or historical pixel digest was overwritten;
+no existing pinned scene moved. foe-round7-pins.json independently pins the
+complete before/after cycles at both resolutions/direction fixtures and all
+168 complete boards (21 biomes × two scales × four clocks). Every complete
+board in that particular ordinary fixture set remains exact. The separately
+reproduced historical ledger also found no changed scene/aggregate digest.
+C26's tests now explicitly recover their exact reviewed source before running
+all their original assertions. Restoring precisely five painters and removing
+five helpers reproduces the entire baseline Draw source byte for byte; the
+new tests independently verify this. No test removed, threshold lowered,
+assertion skipped or raw-buffer diff introduced.
+
+Complete cycle SHA-256 prefixes (direction fixtures -1/+1):
+
+- geyser/res1: 1feb21c7 → 04527697; res2: d10e5527 → f61e644e — rising grate, pressure column and release/recovery.
+- frostjet/res1/-1: 4e26f8c0 → d5c1446f; /+1: b7c7a3c2 → e4cadef4 — opening valve collar and connected plume.
+- frostjet/res2/-1: 29e5d727 → 3c9debc5; /+1: 56737eb4 → b104bb34 — page valve/plume refinement.
+- shark/res1: e15a89b1 → 2bcfbf00; res2: 3f642fd9 → 06f2ddf8 — jaw brace, continuous lunge and return.
+
+**Validation so far:** baseline full check **1914/1914**, exit **0**, 241.72 s;
+focused C27 tests **12/12**, exit **0**, 32.92 s. The first transient baseline
+session was terminated (143); a persistent systemd user job completed the
+replacement. First focused run exposed inherited hzPressure motion under
+reduced motion; fixed those calls locally and retained the strict pixel
+assertions. Tests also cover visible native changes, phase joins, recovery,
+every-theme bounded/grid/palette/purity, excluded hazards, all hostile states
+with Santa/party/antler riders, exact source restoration, scene-ledger
+reproduction and review output. Copied the existing crapper cache locally
+and corrected its editable path without modifying the sibling. Final gates
+and matched performance results follow below.
+
+Final full check **1926/1926**, exit **0**, 272.64 s. Fresh CRAP coverage
+**1926/1926**, exit **0**, 575.01 s;
+`npm run crap -- --changed --threshold 30` exit **0**. Renderer scores:
+sharkAttackPose **17.7**, drawHzShark **14.7**, drawSharkFins **14.0**,
+drawHzGeyser **13.0**, both plume painters **12.3**, drawHzFrostjet **11.4**,
+frostJetPose **10.4**, drawSharkJaw **9.0**, geyserPose **8.7**. New review,
+reference and scene helpers are also below 30. Stamps refreshed: Draw
+**1f170fff**, build **7888079a**. Source and fixtures stayed frozen throughout
+the final check, coverage and FPS; only this log was completed afterward.
+Shared FIFO lock, unchanged six-file test concurrency, bounded paint
+recordings and digest comparisons throughout. Full gates include Christmas,
+New Year and North Pole. Retained logs/exits:
+/tmp/xmas-dressing/foes7-before-check.{log,exit},
+foes7-focused.{log,exit}, foes7-check.{log,exit}, foes7-crap.{log,exit}.
+
+**Performance:** matched back-to-back `npm run fps -- 8 12 18`, saved baseline
+public assets versus final art, under one shared lock; pair exit **0**. On
+all three levels, before and after: **60 median / 60 p5 FPS, 0% long tasks**.
+Worst frame **34/17/33 ms → 17/17/17 ms**; CPU **14/12/15% → 10/13/12%**.
+No measured frame-rate loss; no speedup claimed against desktop load. The
+initial baseline also held 60/60 with 17 ms worst frames. Logs:
+/tmp/xmas-dressing/foes7-final-before-fps.log,
+/tmp/xmas-dressing/foes7-final-after-fps.log and
+/tmp/xmas-dressing/foes7-fps-pair.{log,exit}.
+
+**Next:** owner review of the lifted geyser grate, opening frost collar and
+braced shark jaw in crowded native colonies. No known remaining test or art
+issue; live Omarchy/QML remains unverified. No merge, push, deploy,
+production request, port 8787 change or sibling sync.
