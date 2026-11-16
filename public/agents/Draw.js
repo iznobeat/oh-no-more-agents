@@ -7924,27 +7924,48 @@ function drawHzFlame(ctx, w, pal, h, geo) {
   }
 }
 
+function teslaHeadLift(w, h, g) {
+  var lift = 0
+  if (g.winding) lift = 4 * Math.min(1, h.t / 8)
+  if (g.live) lift = 4
+  if (g.cool) lift = 4 * g.cool * g.cool
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return Math.round(lift * grid) / grid
+}
+
 function drawHzTesla(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y0 = geo.y0, y1 = geo.y1, cx = geo.cx,
-    wide = geo.wide, tall = geo.tall, live = geo.live, t = geo.t,
-    seed = geo.seed, show = geo.show, hot = geo.hot
+  var lift = teslaHeadLift(w, h, geo), top = geo.y0 - lift
   ctx.fillStyle = pal.rig
-  ctx.fillRect(cx - 2, y1 - tall + 4, 4, tall - 4)   // post
-  ctx.fillRect(x0 + 1, y1 - 3, wide - 2, 3)          // base
-  ctx.fillStyle = show ? hot : pal.rigDark
-  ctx.fillRect(cx - 4, y0, 8, 4)                     // ball on top
-  if (show) {
-    ctx.fillStyle = hot
-    var arc = live ? tall - 6 : 1 + Math.round(geo.progress * 4)
-    hzBolt(ctx, cx, y0 + 2, live ? x0 : cx - arc, y0 + 2 + arc, seed + t, live ? 2 : 1)
-    hzBolt(ctx, cx, y0 + 2, live ? x1 : cx + arc, y0 + 2 + arc, seed + t + 3, live ? 2 : 1)
-  }
-  ctx.fillStyle = geo.cool ? pal.warn : pal.rig
+  ctx.fillRect(geo.cx - 2, top + 4, 4, geo.y1 - top - 4)
+  ctx.fillRect(geo.x0 + 1, geo.y1 - 3, geo.wide - 2, 3)
+  ctx.fillStyle = pal.rigDark
+  if (lift) ctx.fillRect(geo.cx - 5, geo.y0 + 4, 10, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.rigDark
+  ctx.fillRect(geo.cx - 4, top, 8, 4)
+  if ((w.res || 1) >= 2 && lift) { ctx.fillStyle = pal.rig; ctx.fillRect(geo.cx - 3.5, top + 0.5, 7, 0.5) }
+  drawTeslaCharge(ctx, w, pal, h, geo, top)
   for (var coil = 0; coil < 3; coil++) {
+    ctx.fillStyle = geo.cool ? pal.warn : pal.rig
     if (geo.winding && coil < Math.ceil(geo.progress * 3)) ctx.fillStyle = geo.hot
-    ctx.fillRect(cx - 3, y1 - 5 - coil * 3, 6, 1)
+    ctx.fillRect(geo.cx - 3, geo.y1 - 5 - coil * 3, 6, 1)
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y0, pal.warn)
+  var frozen = w.reducedMotion && !geo.winding
+  hzPressure(ctx, w, pal, {t:frozen ? 0 : h.t}, {t:w.reducedMotion ? 0 : geo.t, winding:geo.winding, progress:geo.progress, cool:geo.cool, live:geo.live, show:geo.show}, geo.cx, top, pal.warn)
+}
+
+function drawTeslaCharge(ctx, w, pal, h, g, top) {
+  if (!g.show) return
+  ctx.fillStyle = g.hot
+  var arc = g.live ? g.tall - 6 : 1 + Math.round(g.progress * 4)
+  var clock = w.reducedMotion ? 0 : g.t
+  hzBolt(ctx, g.cx, top + 2, g.live ? g.x0 : g.cx - arc, g.y0 + 2 + arc, g.seed + clock, g.live ? 2 : 1)
+  hzBolt(ctx, g.cx, top + 2, g.live ? g.x1 : g.cx + arc, g.y0 + 2 + arc, g.seed + clock + 3, g.live ? 2 : 1)
+  // Opposed charging contacts stay attached to the lifted crown.
+  if (g.winding) {
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(g.cx - 6, top + 3, 2, 3)
+    ctx.fillRect(g.cx + 4, top + 3, 2, 3)
+  }
 }
 
 // --- snipe: one target, a long way off, one shot then a long reload -----
@@ -7977,23 +7998,43 @@ function drawHzSniper(ctx, w, pal, h, geo) {
 }
 
 // --- beam: keeps its own schedule ---------------------------------------
+function laserEmitterDrop(w, h, g) {
+  var drop = 0
+  if (g.winding) drop = 3 * Math.min(1, h.t / 10)
+  if (g.live) drop = 3
+  if (g.cool) drop = 3 * g.cool * g.cool
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return Math.round(drop * grid) / grid
+}
+
 function drawHzLasergrid(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y0 = geo.y0, wide = geo.wide, tall = geo.tall,
-    live = geo.live, show = geo.show, hot = geo.hot
+  var drop = laserEmitterDrop(w, h, geo)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y0, wide, 3)
-  ctx.fillStyle = geo.cool ? pal.warn : pal.rigDark
-  for (var e = x0 + 2; e < x1 - 1; e += 8) ctx.fillRect(e, y0 + 3, 3, 2)
+  ctx.fillRect(geo.x0, geo.y0, geo.wide, 3)
   ctx.fillStyle = pal.warn
-  ctx.fillRect(x0, y0 + 1, wide, 1)
-  if (show) {
-    ctx.fillStyle = hot
-    for (var b2 = x0 + 3; b2 < x1 - 1; b2 += 8) {
-      if (live) ctx.fillRect(b2, y0 + 5, 2, tall - 5)
-      else for (var aim = 0; aim < tall - 5; aim += 5) ctx.fillRect(b2, y0 + 5 + aim, 1, 1)
-    }
+  ctx.fillRect(geo.x0, geo.y0 + 1, geo.wide, 1)
+  for (var x = geo.x0 + 2; x < geo.x1 - 1; x += 8) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x + 1, geo.y0 + 3, 1, drop)
+    ctx.fillStyle = geo.cool ? pal.warn : pal.rigDark
+    ctx.fillRect(x, geo.y0 + 3 + drop, 3, 2)
+    if ((w.res || 1) >= 2 && drop) { ctx.fillStyle = pal.rig; ctx.fillRect(x + 0.5, geo.y0 + 3.5 + drop, 2, 0.5) }
+    if (geo.show) drawLaserColumn(ctx, w, h, geo, x + 1, geo.y0 + 5 + drop)
   }
-  hzLamp(ctx, pal, h, geo, geo.cx - 2, y0 + 1)
+  mountedLamp(ctx, w, pal, h, geo, geo.cx - 2, geo.y0 + 1)
+}
+
+function drawLaserColumn(ctx, w, h, g, x, top) {
+  ctx.fillStyle = g.hot
+  var bottom = g.y1, clock = w.reducedMotion ? 0 : h.t
+  if (g.live) {
+    ctx.fillRect(x, top, 2, bottom - top)
+    // A travelling bright collar follows the full lethal beam, never delays it.
+    ctx.fillRect(x - 1, top + (clock * 2 % Math.max(1, Math.floor(bottom - top - 2))), 4, 2)
+  } else {
+    for (var y = top; y < bottom; y += 5) ctx.fillRect(x, y, 1, 1)
+    ctx.fillRect(x - 1, top - 1, 3, 1)
+  }
 }
 
 function drawHzSweeper(ctx, w, pal, h, geo) {
@@ -8108,26 +8149,52 @@ function drawTrapFine(ctx, w, pal, h, g) {
   for (var c = 0; c < 4; c++) ctx.fillRect(g.cx + 1 + c, g.y1 - 0.5 - (c % 2) * 0.5, 0.5, 0.5)
 }
 
-function drawHzSawblade(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, cx = geo.cx, wide = geo.wide, live = geo.live,
-    t = geo.t, show = geo.show, hot = geo.hot
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(x0 + 2, y1 - 3, wide - 4, 3)          // slot
-  ctx.fillStyle = pal.warn
-  ctx.fillRect(x0 + 3, y1 - 2, wide - 6, 1)
-  if (show || geo.cool) {
-    // A disc rising out of the slot, teeth turning.
-    var rise = hzStroke(geo, 9, 5)
-    var rad = Math.min(rise, 8)
-    ctx.fillStyle = geo.cool ? pal.rig : hot
-    for (var a2 = 0; a2 < 12; a2++) {
-      var ang = (a2 / 12) * Math.PI * 2 + t * 0.25
-      ctx.fillRect(Math.round(cx + Math.cos(ang) * rad), Math.round(y1 - 3 - rise / 2 + Math.sin(ang) * rad * 0.6), 2, 2)
-    }
-    ctx.fillRect(cx - 1, y1 - 4 - rise / 2, 2, 2)
+function sawbladePose(w, h, g) {
+  var rise = 0, age = h.t, angle = 0
+  if (g.winding) {
+    rise = Math.min(1, age / 6) * 4
+    if (age >= 14) { var q = (age - 14) / 5; rise = 4 + 5 * q * q }
+    angle = 0.06 * age + 0.006 * age * age
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y1 - 2)
-  hzImpact(ctx, pal, h, geo, cx, y1 - 3, pal.warn)
+  if (g.live) { rise = 9; angle = 3.306 + (w.reducedMotion ? 0 : age * 0.288) }
+  if (g.cool) {
+    rise = 9 * g.cool * g.cool
+    angle = 10.506 + (w.reducedMotion ? 0 : 0.288 * (age - age * age / 24))
+  }
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { rise: Math.round(rise * grid) / grid, angle: angle }
+}
+
+function drawSawTeeth(ctx, w, pal, g, pose) {
+  var radius = Math.min(pose.rise, 8), cy = g.y1 - 3 - pose.rise / 2
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  ctx.fillStyle = g.cool ? pal.rig : g.hot
+  for (var tooth = 0; tooth < 12; tooth++) {
+    var a = tooth * Math.PI / 6 + pose.angle
+    var x = Math.round((g.cx + Math.cos(a) * radius) * grid) / grid
+    var y = Math.round((cy + Math.sin(a) * radius * 0.6) * grid) / grid
+    ctx.fillRect(x, y, 2, 2)
+  }
+  // Four connected spokes make the rotating tooth ring read as one wheel.
+  ctx.fillStyle = pal.rig
+  for (var spoke = 0; spoke < 4; spoke++) for (var r = 0; r < radius; r++) {
+    var ang = spoke * Math.PI / 2 + pose.angle
+    ctx.fillRect(Math.round(g.cx + Math.cos(ang) * r), Math.round(cy + Math.sin(ang) * r * 0.6), 1, 1)
+  }
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(g.cx - 1, Math.round(cy), 3, 2)
+  if (grid === 2) { ctx.fillStyle = pal.rig; ctx.fillRect(g.cx - 0.5, Math.round(cy) + 0.5, 1, 0.5) }
+}
+
+function drawHzSawblade(ctx, w, pal, h, geo) {
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(geo.x0 + 2, geo.y1 - 3, geo.wide - 4, 3)
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(geo.x0 + 3, geo.y1 - 2, geo.wide - 6, 1)
+  var pose = sawbladePose(w, h, geo)
+  if (pose.rise) drawSawTeeth(ctx, w, pal, geo, pose)
+  mountedLamp(ctx, w, pal, h, geo, geo.cx - 2, geo.y1 - 2)
+  hzImpact(ctx, pal, h, geo, geo.cx, geo.y1 - 3, pal.warn)
 }
 
 function drawHzGrinder(ctx, w, pal, h, geo) {

@@ -15531,3 +15531,109 @@ flame throat in crowded native colonies. No known unresolved art, test or
 frame-rate issue. Live Omarchy/QML remains unverified; raster shots skip text
 and approximate gradients as documented. No merge, push, deploy, production
 request, port 8787 change or sibling/Omarchy write.
+
+## C31 — 2026-11-16 · Raise the wheel, lower the lenses, lift the crown
+
+**Chose:** Circular Reference (sawblade), Neural Net (lasergrid) and Power
+User (tesla), after re-rendering all 88 hostile kind/state fixtures and all
+48 hazard cycles at res 1/2. Inspected twelve hazard overviews, both hostile
+overviews and all sixteen consecutive hostile contact sheets, then candidate
+complete cycles and full boards. None was selected in C12–C14/C24–C30.
+The saw's loose orbiting teeth lacked a connected wheel and jumped to its
+full rise on release; the laser heads stayed rigid throughout charge; Tesla's
+small flickering arcs carried almost all of its warning. Baseline:
+d651079124e24abe2f5190df0b6affeb18cae971.
+
+**Changed (Draw only):** the saw lifts four native pixels over six ticks,
+holds through charge tick fourteen, then accelerates to its original nine-pixel
+stroke at charge nineteen/fire zero. Four connected spokes and a dark hub
+join its original twelve-tooth ring. Rotation accelerates on the charge clock,
+joins the twenty-six fire ticks continuously and coasts while the wheel sinks
+over the twelve-tick recovery cue. Three laser heads lower on attached stems
+over ten of thirty charge ticks, hold, then retract over recovery. The complete
+lethal beam appears at fire zero; travelling collars make the discharge read
+as motion without delaying its reach. Tesla's original eight-pixel crown
+lifts four pixels over eight of twenty-four charge ticks, holds above exposed
+post and contacts, fires from that crown and lowers during recovery. Its three
+coils now light progressively rather than inheriting the first coil's hot fill.
+Original palettes, tooth-ring/slot, ceiling rail and crown/post identities stay.
+Whole pixels carry the poses at native size; page teeth, hubs, lenses and crown
+edges refine the half-pixel grid.
+
+Reduced motion holds live rotation, travelling collars, electrical flicker,
+pressure wisps and idle lamps; phase-progress tells and recovery remain.
+Preserved quiet idle paint, omitting the new fittings when retracted. No
+Sim.js, sfx.js, North Pole paint, hostile heads/riders, umbrellas, timers,
+behaviour, RNG, world writes, new colours, dependencies or product text changed.
+No sibling/Omarchy writes.
+
+**Review/tool:** extended tools/foe-strips.js with C31 compact consecutive
+cycles, before-left/after-right keys and ordinary/Christmas/New Year complete
+boards at actual native/page size. Checked every new test/helper/fixture name
+was free with test -e. Baseline catalogue and saved public assets:
+/tmp/xmas-dressing/foes11-0 (before-public subdirectory). Drafts stayed outside
+the repository while the baseline check ran. Initial review: foes11-1; first
+complete candidate catalogue: foes11-2. Tightened the idle treatment before
+final review. Inspected all six final side-by-side strips:
+
+- /tmp/xmas-dressing/foes11-3/sawblade-compare-res1.png
+- /tmp/xmas-dressing/foes11-3/sawblade-compare-res2.png
+- /tmp/xmas-dressing/foes11-3/lasergrid-compare-res1.png
+- /tmp/xmas-dressing/foes11-3/lasergrid-compare-res2.png
+- /tmp/xmas-dressing/foes11-3/tesla-compare-res1.png
+- /tmp/xmas-dressing/foes11-3/tesla-compare-res2.png
+
+Also inspected compact complete cycles at both scales, ordinary charge/fire/
+rest full boards at both scales, Christmas charge at page size and New Year
+charge at native size. foes11-3 retains the final complete catalogue. These
+are staged raster renders, not live Omarchy/QML inspection.
+
+**Pins:** no existing golden digest or historical transition moved. New
+foe-round11-pins.json retains independent predecessor/reviewed complete-cycle
+pins in both facings and resolutions, plus 168 ordinary full boards (21 biomes,
+two scales, four clocks), all byte-identical. The independent historical scene
+audit also found no moved frame; foe-round11-scenes.json retains that exact
+ledger. Earlier C30 tests/audit explicitly recover their reviewed source;
+restoration flows through earlier reference helpers. Restoring precisely three
+painters and removing six helpers independently recovers complete predecessor
+Draw.js byte for byte. No skips, widened thresholds or raw-buffer deepEqual.
+New cycle SHA-256 prefixes (both facings identical):
+
+- sawblade/res1: 553d3df6 → 1c05c436; res2: 9e593aa2 → f0043c3b.
+- lasergrid/res1: 9bf3e2ab → 60f4965a; res2: 542814bc → 76e72bfd.
+- tesla/res1: 3abbd05b → fcf87d06; res2: fbd17c6a → f72ae5f4.
+
+**Validation:** baseline npm run check **1964/1964**, exit **0**, 230.46 s.
+Focused C31/hazards regression **113/113**, exit **0**, 30.46 s, including
+all fourteen new cases: independent before/after cycles, full-size differences,
+held poses, phase joins, immediate full laser reach, palette/grid/context/world
+purity, excluded hazards, seasonal riders, full boards, exact source recovery,
+historical scene reproduction, review output, reduced motion and half pixels.
+Shared FIFO heavy-run lock and six-file suite concurrency retained. Copied the
+existing crapper cache locally and corrected only its local editable path.
+Final Draw stamp 1a6b477f, build f192a4df. Source, fixtures and stamps freeze
+for full check, fresh coverage, CRAP and FPS; final gate results follow below.
+
+Final `npm run check`: **1978/1978**, exit **0**, 240.21 s, including
+all season tests. Fresh coverage: **1978/1978**, exit **0**, 584.83 s.
+`npm run crap -- --changed --threshold 30`: exit **0**. Renderer scores:
+drawHzTesla **16.2**, sawbladePose **9.2**, drawTeslaCharge **9.0**,
+drawSawTeeth **8.1**, drawHzLasergrid **7.1**, laserEmitterDrop **6.1**,
+teslaHeadLift **6.1**, drawLaserColumn **4.1**, drawHzSawblade **2.0**.
+New review helper roundElevenReview **5.0**; all new/changed functions pass.
+Source, fixtures and stamps stayed frozen throughout the final gates; only
+this log was completed afterward.
+
+**Performance:** matched `npm run fps -- 8 12 18` before and after, under
+the shared heavy-run lock. Both runs, every level: **60 median / 60 p5 FPS,
+17 ms worst frame, 0% long tasks**. CPU **10/8/10% → 11/9/10%**. Both exit
+**0**. No measured frame-rate loss; no CPU change claimed against desktop load.
+Logs: /tmp/xmas-dressing/foes11-baseline-check.log, foes11-focused.log,
+foes11-final-check.log, foes11-final-crap.log, foes11-before-fps.log and
+foes11-after-fps.log; adjacent explicit .exit files are all zero. No known
+unresolved art, test or frame-rate issue.
+
+**Next:** review the raised saw, lowered lenses and lifted crown in crowded
+native colonies. Live Omarchy/QML remains unverified; raster renders skip text
+and approximate gradients as documented. No merge, push, deploy, production
+request, port 8787 change or sibling/Omarchy write.
