@@ -1,7 +1,8 @@
+import {foeRoundSixSourceBefore,foeRoundSixSuccessor} from '../tools/foe-round6-reference.js'
 import {alpineSourceBefore} from '../tools/alpine-reference.js'
 import os from 'node:os'
 import path from 'node:path'
-import {ironworksSheets} from '../tools/ironworks-art.js'
+import {ironworksSheets,ironworksCorpus} from '../tools/ironworks-art.js'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -9,7 +10,7 @@ import {execFileSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {load,canvas,frame,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
-const source=fs.readFileSync('public/agents/Draw.js','utf8')
+const source=fs.readFileSync('public/agents/Draw.js','utf8'),historical=renderer(foeRoundSixSourceBefore(source))
 const old=renderer(execFileSync('git',['show','6aaf4b4b2a2aa720eea7ce0488d85d34f0fded3b:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
 const D=load('Draw.js'),S=load('Sim.js'),P=load('Palette.js')
 const hash=b=>createHash('sha256').update(b).digest('hex')
@@ -39,7 +40,7 @@ test('C15 complete Foundry boards retain independent historical and reviewed pin
  try{for(const res of[1,2])for(const level of[4,24,44])for(const ticks of[350,900]){
   const opts={level,ticks,res,page:res===2},key=`${level}/${ticks}/${res}`
   const before=frame(S,old,P,opts).img.buf,after=frame(S,D,P,opts).img.buf
-  assert.equal(hash(before),pins[key].before);assert.equal(hash(after),pins[key].after)
+  assert.equal(hash(before),pins[key].before);assert.equal(hash(frame(S,historical,P,opts).img.buf),pins[key].after);assert.equal(hash(after),foeRoundSixSuccessor(pins[key].after))
   let changed=0;for(let i=0;i<before.length;i+=3)if(before[i]!==after[i]||before[i+1]!==after[i+1]||before[i+2]!==after[i+2])changed++
   assert.ok(changed>1500*res*res,`visible full frame ${key}: ${changed}`)
  }}finally{Math.random=random}
@@ -109,7 +110,8 @@ test('C15 review retains full-frame before/after sheets and all 21 biomes at bot
  const out=fs.mkdtempSync(path.join(os.tmpdir(),'ironworks-review-'))
  try{
   const corpus=ironworksSheets('6aaf4b4b2a2aa720eea7ce0488d85d34f0fded3b',out),pins=JSON.parse(fs.readFileSync('test/fixtures/ironworks-pins.json','utf8'))
-  for(const [key,pin]of Object.entries(pins)){assert.equal(corpus.before[key],pin.before);assert.equal(corpus.after[key],pin.after)}
+  const original=ironworksCorpus(historical)
+  for(const [key,pin]of Object.entries(pins)){assert.equal(corpus.before[key],pin.before);assert.equal(original[key],pin.after);assert.equal(corpus.after[key],foeRoundSixSuccessor(pin.after))}
   for(const res of[1,2])for(const name of['full-res'+res+'-sheet.png',...Array.from({length:3},(_,i)=>`catalogue-${i+1}-res${res}.png`)])assert.ok(fs.statSync(path.join(out,name)).size>300)
  }finally{fs.rmSync(out,{recursive:true,force:true})}
 })

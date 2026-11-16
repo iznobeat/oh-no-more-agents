@@ -8387,20 +8387,40 @@ function drawHzSnowball(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.decorLit)
 }
 
+function moltenDropPose(w, h, g, i) {
+  // Sim: 26 charge / 26 fire; four hanging loads release three ticks apart.
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  var grow = g.live || g.cool ? 1 : g.winding ? Math.min(1, h.t / 16) : 0
+  var age = g.live ? Math.max(0, h.t - i * 3) : 0
+  if (w.reducedMotion && g.live) age = 7
+  var drop = g.live ? Math.min(g.tall - 8, age * age * 0.32) : 0
+  if (g.cool) { drop = g.tall - 8; age = 25 - i * 3 + h.t }
+  var spread = Math.max(0, Math.min(1, age - 7, 19 - age))
+  return { drop: Math.round(drop * grid) / grid, grow: grow,
+    landed: age >= 8, spread: Math.round(spread * grid) / grid }
+}
+
 function drawHzMolten(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, wide = geo.wide, live = geo.live,
-    show = geo.show, hot = geo.hot
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0, y0, wide, 3)
-  ctx.fillStyle = show ? hot : pal.warn
-  for (var ml = 0; ml < 4; ml++) {
-    if (!show && !geo.cool && ml > 0) continue
-    var moltenX = (h.zx0 + 0.5 + ((ml * 2.3 + (live ? h.fired : 0)) % Math.max(1, h.zx1 - h.zx0 + 1))) * C
-    var mly = live ? (h.zy0 + ((h.t * 0.55 + ml * 3.1) % Math.max(1, h.zy1 - h.zy0 + 1))) * C
-        : (geo.cool ? geo.y1 - 2 : y0 + 3 + (ml % 2) + Math.round(geo.progress * 2) + (!show ? Math.floor(geo.t / 24) % 2 : 0))
-    ctx.fillRect(moltenX, mly, live ? 3 : 1, live ? 5 : 2)
+  ctx.fillRect(geo.x0, geo.y0, geo.wide, 3)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  for (var i = 0; i < 4; i++) {
+    if (!geo.show && !geo.cool && i > 0) continue
+    var p = moltenDropPose(w, h, geo, i)
+    var x = geo.x0 + 2 + i * Math.floor((geo.wide - 4) / 3)
+    var y = geo.y0 + 3 + p.drop
+    if (!geo.show && !geo.cool && !w.reducedMotion) y += Math.floor(geo.t / 24) % 2
+    if (p.landed) {
+      var fade = geo.cool ? geo.cool : 1
+      ctx.globalAlpha = fade
+      if (p.spread > 0) ctx.fillRect(x - p.spread, geo.y1 - 2, 2 + p.spread * 2, 2)
+    } else {
+      var size = geo.live ? 3 : 1 + Math.round(p.grow * 2)
+      ctx.fillRect(x, y, size, 2 + Math.round(p.grow * 3))
+      if (geo.winding) ctx.fillRect(x + 1, geo.y0 + 3, 1, 2 + Math.round(p.grow * 2))
+    }
+    ctx.globalAlpha = 1
   }
-  hzImpact(ctx, pal, h, geo, geo.cx, geo.y1, pal.fire)
 }
 
 function drawHzVinelock(ctx, w, pal, h, geo) {
@@ -8878,24 +8898,40 @@ function drawHzFrostjet(ctx, w, pal, h, geo) {
 }
 
 // --- spaceship ----------------------------------------------------------
+function airlockGap(w, h, g) {
+  // Sim: 34 charge / 24 fire. Unseal, hold, retract; close over twelve rest ticks.
+  var amount = 0
+  if (g.winding) amount = Math.min(2, h.t / 10)
+  if (g.live) amount = 2 + Math.min(1, h.t / 3) * (g.wide / 2 - 4)
+  if (g.cool) amount = (g.wide / 2 - 2) * g.cool
+  if (w.reducedMotion && g.live) amount = g.wide / 2 - 2
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return Math.round(amount * grid) / grid
+}
+
 function drawHzAirlock(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, y1 = geo.y1, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, show = geo.show, hot = geo.hot
-  // Floor plates that part, and everything above them goes.
-  var gap2 = hzStroke(geo, Math.round(wide / 2) - 2, 4)
+  var gap = airlockGap(w, h, geo), half = geo.wide / 2
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y1 - 4, Math.max(0, wide / 2 - gap2), 4)
-  ctx.fillRect(x0 + wide / 2 + gap2, y1 - 4, Math.max(0, wide / 2 - gap2), 4)
-  ctx.fillStyle = show ? hot : pal.warn
-  ctx.fillRect(x0 + 1, y1 - 5, wide - 2, 1)
-  if (live) {
+  ctx.fillRect(geo.x0, geo.y1 - 4, half - gap, 4)
+  ctx.fillRect(geo.cx + gap, geo.y1 - 4, half - gap, 4)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  ctx.fillRect(geo.x0 + 1, geo.y1 - 5, half - gap - 1, 1)
+  ctx.fillRect(geo.cx + gap, geo.y1 - 5, half - gap - 1, 1)
+  if (geo.live) {
     ctx.fillStyle = pal.fire
     ctx.globalAlpha = 0.5
-    ctx.fillRect(x0 + wide / 2 - gap2, y0, gap2 * 2, tall - 4)
+    ctx.fillRect(geo.cx - gap, geo.y0, gap * 2, geo.tall - 4)
     ctx.globalAlpha = 1
+    ctx.fillStyle = pal.fireHot
+    var age = w.reducedMotion ? 3 : h.t
+    for (var i = 0; i < 3; i++) {
+      var y = geo.y0 + (age * 2 + i * 7) % (geo.tall - 6)
+      ctx.fillRect(geo.cx - 2, y, 1, 1)
+      ctx.fillRect(geo.cx + 2, y, 1, 1)
+      ctx.fillRect(geo.cx - 1, y + 1, 3, 1)
+    }
   }
-  hzLamp(ctx, pal, h, geo, x0 + 1, y1 - 3)
-  hzPressure(ctx, w, pal, h, geo, geo.cx, y1 - 4, pal.decorLit)
+  hzLamp(ctx, pal, h, geo, geo.x0 + 1, geo.y1 - 3)
 }
 
 // --- Factory ------------------------------------------------------------
@@ -8961,28 +8997,48 @@ function drawHzFlywheel(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, cx, y0 + tall / 2, pal.warn)
 }
 
+function steamVentPose(w, h, g) {
+  // Sim: 26 charge / 28 fire. Pressure lifts the cowl before the column escapes.
+  var lift = g.winding ? Math.min(3, h.t / 6) : 0
+  var height = g.winding ? 2 + Math.min(3, h.t / 6) : 0
+  if (g.live) { lift = 3; height = Math.min(g.tall - 7, 5 + h.t * 4) }
+  if (g.cool) { lift = 3 * g.cool; height = (g.tall - 7) * g.cool }
+  if (w.reducedMotion && g.live) height = g.tall - 7
+  var grid = (w.res || 1) >= 2 ? 2 : 1
+  return { lift: Math.round(lift * grid) / grid, height: Math.round(height * grid) / grid }
+}
+
 function drawHzSteamvent(ctx, w, pal, h, geo) {
-  var y1 = geo.y1, cx = geo.cx, tall = geo.tall, live = geo.live, t = geo.t,
-    show = geo.show, hot = geo.hot
-  // A floor pipe that lets go upward. Nothing to see between times except
-  // the cowl, which is the point: the danger is the column, not the fitting.
+  var p = steamVentPose(w, h, geo), cx = geo.cx, y = geo.y1 - 6
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(cx - 4, y1 - 4, 8, 4)                      // the cowl
-  ctx.fillStyle = pal.rig
-  ctx.fillRect(cx - 3, y1 - 6, 6, 2)
-  if (show) {
-    // The column, widening as it rises and thinning as it loses pressure.
-    for (var jv = 0; jv < (live ? tall - 6 : 3 + Math.round(geo.progress * 6)); jv += 2) {
-      var lift = live ? 1 : 0.45
-      var wj = 2 + Math.round(jv * 0.22 * lift)
-      ctx.globalAlpha = (live ? 0.75 : 0.35) * (1 - jv / (tall - 6))
-      ctx.fillStyle = jv % 4 === 0 ? hot : pal.decorLit
-      ctx.fillRect(cx - wj / 2 + Math.sin((t * 0.12) + jv * 0.4) * 2,
-                   y1 - 7 - jv, wj, 2)
+  ctx.fillRect(cx - 4, geo.y1 - 4, 8, 4)
+  ctx.fillRect(cx - 2, y - p.lift, 1, 3 + p.lift)
+  ctx.fillRect(cx + 1, y - p.lift, 1, 3 + p.lift)
+  if (geo.show || geo.cool) {
+    var age = w.reducedMotion ? 0 : h.t
+    for (var i = 0; i < p.height; i += 2) {
+      var width = 2 + Math.floor(i / 4)
+      var sway = Math.round(Math.sin(age * 0.3 - i * 0.6))
+      ctx.fillStyle = i % 4 === 0 ? geo.hot : pal.decorLit
+      ctx.globalAlpha = geo.live ? 0.75 : 0.35
+      ctx.fillRect(cx - Math.floor(width / 2) + sway, y - 1 - i, width, 2)
     }
     ctx.globalAlpha = 1
   }
-  hzPressure(ctx, w, pal, h, geo, cx, y1 - 6, pal.decorLit)
+  if (geo.winding) {
+    ctx.fillStyle = pal.decorLit
+    var vent = Math.round(geo.progress * 3)
+    ctx.fillRect(cx - 3 - vent, y + 2 - p.lift, vent, 1)
+    ctx.fillRect(cx + 3, y + 2 - p.lift, vent, 1)
+  }
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(cx - 3, y - p.lift, 6, 2)
+  if ((w.res || 1) >= 2) {
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(cx - 2.5, y - p.lift + 1.5, 5, 0.5)
+  }
+  if (!geo.show && !geo.cool && !w.reducedMotion)
+    hzPressure(ctx, w, pal, h, geo, cx, y, pal.decorLit)
 }
 
 function drawHzSprinkler(ctx, w, pal, h, geo) {
