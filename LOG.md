@@ -16079,3 +16079,21 @@ foes14-final-crap.log and foes14-after-fps.log.
 **Next:** owner review of foes14-2's shutter, braced handle and fissure pairs;
 leave the four clear, unselected hazard cycles alone unless actual motion
 review identifies a concrete problem.
+
+## 495 — 2026-11-16 · Deploy: fan shutters, buffer bracing, vent pressure; the loop paused
+
+**Deployed** build e6d8d8fe (Worker version 7d2edfc7), replacing d89c3f94;
+covers C34 (the Hot Aisle fan's shutters open before it blows, the Buffer
+Cleaner braces and lowers, the Memory Pressure vent's lips part as pressure
+builds). C34 reported a CPU rise; measured main and the branch back to back
+on 8/12/18: the same (14–20% both), the machine's own load. 45 tells
+improved.
+**Verify:** the first `npm run verify -- --previous d89c3f94`, seconds after
+the deploy, reported `page error: Uncaught` with no detail; the next four
+passed. Read as the new build still propagating, not a fault in it. The
+local smoke was skipped before this deploy (an oversight) and run after it:
+passed (12–19). **Gate:** 2021/2021, CRAP green.
+**Paused:** Codex's round C35 was stopped by Claude Code when the machine
+ran critically low on memory (load ~12 from other work); it had made no
+changes, and its worktree is removed. The loop pauses here rather than
+start more heavy runs.
