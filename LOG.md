@@ -14755,3 +14755,127 @@ covers C24 (reviewed in its strips: the scorpion's tail coils over its back
 before the strike, the spore pod swells and splits, the crusher holds then
 drops). **Before:** gate 1891/1891; `npm run smoke -- --level 10` passed
 (10–16). **After:** `npm run verify -- --previous f28a68d3` passed.
+## C25 — 2026-11-16 · Rear, swarm, crumble
+
+**Chose:** Python (snake), Legacy Daemon (scarab) and Stack Overflow
+(rockfall), after re-rendering the complete eight-kind × eleven-state enemy
+catalogue and all 48 hazard cycles at res 1/2. Inspected every overview at
+both resolutions, then consecutive candidate cycles and actual-size full
+boards. The snake lowered its head instead of striking forward; the scarabs
+jumped from a stationary row to a looping conveyor; rockfall spawned blocks
+at unrelated heights with no continuous ceiling-to-floor release. None of
+the twelve C12–C14/C24 choices changed. Baseline:
+da0d2b8c38e9beae8062ccc4a41e4b5c821c361b.
+
+**Changed (Draw only):** the snake rears and pulls back over the first ten
+of its twenty charge ticks, holds, extends over ticks 15–19 to fire zero,
+recoils through fire 15 and lowers during the existing twelve-tick recovery
+cue. A bounded quadratic neck joins the original S body to its wedge head.
+The five scarabs spread their wings, stagger their lifts over the last six
+of eighteen charge ticks, fly outward on individually delayed arcs, return
+by fire 19 and fold their wings through recovery. Front beetles release
+first in either direction; the first draft's merged bright wing line became
+separate offset strokes and separated trajectories. Rockfall loosens four
+visible loads beneath the original slab, separates them over charge 28–35,
+accelerates staggered drops across its eighteen fire ticks, squashes at the
+floor and settles into shrinking rubble during recovery. Block positions
+join exactly across charge/fire and fire/rest. Original palettes, S body,
+wedge head, beetle carapaces and cracked-slab identity remain. Whole pixels
+carry each new pose at res 1; res 2 refines the curved neck, wing travel,
+carapace seams and block edges on the half-pixel grid.
+
+Reduced motion freezes live travel/recoil/flutter and idle motion while
+retaining the phase-progress warning. Preserved the original native idle
+breathing and beetle shuffle; the new focused idle test also checks that all
+three freeze at both resolutions. No Sim.js, sfx.js, North Pole code, enemy
+head/rider, umbrella, behaviour, timing, RNG, world write, dependency or
+product text changes. No sibling or Omarchy files written.
+
+**Review/tool:** extended the existing tools/foe-strips.js with C25 compact
+consecutive cycles, side-by-side keys and ordinary/Christmas/New Year full
+boards with all eight enemies. Checked every new test/helper/fixture name
+was free before creating it. Saved original public assets in
+/tmp/xmas-dressing/foes5-1/before/public. Complete baseline catalogue:
+/tmp/xmas-dressing/foes5-1; drafts: foes5-2 through foes5-4; final complete
+catalogue: /tmp/xmas-dressing/foes5-5. Inspected drafts 2/3, then these final
+before-left/after-right strips at native size:
+
+- /tmp/xmas-dressing/foes5-5/snake-compare-res1.png
+- /tmp/xmas-dressing/foes5-5/snake-compare-res2.png
+- /tmp/xmas-dressing/foes5-5/scarab-compare-res1.png
+- /tmp/xmas-dressing/foes5-5/scarab-compare-res2.png
+- /tmp/xmas-dressing/foes5-5/rockfall-compare-res1.png
+- /tmp/xmas-dressing/foes5-5/rockfall-compare-res2.png
+
+Also inspected consecutive compact cycles at both resolutions (draft 3),
+ordinary charge/fire full boards, Christmas fire and New Year charge full
+boards (final 5). These are staged art through the real raster renderer,
+including its documented gradient approximation; no live Omarchy/QML claim.
+
+**Pins:** no existing golden fixture JSON was overwritten. New
+foe-round5-pins.json retains independent before/after cycle digests in both
+resolutions/facings and all 168 full frames (21 biomes × two resolutions ×
+four clocks), including unchanged frames. Restoring exactly three painters
+and removing their four helpers recovers the entire baseline Draw source
+byte for byte. C24's source/scene tests explicitly use that exact restored
+source; earlier historical assertions retain their full checks. The current
+successor chain advances only the explicit C25 ledger, independently
+reproduced in the new tests. No test removed, threshold lowered, comparison
+skipped or raw-buffer diff introduced.
+
+Complete cycle SHA-256 prefixes (res/dir):
+
+- rockfall/1/-1 and +1: `d0320fe3` → `9caf3303` — connected loosening, drop and settling.
+- rockfall/2/-1 and +1: `86fec755` → `791be2b8` — same poses with half-pixel block edges.
+- scarab/1/-1: `010a590f` → `849989c5` — wing preparation and staggered round-trip arcs.
+- scarab/1/+1: `43c168fb` → `ea42387c` — mirrored release order.
+- scarab/2/-1: `a3113824` → `8a2fb839` — half-pixel flight and carapace seams.
+- scarab/2/+1: `b64dfc27` → `085989d0` — mirrored release order and fine seams.
+- snake/1/-1 and +1: `19df5f6f` → `40465d75` — connected rear, lunge and recoil.
+- snake/2/-1 and +1: `70142a82` → `2ff549f3` — half-pixel neck and head travel.
+
+Every changed pre-existing scene/aggregate pin (level/res/tick):
+
+- full/17/1/120: `567af109` → `bb868750` — rockfall's visible loosening load.
+- full/17/2/120: `45f8d2dc` → `85ac3d86` — same load with fine edges.
+- aggregates/120,350: `f26a0341` → `af52a8c2` — includes that level-17 load.
+- disabled/120,350: `5e59092e` → `6ac3bdf4` — same load with the historical colony poses disabled.
+
+**Validation:** baseline full check **1891/1891**, exit **0**, 224.74 s.
+Final full check **1902/1902**, exit **0**, 220.06 s. Eleven new tests cover
+independent cycle/full-frame digests, visibly changed native/page keys,
+actual phase joins, recovery expiry, reduced motion, preserved idle poses,
+every-theme palette/grid/purity/bounded paint, exact excluded hazards and
+seasonal enemy riders, complete source restoration, independently reproduced
+scene transitions and the review writer. Focused tests **11/11**, exit **0**.
+The full gate includes Christmas, New Year and North Pole tests. Full checks
+and measurements use the shared FIFO lock and unchanged six-file suite
+concurrency. The baseline transient FPS runner was terminated (143); its
+persistent replacement completed with an explicit zero exit. Subsequent long
+jobs use persistent systemd user runners with retained exits. Copied the
+existing crapper cache locally and corrected its editable path to this
+worktree, without writing to the sibling.
+
+`npm run crap -- --changed --threshold 30` exited **0**, with fresh coverage
+**1902/1902**, exit **0**, 444.26 s. Renderer scores: scarabLaunchPose **15.1**,
+drawHzSnake **15**, drawHzRockfall **14.1**, snakeStrikePose **13.4**,
+drawHzScarab **9.1**, rockLoadPose **8.1**, drawSnakeNeck **4.1**. New review
+and reference helpers are also below 30. Draw line coverage **99.68%**.
+Stamps refreshed: Draw **fd0941bf**, build **4a031779**. Source and fixtures
+remained frozen through the full check, coverage and FPS; only this log was
+completed afterward. Both the full check and complexity gate have retained
+explicit zero exits in /tmp/xmas-dressing/foes5-check.exit and
+/tmp/xmas-dressing/foes5-crap.exit.
+
+**Performance:** matched back-to-back `npm run fps -- 8 12 18`, saved
+baseline public assets versus final art, under one shared lock. Before and
+after on all three levels: **60 median / 60 p5 FPS, 17 ms worst frame,
+0% long tasks**. CPU **13/11/11% → 12/12/15%**; no measured frame-rate loss
+and no CPU speedup claimed against changing desktop load. The pair exited
+**0**. Logs: /tmp/xmas-dressing/foes5-final-before-fps.log and
+/tmp/xmas-dressing/foes5-final-after-fps.log; explicit pair exit:
+/tmp/xmas-dressing/foes5-fps-pair.exit.
+
+**Next:** owner review of the rearing snake, staggered swarm and continuous
+rockfall in crowded native colonies. Live Omarchy/QML remains unverified.
+No merge, push, deploy, production request, port 8787 change or sibling sync.
