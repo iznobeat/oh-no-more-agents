@@ -69,7 +69,7 @@ export function run(base,out,options={}){
  enemyStrips(out,old,now,manifest,options.kinds)
  hazardStrips(out,old,now,manifest,S.HAZARDS.filter(s=>!options.hazards || options.hazards.includes(s.id)))
  overview(out,now)
- choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now);roundThreeReview(out,old,now);roundFourReview(out,old,now);roundFiveReview(out,old,now);roundSixReview(out,old,now);roundSevenReview(out,old,now)
+ choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now);roundThreeReview(out,old,now);roundFourReview(out,old,now);roundFiveReview(out,old,now);roundSixReview(out,old,now);roundSevenReview(out,old,now);roundEightReview(out,old,now)
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2))
 }
 export function enemyStrips(out,old,now,manifest,kinds=KINDS){
@@ -266,6 +266,21 @@ export function roundSevenReview(out,old,now){
   writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
  }
  roundTwoBoards(out,old,now,ROUND_SEVEN,'round7')
+}
+
+
+export const ROUND_EIGHT=['vinelock','blackice','shredder']
+export function roundEightReview(out,old,now){
+ for(const res of [1,2])for(const name of ROUND_EIGHT){
+  const spec=S.HAZARDS.find(s=>s.id===name)
+  compactHazardStrip(out,old,now,spec,res)
+  const keys=[['idle',0],['charge',Math.floor(spec.charge/2)],['charge',spec.charge-4],['charge',spec.charge-1],['fire',0],['fire',3],['rest',0],['rest',6]]
+  const pair=canvas(16*48*res,48*res,'#1a1b26')
+  for(const [j,D]of [old,now].entries())for(const [i,[phase,t]]of keys.entries())
+   copyPixels(pair,crop(hazardFrame(D,spec,phase,t,res),8*res,0,48*res,48*res),(j*8+i)*48*res,0)
+  writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
+ }
+ roundTwoBoards(out,old,now,ROUND_EIGHT,'round8')
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv[2]||'HEAD',process.argv[3]||'/tmp/xmas-dressing/foes-0')

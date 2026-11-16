@@ -8454,38 +8454,71 @@ function drawHzMolten(ctx, w, pal, h, geo) {
   }
 }
 
+function vineLockPose(w, h, g) {
+  var rise = 0, curl = 0
+  if (g.winding) { rise = Math.min(1, h.t / 7); curl = Math.min(1, h.t / 5) }
+  if (g.live) { rise = 1 + Math.min(1, h.t / 3); curl = 1 - Math.min(1, h.t / 6) }
+  if (g.cool) { rise = 2 * g.cool; curl = 0 }
+  if (w.reducedMotion && g.live) { rise = 2; curl = 0 }
+  var grid = w.res === 2 ? 2 : 1
+  return { height: Math.round((2 + rise * 5) * grid) / grid, curl: curl }
+}
+
 function drawHzVinelock(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, wide = geo.wide, tall = geo.tall,
-    live = geo.live, winding = geo.winding, show = geo.show, hot = geo.hot
+  var pose = vineLockPose(w, h, geo), grid = w.res === 2 ? 2 : 1
   ctx.fillStyle = pal.decorDim
-  ctx.fillRect(x0, y1 - 2, wide, 2)
-  ctx.fillStyle = show ? hot : pal.decor
-  for (var vl = 1; vl < wide; vl += 4) {
-    var vh = 2 + hzStroke(geo, tall - 4, 6)
-    for (var vv = 0; vv < vh; vv++) ctx.fillRect(x0 + vl + ((vv >> 2) % 2) + (vv > 0 ? Math.round(Math.sin(geo.t * 0.06 + vl) * 0.6) : 0), y1 - 3 - vv, 2, 1)
+  ctx.fillRect(geo.x0, geo.y1 - 2, geo.wide, 2)
+  ctx.fillStyle = geo.show ? geo.hot : pal.decor
+  for (var v = 1; v < geo.wide; v += 4) {
+    var side = v % 8 === 1 ? 1 : -1
+    for (var y = 0; y < pose.height; y++) {
+      var bend = Math.max(0, (y / pose.height - 0.55) / 0.45)
+      var hook = Math.sin(bend * Math.PI) * pose.curl * 2 * side
+      var clock = w.reducedMotion ? 0 : geo.t
+      var sway = Math.sin(y * 0.65 + clock * 0.06 + v) * (y > 0 ? 0.8 : 0)
+      var x = Math.round((geo.x0 + v + hook + sway) * grid) / grid
+      ctx.fillRect(x, geo.y1 - 3 - y, 2, 1)
+    }
+    if (geo.show || geo.cool) {
+      var tip = geo.y1 - 2 - pose.height
+      ctx.fillRect(geo.x0 + v + side, tip + 1, 2, 1)
+      if (w.res === 2) ctx.fillRect(geo.x0 + v + 0.5, tip, 0.5, 1.5)
+    }
   }
-  hzImpact(ctx, pal, h, geo, geo.cx, y1 - 4, pal.decor)
+}
+
+function blackIcePose(w, h, g) {
+  var height = 0
+  if (g.winding) height = 2 * Math.min(1, h.t / 5) + 6 * Math.pow(Math.max(0, (h.t - 8) / 3), 2)
+  if (g.live) height = 8 + (w.reducedMotion ? 0 : (h.t === 0 ? 0 : Math.max(0, 3 - h.t)))
+  if (g.cool) height = 8 * g.cool * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(height * grid) / grid
 }
 
 function drawHzBlackice(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, cx = geo.cx, wide = geo.wide, live = geo.live,
-    show = geo.show, hot = geo.hot
-  ctx.fillStyle = show ? hot : pal.decorLit
-  ctx.fillRect(x0, y1 - 2, wide, 2)
+  var height = blackIcePose(w, h, geo), grid = w.res === 2 ? 2 : 1
+  ctx.fillStyle = geo.show ? geo.hot : pal.decorLit
+  ctx.fillRect(geo.x0, geo.y1 - 2, geo.wide, 2)
   ctx.fillStyle = pal.rockEdge
-  for (var bi = 1; bi < wide; bi += 5) ctx.fillRect(x0 + bi, y1 - 3, 3, 1)
-  if (live) {
-    ctx.fillStyle = hot
-    hzTri(ctx, cx, y1 - 2, 5, 8, -1)
+  for (var bi = 1; bi < geo.wide; bi += 5) ctx.fillRect(geo.x0 + bi, geo.y1 - 3, 3, 1)
+  ctx.fillStyle = geo.show ? geo.hot : pal.decorLit
+  for (var shard = -1; shard <= 1; shard++) {
+    var x = geo.cx + shard * 6, tall = height * (shard === 0 ? 1 : 0.55)
+    tall = Math.round(tall * grid) / grid
+    for (var y = 0; y < tall; y++) {
+      var half = Math.max(0, Math.round((1 - y / tall) * (shard === 0 ? 4 : 2)))
+      ctx.fillRect(x - half, geo.y1 - 3 - y, half * 2 + 1, 1)
+    }
+    if (w.res === 2 && tall > 0) {
+      ctx.fillStyle = pal.rockEdge
+      ctx.fillRect(x + 0.5, geo.y1 - 2.5 - tall, 0.5, tall)
+      ctx.fillStyle = geo.show ? geo.hot : pal.decorLit
+    }
   }
-  ctx.fillStyle = show ? hot : pal.decorLit
-  var crack = geo.winding ? 2 + Math.round(geo.progress * 7) : 2
-  for (var frost = 0; frost < 3; frost++) {
-    var fx = x0 + 3 + frost * 7 + (Math.floor(geo.t / 30) % 2)
-    ctx.fillRect(fx, y1 - 3, crack, 1)
-    if (geo.winding) ctx.fillRect(fx + crack - 1, y1 - 5, 1, 2)
-  }
-  hzImpact(ctx, pal, h, geo, cx, y1 - 3, pal.decorLit)
+  // Splitting frost follows the same build-up; recovery draws back into cracks.
+  var crack = geo.winding ? Math.min(5, 1 + Math.floor(h.t / 2)) : 2
+  for (var f = 0; f < 3; f++) ctx.fillRect(geo.x0 + 3 + f * 7 + (!w.reducedMotion && !geo.show ? Math.floor(geo.t / 30) % 2 : 0), geo.y1 - 3, crack, 1)
 }
 
 function drawHzPacketloss(ctx, w, pal, h, geo) {
@@ -9171,25 +9204,43 @@ function drawHzPolisher(ctx, w, pal, h, geo) {
   hzImpact(ctx, pal, h, geo, pcx, y1 - 4, pal.decorLit)
 }
 
+function shredderPose(w, h, g) {
+  var lift = 0, turn = 0
+  if (g.winding) { lift = Math.min(1, h.t / 8) * 3; turn = Math.floor(h.t / 3) }
+  if (g.live) { lift = 3; turn = w.reducedMotion ? 0 : Math.floor(h.t / 2) }
+  if (g.cool) { lift = 3 * g.cool; turn = w.reducedMotion ? 0 : 11 }
+  var grid = w.res === 2 ? 2 : 1
+  return { lift: Math.round(lift * grid) / grid, turn: turn }
+}
+
 function drawHzShredder(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y1 = geo.y1, wide = geo.wide, live = geo.live, t = geo.t,
-    show = geo.show, hot = geo.hot
-  // A slot in the floor with a very good appetite. Dormant it is furniture;
-  // armed, the rollers turn and you can see how far down it goes.
+  var pose = shredderPose(w, h, geo)
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(x0 + 1, y1 - 5, wide - 2, 5)               // the hopper
+  ctx.fillRect(geo.x0 + 1, geo.y1 - 5, geo.wide - 2, 5)
   ctx.fillStyle = pal.hatchMouth
-  ctx.fillRect(x0 + 3, y1 - 4, wide - 6, 3)               // the slot
-  if (show) {
-    ctx.fillStyle = hot
-    for (var sr = 0; sr < 6; sr++)
-      ctx.fillRect(x0 + 4 + ((sr * 4 + Math.floor(t * (live ? 0.8 : 0.3))) % (wide - 8)),
-                   y1 - 4, 2, 3)                          // the rollers
-    if (live) for (var st5 = 0; st5 < wide - 6; st5 += 4)
-      hzTri(ctx, x0 + 4 + st5, y1 - 5, 2, 3, -1)          // and the teeth
+  ctx.fillRect(geo.x0 + 3, geo.y1 - 4 - pose.lift, geo.wide - 6, 3 + pose.lift)
+  if (geo.show || geo.cool) drawShredderRollers(ctx, w, pal, geo, pose)
+  hzLamp(ctx, pal, h, w.reducedMotion ? { t: 400, winding: geo.winding, progress: geo.progress, cool: geo.cool, show: geo.show, hot: geo.hot, live: geo.live } : geo, geo.x0 + 2, geo.y1 - 2)
+}
+
+function drawShredderRollers(ctx, w, pal, g, pose) {
+  var count = Math.floor((g.wide - 6) / 4)
+  for (var i = 0; i < count; i++) {
+    var turn = (pose.turn + i % 2) % 3, x = g.x0 + 4 + i * 4
+    var y = g.y1 - 4 - pose.lift + turn
+    ctx.fillStyle = g.show ? g.hot : pal.rig
+    ctx.fillRect(x, g.y1 - 4 - pose.lift, 2, 3 + pose.lift)
+    ctx.fillStyle = pal.rigDark
+    ctx.fillRect(x, y, 2, 1)
+    if (g.live) {
+      ctx.fillStyle = g.hot
+      ctx.fillRect(x - 1, g.y1 - 5 - pose.lift + turn, 2, 1)
+    }
+    if (w.res === 2) {
+      ctx.fillStyle = pal.rig
+      ctx.fillRect(x + 0.5, y + 1, 0.5, 1)
+    }
   }
-  hzLamp(ctx, pal, h, geo, x0 + 2, y1 - 2)
-  hzImpact(ctx, pal, h, geo, geo.cx, y1 - 5, pal.rig)
 }
 
 // Cock to one side, drive down, sweep through, then fold back to the rail.
