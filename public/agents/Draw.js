@@ -7698,7 +7698,7 @@ var HAZARD_FINE = {
   tripwire: function (ctx, w, pal, h, g) {
     ctx.fillStyle = "#e9edf7"                                   // eyelets
     ctx.fillRect(g.x0 + 0.5, g.y1 - 7.5, 1, 1.5); ctx.fillRect(g.x1 - 1.5, g.y1 - 7.5, 1, 1.5)
-    ctx.fillStyle = g.show ? g.hot : (Math.floor(w.ticks / 12) % 2 ? "#5dffa0" : "#1f4a33")
+    ctx.fillStyle = g.show ? g.hot : (Math.floor((w.reducedMotion ? 0 : w.ticks) / 12) % 2 ? "#5dffa0" : "#1f4a33")
     ctx.fillRect(g.x0 + 0.5, g.y1 - 5, 1, 0.5)                  // armed lamp on the post
   },
   beartrap: drawTrapFine,
@@ -7715,7 +7715,7 @@ var HAZARD_FINE = {
     ctx.fillRect(g.cx + 0.5, g.y0 + 2.5, 0.5, 0.5)              // glint on the lens
     ctx.fillStyle = pal.rigDark                                 // vents
     for (var v = 0; v < 3; v++) ctx.fillRect(g.x0 + 1 + v * 1.5, g.y0 + 0.5, 0.5, 1.5)
-    ctx.fillStyle = g.show ? g.hot : (Math.floor(w.ticks / 24) % 2 ? "#ff5268" : "#5c1424")
+    ctx.fillStyle = g.show ? g.hot : (Math.floor((w.reducedMotion ? 0 : w.ticks) / 24) % 2 ? "#ff5268" : "#5c1424")
     ctx.fillRect(g.x1 - 1.5, g.y0 + 0.5, 1, 0.5)                // status lamp
   }
 }
@@ -7740,44 +7740,82 @@ var HAZARD_DRAW = {
 }
 
 // --- watch: mounted, dormant, wakes when somebody walks into reach -------
+function sprayerBarrelDrop(w, h, g) {
+  var drop = 0
+  if (g.winding) drop = 4 * Math.min(1, h.t / 7)
+  if (g.live) drop = 4 - (w.reducedMotion ? 0 : 2 * Math.max(0, 1 - (h.t % 6) / 3))
+  if (g.cool) drop = 4 * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(drop * grid) / grid
+}
+
+function drawSprayerRounds(ctx, w, pal, h, g, muzzle) {
+  var age = w.reducedMotion ? 0 : h.t
+  ctx.fillStyle = g.hot
+  if (!w.reducedMotion && h.t % 6 < 2) hzTri(ctx, g.cx, muzzle, 3, 4, 1)
+  for (var y = g.y0 + 15; y < g.y1; y += 5)
+    ctx.fillRect(g.cx - 1, g.y0 + 15 + ((y - g.y0 - 15 + age * 4) % Math.max(1, g.tall - 15)), 2, 3)
+}
+
 function drawHzGun(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide, tall = geo.tall,
-    live = geo.live, t = geo.t, show = geo.show, hot = geo.hot
+  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide
+  var drop = sprayerBarrelDrop(w, h, geo), muzzle = y0 + 11 + drop
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0 + 2, y0, wide - 4, 5)          // mount
-  ctx.fillRect(cx - 2, y0 + 5, 4, 6)             // barrel
+  ctx.fillRect(x0 + 2, y0, wide - 4, 5)
+  ctx.fillRect(cx - 2, y0 + 5, 4, 6 + drop)       // sliding barrel stays on its sleeve
   ctx.fillStyle = pal.rigDark
-  ctx.fillRect(cx - 6, y0 + 2, 4, 4)             // drum magazine
+  ctx.fillRect(cx - 6, y0 + 2, 4, 4)              // original drum magazine
+  if (drop > 0) {
+    ctx.fillRect(cx - 3, y0 + 7 + drop, 6, 2)     // cocked collar, clear at native size
+    ctx.fillRect(cx - 1, muzzle - 1, 2, 1)
+  }
   ctx.fillStyle = pal.warn
   ctx.fillRect(x0 + 2, y0 + 1, wide - 4, 1)
-  if (show) {
-    ctx.fillStyle = hot
-    if (live) {
-      hzTri(ctx, cx, y0 + 11, 3, 4, 1)           // muzzle flash
-      for (var g = 0; g < tall; g += 5) ctx.fillRect(cx - 1, y0 + 13 + ((t * 4 + g) % tall), 2, 3)
-    } else ctx.fillRect(cx - 1, y0 + 11, 2, 2)
+  if (geo.winding) ctx.fillRect(cx - 1, muzzle, 2, 2)
+  if (geo.live) drawSprayerRounds(ctx, w, pal, h, geo, muzzle)
+  mountedLamp(ctx, w, pal, h, geo, cx - 2, y0 + 2)
+}
+
+function sentryShutterOpen(w, h, g) {
+  var open = 0
+  if (g.winding) open = 3 * Math.min(1, h.t / 12)
+  if (g.live) open = 3
+  if (g.cool) open = 3 * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(open * grid) / grid
+}
+
+function drawSentryBeam(ctx, w, pal, h, g) {
+  // catchFired measures from (zx0 + zx1) / 2, twelve cells along h.dir.
+  var start = (h.zx0 + h.zx1) / 2 * g.C, end = start + (h.reach || 12) * g.C * h.dir
+  ctx.fillStyle = g.hot
+  if (g.live) ctx.fillRect(Math.min(start, end), g.y0 + 4, Math.abs(end - start) + 1, 2)
+  else for (var sight = 0; sight <= Math.abs(end - start); sight += 4)
+    ctx.fillRect(start + sight * h.dir, g.y0 + 4, 1, 1)
+  if (g.live && !w.reducedMotion && h.t < 4) {
+    ctx.fillStyle = pal.fireHot
+    ctx.fillRect(g.cx - 3, g.y0 + 1, 6, 6)
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y0 + 2)
-  hzPressure(ctx, w, pal, h, geo, cx, y0 + 11, pal.rig)
 }
 
 function drawHzSentry(ctx, w, pal, h, geo) {
-  var C = geo.C, x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide,
-    live = geo.live, show = geo.show, hot = geo.hot
+  var x0 = geo.x0, y0 = geo.y0, cx = geo.cx, wide = geo.wide
+  var open = sentryShutterOpen(w, h, geo)
   ctx.fillStyle = pal.rig
   ctx.fillRect(x0, y0, wide, 6)
   ctx.fillStyle = pal.rigDark
   ctx.fillRect(x0 + 1, y0 + 6, wide - 2, 2)
-  ctx.fillStyle = show ? hot : (geo.cool ? pal.fire : pal.warn)
-  ctx.fillRect(cx - 2, y0 + 2, 4, 3)             // lens
-  if (show) {
-    ctx.fillStyle = hot
-    var sentryReach = 12 * C * h.dir        // Sim's sentry reach; keep the two together
-    if (live) ctx.fillRect(Math.min(cx, cx + sentryReach), y0 + 4, Math.abs(sentryReach), 2)
-    else for (var sight = 0; sight < Math.abs(sentryReach); sight += 5)
-      ctx.fillRect(cx + sight * h.dir, y0 + 4, 1, 1)
+  if (open > 0) {
+    ctx.fillRect(cx - 3, y0 - open, 6, 3)        // upper/lower iris leaves expose the fixed lens
+    ctx.fillRect(cx - 3, y0 + 5 + open, 6, 3)
+    ctx.fillStyle = pal.rig
+    ctx.fillRect(cx - 4, y0 + 1 - open, 8, 1)
+    ctx.fillRect(cx - 4, y0 + 6 + open, 8, 1)
   }
-  hzLamp(ctx, pal, h, geo, cx - 2, y0 + 1)
+  ctx.fillStyle = geo.show ? geo.hot : (geo.cool ? pal.fire : pal.warn)
+  ctx.fillRect(cx - 2, y0 + 2, 4, 3)
+  if (geo.show) drawSentryBeam(ctx, w, pal, h, geo)
+  mountedLamp(ctx, w, pal, h, geo, cx - 2, y0 + 1)
 }
 
 function twinTurretSpread(w, h, g) {
@@ -8087,19 +8125,43 @@ function drawHzSweeper(ctx, w, pal, h, geo) {
   mountedLamp(ctx, w, pal, h, geo, rail + 2, top + 1)
 }
 
-function drawHzTripwire(ctx, w, pal, h, geo) {
-  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, wide = geo.wide, live = geo.live,
-    t = geo.t, show = geo.show, hot = geo.hot
+function tripwireTension(w, h, g) {
+  var pull = 0
+  if (g.winding) pull = 4 * Math.min(1, h.t / 8)
+  if (g.live) pull = 4
+  if (g.cool) pull = 4 * g.cool
+  var grid = w.res === 2 ? 2 : 1
+  return Math.round(pull * grid) / grid
+}
+
+function drawTripwireCoil(ctx, pal, x, y, dir, pull) {
+  ctx.fillStyle = pal.rigDark
+  ctx.fillRect(Math.min(x, x + dir * pull), y + 1, pull + 2, 3)
   ctx.fillStyle = pal.rig
-  ctx.fillRect(x0, y1 - 8, 2, 8)                     // posts
+  ctx.fillRect(x + dir * pull, y - 1 - pull, 2, 6 + pull) // raised contact arms stay attached
+  ctx.fillRect(x + dir * pull - 1, y - 1 - pull, 4, 1)
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(x + dir * pull, y + 1, 2, 3)
+}
+
+function drawHzTripwire(ctx, w, pal, h, geo) {
+  var x0 = geo.x0, x1 = geo.x1, y1 = geo.y1, wide = geo.wide
+  var pull = tripwireTension(w, h, geo), age = w.reducedMotion ? 0 : h.t
+  ctx.fillStyle = pal.rig
+  ctx.fillRect(x0, y1 - 8, 2, 8)
   ctx.fillRect(x1 - 2, y1 - 8, 2, 8)
-  ctx.fillStyle = show ? hot : pal.warn
-  ctx.fillRect(x0, y1 - 7, wide, 1)                  // the wire itself
-  if (show && live) {
-    ctx.fillStyle = pal.fireHot
-    for (var tw = 0; tw < wide; tw += 3) ctx.fillRect(x0 + tw, y1 - 9 - ((t + tw) % 4), 2, 2)
+  if (pull > 0) {
+    drawTripwireCoil(ctx, pal, x0 + 2, y1 - 6, 1, pull)
+    drawTripwireCoil(ctx, pal, x1 - 4, y1 - 6, -1, pull)
   }
-  hzLamp(ctx, pal, h, geo, x0, y1 - 4)
+  ctx.fillStyle = geo.show ? geo.hot : pal.warn
+  ctx.fillRect(x0, y1 - 7, wide, 1)            // unchanged full-box reach, live immediately
+  if (geo.live) {
+    ctx.fillStyle = pal.fireHot
+    for (var tw = 2; tw < wide - 2; tw += 3)
+      ctx.fillRect(x0 + tw, y1 - 9 - ((age + tw) % 4), 2, 2)
+  }
+  mountedLamp(ctx, w, pal, h, geo, x0, y1 - 4)
 }
 
 // --- plate: armed by being stood on -------------------------------------

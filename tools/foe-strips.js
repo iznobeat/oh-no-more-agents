@@ -69,7 +69,7 @@ export function run(base,out,options={}){
  enemyStrips(out,old,now,manifest,options.kinds)
  hazardStrips(out,old,now,manifest,S.HAZARDS.filter(s=>!options.hazards || options.hazards.includes(s.id)))
  overview(out,now);enemyContacts(out,now)
- choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now);roundThreeReview(out,old,now);roundFourReview(out,old,now);roundFiveReview(out,old,now);roundSixReview(out,old,now);roundSevenReview(out,old,now);roundEightReview(out,old,now);roundNineReview(out,old,now);roundTenReview(out,old,now);roundElevenReview(out,old,now);roundTwelveReview(out,old,now)
+ choices(out,old,now);boards(out,old,now);pairs(out,old,now);roundTwoReview(out,old,now);roundThreeReview(out,old,now);roundFourReview(out,old,now);roundFiveReview(out,old,now);roundSixReview(out,old,now);roundSevenReview(out,old,now);roundEightReview(out,old,now);roundNineReview(out,old,now);roundTenReview(out,old,now);roundElevenReview(out,old,now);roundTwelveReview(out,old,now);roundThirteenReview(out,old,now)
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2))
 }
 export function enemyStrips(out,old,now,manifest,kinds=KINDS){
@@ -345,6 +345,19 @@ export function roundTwelveReview(out,old,now){
   writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
  }
  roundTwoBoards(out,old,now,ROUND_TWELVE,'round12')
+}
+export const ROUND_THIRTEEN=['gun','sentry','tripwire']
+export function roundThirteenReview(out,old,now){
+ for(const res of [1,2])for(const name of ROUND_THIRTEEN){
+  const spec=S.HAZARDS.find(s=>s.id===name)
+  compactHazardStrip(out,old,now,spec,res)
+  const keys=[['idle',0],['charge',8],['charge',spec.charge-1],['fire',0],['fire',3],['fire',spec.fire-1],['rest',0],['rest',6]]
+  const pair=canvas(16*64*res,56*res,'#1a1b26')
+  for(const [j,D]of [old,now].entries())for(const [i,[phase,t]]of keys.entries())
+   copyPixels(pair,hazardFrame(D,spec,phase,t,res),(j*8+i)*64*res,0)
+  writePNG(path.join(out,`${name}-compare-res${res}.png`),pair)
+ }
+ roundTwoBoards(out,old,now,ROUND_THIRTEEN,'round13')
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))run(process.argv[2]||'HEAD',process.argv[3]||'/tmp/xmas-dressing/foes-0')
