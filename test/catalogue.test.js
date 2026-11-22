@@ -128,14 +128,21 @@ test("Fallback's net draws through its life", async () => {
 })
 
 test("a Model Collapse copy comes out ahead of the original, or on it at a wall", () => {
-  const w = S.generate(1, 0, 3), c = w.corridors[0]
+  const w = S.generate(1, 0, 3), land = { x: 20.5, y: 20 }
   const ag = S.spawn(w)
-  ag.special = "collapse"; ag.dir = 1; ag.x = c.startX + 5; ag.y = c.floorY - 1; ag.modelGen = 0
+  ag.special = "collapse"; ag.dir = 1; ag.x = 14.5; ag.y = land.y; ag.modelGen = 0
   w.agents = [ag]
-  const land = { x: ag.x + 6, y: ag.y }
+  for (const x of [20, 21]) {
+    for (let y = land.y - S.AGENT_H + 1; y <= land.y; y++) S.setCell(w, x, y, w.k.EMPTY)
+    S.setCell(w, x, land.y + 1, w.k.ROCK)
+  }
   assert.equal(S.collapseCopy(w, ag, land), true)
   const copy = w.agents[1]
-  assert.ok(copy.x >= land.x && copy.dir === ag.dir)
+  assert.equal(copy.x, land.x + 1.2)
+  assert.equal(copy.dir, ag.dir)
+  S.setCell(w, 21, land.y, w.k.ROCK)
+  assert.equal(S.collapseCopy(w, ag, land), true)
+  assert.equal(w.agents[2].x, land.x)
   ag.modelGen = 3
   assert.equal(S.collapseCopy(w, ag, land), false, "third generation makes no more")
 })

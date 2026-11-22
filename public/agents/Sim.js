@@ -4245,6 +4245,7 @@ function specialLanding(w, ag, reach) {
 // with nothing but the stall rules to get it over: 82 of its 166 deaths in a
 // 160-level sample were their bombs. A step *behind* the landing was worse
 // (57% home — that is often over the gap just crossed); ahead, 84%.
+// Use the landing itself when that step is blocked or has no floor.
 function collapseCopy(w, ag, land) {
   if ((ag.modelGen || 0) >= 3 || w.collapseCopies >= 12) return false
   var copy = {}
@@ -4253,7 +4254,8 @@ function collapseCopy(w, ag, land) {
   var at0 = land || { x: ag.x, y: ag.y }
   copy.x = at0.x + ag.dir * (1.2 + (ag.modelGen || 0) * 0.3)
   copy.y = at0.y
-  if (!standable(w, Math.floor(copy.x), Math.floor(copy.y))) copy.x = at0.x   // not into a wall
+  var cx = Math.floor(copy.x), footY = Math.floor(copy.y)
+  if (!standable(w, cx, footY) || !solid(w, cx, footY + 1)) copy.x = at0.x
   copy.dir = ag.dir
   copy.state = "walk"
   copy.modelGen = (ag.modelGen || 0) + 1

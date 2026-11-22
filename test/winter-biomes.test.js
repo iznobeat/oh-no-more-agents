@@ -43,6 +43,26 @@ test("the market exit aisle lets the level 661 crowd move through together", () 
   assert.ok(w.saved >= w.toRelease * 0.9)
 })
 
+test("the level 6001 Model Collapse copy starts on the ledge and makes it home", () => {
+  const w = S.generate(6001, 0, 47521932)
+  let copy
+  while (!copy && !w.done && w.ticks < 4500) {
+    S.step(w)
+    copy = w.agents.find(a => a.modelGen === 1)
+  }
+  assert.ok(copy)
+  const landing = Math.floor(copy.specialX), footY = Math.floor(copy.y)
+  assert.equal(Math.floor(copy.x), landing)
+  assert.ok(S.solid(w, landing, footY + 1))
+  assert.ok(!S.solid(w, landing + 1, footY + 1), "the forward spawn is over a drop")
+  assert.equal(copy.state, "walk")
+  while (!w.done && w.ticks < 4500) S.step(w)
+  assert.ok(w.done)
+  assert.equal(copy.state, "saved")
+  assert.equal(w.saved, 15)
+  assert.equal(w.lost, 0)
+})
+
 test("level 9241 fits three working lanterns in a narrow pocket before the exit", () => {
   const w = S.generate(9241, 0, colonySeed(9241, 0, 3))
   assert.equal(w.mission?.kind, "lantern")

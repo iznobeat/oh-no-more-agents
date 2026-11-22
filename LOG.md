@@ -16283,3 +16283,23 @@ changed-file CRAP score of 29.0.
 
 **Next:** keep Model Collapse copies on supported ground. On level 6001
 the copy spawns past the original's ledge and splats in all eight replays.
+
+## 505 — 2026-11-22 · Model Collapse copies need floor support
+
+A copy takes its forward spawn only if the spot has clearance and a floor.
+If either check fails, it starts on the original's landing. The shared
+clearance rule is untouched.
+
+At level 6001 the copy used to spawn over a 20-cell fall in all eight
+seeded runs. It now starts on the ledge, uses its cushion descent, and
+reaches the exit. All eight runs went from 14 of 15 rescued to 15 of 15.
+The 80 comparison runs on four nearby winter layouts and six non-winter
+Model Collapse layouts matched the previous playtest results, including
+rescue totals, loops, and stalls. The 106 focused tests and all special
+height checks passed.
+
+The full check passed all 2,051 tests. The maximum changed-file CRAP score
+was 29.0.
+
+**Next:** fix Bouncer hit recovery. On level 9601, a Bouncer grabs the
+same agent a tick after losing a fight, before its recovery timer advances.
