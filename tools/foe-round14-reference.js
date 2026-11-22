@@ -10,6 +10,8 @@ export function foeRoundFourteenSourceBefore(source){
  source=source.replace('  var skiers = m.id === "skiers"\n','')
  source=source.replace('    if (!skiers && drawMissionEscort','    if (drawMissionEscort')
  source=source.replace('    if (skiers) drawRidgeSkier(ctx, w, pal, t, x, y)\n    else drawMissionSubject','    drawMissionSubject')
+ source=source.replace('  var at = w.mission.id === "skiers" ? ridgeSkierNotice(w.mission).at : w.mission.openedAt\n  return Math.max(0, 1 - (w.ticks - at) / 45)','  return Math.max(0, 1 - (w.ticks - w.mission.openedAt) / 45)')
+ source=source.replace('  if (w.mission.id === "skiers") text = w.mission.done ? ridgeSkierNotice(w.mission).text : "ESCORT SKIERS TO SHELTER"\n','')
  reference ||= execFileSync('git',['show','fe891415d168b38bc8110e47977b9b396e0a46d4:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
  for(const name of ['drawHzHotaisle','drawHzPolisher','drawHzVent']){
   const re=new RegExp('function '+name+'\\([^]*?\\n}\\n')

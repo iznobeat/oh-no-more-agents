@@ -6739,7 +6739,8 @@ function skyCardTextBox(box) {
 function skyMissionAlpha(w) {
   if (!w.mission) return 0
   if (!w.mission.done) return 1
-  return Math.max(0, 1 - (w.ticks - w.mission.openedAt) / 45)
+  var at = w.mission.id === "skiers" ? ridgeSkierNotice(w.mission).at : w.mission.openedAt
+  return Math.max(0, 1 - (w.ticks - at) / 45)
 }
 
 function skyNameWidth(w, width) {
@@ -6802,6 +6803,7 @@ function drawSkyMissionText(ctx, w, pal, box, alpha) {
   ctx.textAlign = "left"
   ctx.fillStyle = w.mission.done ? pal.exitLight : pal.warn
   var text = w.mission.done ? "MISSION COMPLETE — EXIT ONLINE" : "MISSION: " + w.mission.verb
+  if (w.mission.id === "skiers") text = w.mission.done ? ridgeSkierNotice(w.mission).text : "ESCORT SKIERS TO SHELTER"
   ctx.fillText(skyFitText(ctx, text, width), x, 11)
 }
 
@@ -28730,6 +28732,18 @@ function drawRidgeExitFine(ctx, pal, x, y, width, height) {
 var RIDGE_SKIER_JACKETS = ["#e47c63", "#56b6ab", "#eab969"]
 var RIDGE_SKI_LEAN = [3, 4, 3, 2]
 var RIDGE_SKIER_STRIDE = [-1, 0, 1, 0]
+
+function ridgeSkierNotice(mission) {
+  var at = mission.openedAt, arrived = 0
+  if (mission.descoped) return { at: at, text: "SKIERS STILL WAITING" }
+  for (var i = 0; i < mission.targets.length; i++) {
+    var skier = mission.targets[i]
+    if (!skier.home) continue
+    arrived++
+    at = Math.max(at, skier.homeAt)
+  }
+  return { at: at, text: arrived ? arrived + "/" + mission.targets.length + " AT SHELTER" : "SKIERS FREED" }
+}
 
 function drawRidgeSkier(ctx, w, pal, t, x, y) {
   var age = t.home ? w.ticks - t.homeAt : 0

@@ -160,3 +160,38 @@ test("stand-down and mission completion have bounded lifetimes; absent and tight
   assert.equal(D.skyFitText(fitted.ctx, "too long", 1), "")
   assert.equal(D.skyFitText(fitted.ctx, "two", 30), "two")
 })
+
+test("the Ridge banner names release, shelter arrivals, and a descoped rescue separately", () => {
+  const w = S.generate(1531, 0, 58581591)
+  const ridgePal = P.build(theme.theme, w.level)
+  const labels = world => {
+    const r = recording(), before = JSON.stringify(world)
+    D.drawSkyMission(r.ctx, world, ridgePal)
+    assert.equal(JSON.stringify(world), before)
+    return r.texts.map(t => t.text)
+  }
+  for (const [tick, expected] of [
+    [270, "ESCORT SKIERS TO SHELTER"],
+    [291, "SKIERS FREED"],
+    [336, null],
+    [489, null],
+    [490, "1/2 AT SHELTER"],
+    [504, "2/2 AT SHELTER"],
+    [549, null]
+  ]) {
+    while (w.ticks < tick) S.step(w)
+    for (const res of [1, 2]) {
+      w.res = res
+      assert.deepEqual(labels(w), expected === null ? [] : [expected])
+    }
+  }
+  assert.equal(D.escortLine(w), " · +2 RESCUED")
+
+  const skipped = S.generate(w.level, 0, w.colonySeed)
+  skipped.ticks = 300
+  S.descopeMission(skipped, skipped.mission)
+  assert.deepEqual(labels(skipped), ["SKIERS STILL WAITING"])
+  assert.equal(D.escortLine(skipped), "")
+  skipped.ticks += 45
+  assert.deepEqual(labels(skipped), [])
+})

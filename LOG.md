@@ -16205,3 +16205,25 @@ The seven focused tour and daily tests passed.
 The link review, all 2,046 tests, and the changed-file CRAP gate passed.
 
 **Next:** distinguish release from arrival in the Aurora Ridge mission banner.
+
+## 501 — 2026-11-22 · Skier release and shelter notices
+
+The Ridge opens with “Escort skiers to shelter.” The banner says
+“Skiers freed” as the exit begins to open, then
+shows how many have reached shelter when an escort arrives. Each notice
+uses the existing 45-tick fade. A descoped mission says “Skiers still
+waiting.” The gate transition and final rescue report use the same state
+as before.
+
+On the pinned level 1531 replay, the notices appear at ticks 291, 490
+and 504. Chromium renders showed the full opening label and all three
+notices at native and page resolution. The opening label measured 115.2
+of the 166 logical pixels available beside Rubber Duck. The 21 focused
+sky, winter and escort tests passed,
+along with the historical renderer comparison.
+
+The banner passed the full check with 2,047 tests and a maximum changed-file
+CRAP score of 29.0.
+
+**Next:** give the skiers a visible grip on the cable. On level 1531 their
+hands sit three to five art pixels below it during the delayed crossing.
