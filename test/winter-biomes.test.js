@@ -86,6 +86,48 @@ test("lanterns catch in sequence and hold steady with reduced motion", () => {
   }
 })
 
+test("Market lanterns catch from the first helper's side on real replays", () => {
+  const litLanterns = (w, pal) => {
+    const { ctx } = canvas(1, 1), lamps = []
+    ctx.fillRect = (x, y, width) => {
+      if (ctx.fillStyle === "#fff0bd" && width === 2) lamps.push(x + 1)
+    }
+    D.drawMarketMission(ctx, w, pal)
+    return lamps
+  }
+
+  for (const [stage, openedAt, fromRight] of [[841, 236, false], [901, 302, true], [9241, 340, true]]) {
+    const w = S.generate(stage, 0, colonySeed(stage, 0, 3))
+    const m = w.mission, pal = P.build(theme, stage)
+    const positions = m.targets.map(t => t.x * w.k.CELL)
+    const order = fromRight ? positions.slice().reverse() : positions
+    for (const [age, count] of [[-1, 0], [0, 1], [3, 1], [4, 2], [7, 2], [8, 3]]) {
+      while (w.ticks < openedAt + age) S.step(w)
+      assert.equal(m.done, age >= 0)
+      if (age >= 0) assert.equal(m.openedAt, openedAt)
+      assert.equal(m.lanternsFromRight, fromRight)
+      for (const res of [1, 2]) {
+        w.res = res
+        w.reducedMotion = false
+        assert.deepEqual(litLanterns(w, pal), order.slice(0, count).sort((a, b) => a - b))
+        w.reducedMotion = true
+        assert.deepEqual(litLanterns(w, pal), age < 0 ? [] : positions)
+      }
+    }
+  }
+
+  const w = S.generate(841, 0, 3), m = w.mission
+  w.agents.push({ id: 1, x: m.x, y: m.y, state: "walk" })
+  S.stepMission(w)
+  w.agents[0].x += 1
+  while (!m.done && w.ticks < 4) {
+    w.ticks++
+    S.stepMission(w)
+  }
+  assert.equal(m.lanternsFromRight, false, "a centered first helper keeps the default order")
+  assert.deepEqual(litLanterns(w, P.build(theme, w.level)), [m.targets[0].x * w.k.CELL])
+})
+
 test("ridge agents ride real cables across chasms and complete neighbouring ridge layouts", () => {
   for (const stage of [631, 691, 751]) {
     const w = S.generate(stage, 0, 3)

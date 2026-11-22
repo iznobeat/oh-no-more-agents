@@ -16246,3 +16246,22 @@ CRAP score of 29.0.
 
 **Next:** start Market lantern ignition on the first helper's side. On
 level 901 the helper arrives beside the right lantern, which lights last.
+
+## 503 — 2026-11-22 · Market lanterns light from the helper's side
+
+The first contributing agent sets the order of the lanterns' four-tick
+ignition sequence. A centered or absent helper keeps the left-first
+default. Reduced motion still lights all three on the unlock tick.
+
+On level 841 the left lantern still lights first. On levels 901 and
+9241 the right lantern lights first beside the helper. The native and
+page comparisons found pixel changes only inside the lantern glow
+footprints during ignition. All 48 seeded replays across five visits
+and two board widths kept the same unlocks, agent paths and rescue
+outcomes. The 23 focused tests passed.
+
+The ignition change passed the full check with 2,049 tests and a maximum
+changed-file CRAP score of 29.0.
+
+**Next:** shorten the pending Market objective. Level 5161 truncates the
+instruction beside Rubber Duck at both canvas resolutions.

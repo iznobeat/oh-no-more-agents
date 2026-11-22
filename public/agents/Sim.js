@@ -11898,7 +11898,11 @@ function stepMission(w) {
     if (ag.gone || ag.state === "saved" || ag.state === "bomb") continue
     if (Math.abs(ag.x - m.x) <= 8 && Math.abs(ag.y - m.y) <= 7) m.discovered = true
     if (m.discovered && Math.abs(ag.x - m.x) <= 3 && Math.abs(ag.y - m.y) <= 7
-        && (m.kind !== "alien" || ag.id === m.scoutId)) helping++
+        && (m.kind !== "alien" || ag.id === m.scoutId)) {
+      // Use the first contribution to set the lantern animation's direction.
+      if (m.kind === "lantern" && !m.progress && !helping) m.lanternsFromRight = ag.x > m.x
+      helping++
+    }
   }
   if (m.discovered) for (var di = 0; di < m.targets.length; di++) m.targets[di].discovered = true
   if (helping) {

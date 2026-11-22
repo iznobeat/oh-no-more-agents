@@ -28651,7 +28651,9 @@ function drawMarketLantern(ctx, w, target, index) {
 }
 
 function drawMarketFlame(ctx, w, x, y, index) {
-  var age = w.reducedMotion ? 30 : w.ticks - w.mission.openedAt - index * 4
+  var m = w.mission
+  var order = m.lanternsFromRight ? m.targets.length - 1 - index : index
+  var age = w.reducedMotion ? 30 : w.ticks - m.openedAt - order * 4
   if (age < 0) return
   var phase = w.reducedMotion ? 0 : Math.floor((w.ticks + index * 7) / 8) % MARKET_WICK.length
   ctx.globalAlpha = age < 6 ? 0.30 : 0.16
