@@ -542,7 +542,7 @@
   // nothing is cleared and nothing is counted. It goes to that biome's next
   // level after this one, so a tour moves forward through the game.
   function tourLevel(from, biome) {
-    var l = from + 1
+    var l = Math.max(from + 1, biomeShowcaseLevel(biome))
     while (biomeIndex(l) !== biome) l++
     return l
   }
@@ -576,17 +576,17 @@
     var badge = document.getElementById("dailyBadge")
     if (!badge) return
     var ctx = badge.getContext("2d")
+    ctx.clearRect(0, 0, badge.width, badge.height)
     if (el.daily.classList.contains("advent")) drawUiPixels(ctx, ADVENT_BADGE_PIXELS, 1, 1)
     else drawDailyBadge(ctx, 0, 0)
   }
 
   function paintTour() {
-    paintDailyBadge()
     if (!el.tour) return
     var t = THEMES[themeName]
     Array.prototype.forEach.call(el.tour.children, function (b, i) {
       var pal = build({ background: hex(t.background), foreground: hex(t.foreground), accent: hex(t.accent),
-        urgent: hex(t.urgent), muted: hex(t.muted) }, i + 1)
+        urgent: hex(t.urgent), muted: hex(t.muted) }, biomeShowcaseLevel(i))
       drawTourIcon(b.firstChild.getContext("2d"), pal, i)
     })
   }
@@ -1166,6 +1166,7 @@
     if (!window.AgentShare) return
     var d = AgentShare.daily(AgentShare.today())
     if (!d) return
+    refreshDaily(d.daily)
     newLevel(d.level, d.seed)
     world.daily = d.daily
     saveState()
@@ -1179,13 +1180,21 @@
 
   function setupDaily() {
     if (!el.daily || !window.AgentShare) return
-    var date = AgentShare.today(), door = AgentShare.adventDay(date)
-    document.getElementById("dailyDate").textContent = date
-    if (door) {
-      el.daily.classList.add("advent")
-      document.getElementById("dailyNote").textContent = "North Pole · Door " + door + " of " + AgentShare.ADVENT_LAST
-    }
+    refreshDaily(AgentShare.today())
     el.daily.addEventListener("click", playDaily)
+  }
+
+  function refreshDaily(date) {
+    if (!el.daily) return
+    var stamp = document.getElementById("dailyDate")
+    if (stamp.textContent === date) return
+    var door = AgentShare.adventDay(date)
+    stamp.textContent = date
+    el.daily.classList.toggle("advent", Boolean(door))
+    document.getElementById("dailyNote").textContent = door
+      ? "North Pole · Door " + door + " of " + AgentShare.ADVENT_LAST
+      : "Today's standup is mandatory."
+    paintDailyBadge()
   }
 
   function copyByHand(text) {
@@ -1645,7 +1654,10 @@
     // Pause the clock while hidden; throttled timers would consume game time.
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) { finishCommute(); if (timer !== null) { clearInterval(timer); timer = null } }
-      else restartClock()
+      else {
+        restartClock()
+        if (window.AgentShare) refreshDaily(AgentShare.today())
+      }
       syncSfxScene()
     })
     window.addEventListener("online", function () { loadGlobalStats(); flushGlobalSaves() })
@@ -1656,7 +1668,9 @@
     // A paused or hidden game makes no requests of its own. Hidden tabs throttle
     // this to about a minute, which is far finer than it needs to be.
     setInterval(function () {
-      if (!document.hidden && Date.now() - lastStatsAt > STATS_IDLE) loadGlobalStats()
+      if (document.hidden) return
+      if (window.AgentShare) refreshDaily(AgentShare.today())
+      if (Date.now() - lastStatsAt > STATS_IDLE) loadGlobalStats()
     }, 60000)
 
     // Leaving mid-batch would otherwise strand those rescues until the player

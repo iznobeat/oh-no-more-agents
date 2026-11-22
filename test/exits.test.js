@@ -25,8 +25,8 @@ test("exit frames at res 1 and unspecified res match the pre-detail pixels", () 
   assert.equal(hash.digest("hex"), "3751fa33d57102a143446b775b52d01ac95b13214fd579a3dcaffaf4443ac6f1")
 })
 
-for (let level = 1; level <= S.BIOMES.length; level++) {
-  const biome = S.BIOMES[level - 1]
+for (const [index, biome] of S.BIOMES.entries()) {
+  const level = S.biomeShowcaseLevel(index)
   test(`${biome} exit draws at both resolutions and adds fine pixels inside its frame`, () => {
     assert.equal(typeof D.EXIT_FINE[biome], "function", "every biome has a fine drawing")
     const w = S.generate(level, 0, 3), e = w.exit, C = w.k.CELL

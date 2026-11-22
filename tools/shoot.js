@@ -81,12 +81,11 @@ if (cmd === "level") {
   report(writePNG(path.join(outDir, `crop-${level}.png`), c, scale * 2), world.biome)
 
 } else if (cmd === "biomes") {
-  // One level from each biome, in order, stacked into a contact sheet. The
-  // biome is picked by level number, so level N shows biome (N-1) % BIOMES.length.
+  // One representative level from each biome, in catalogue order.
   const images = []
   const names = []
   for (let i = 0; i < S.BIOMES.length; i++) {
-    const lv = i + 1
+    const lv = S.biomeShowcaseLevel(i)
     const { img, world } = shot({ level: lv })
     images.push(img)
     names.push(`${lv} ${world.biome}`)

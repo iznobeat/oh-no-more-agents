@@ -7,6 +7,7 @@
   // Eight at most: when a line is added, the oldest (or least useful to a
   // watcher: keep the ones that say what a tap does) drops off.
   var NEWS = [
+    { id: "2026-11-22-winter", text: "Added: Winter Market and Aurora Ridge. Find two winter stops in the biome tour." },
     { id: "2026-11-22-advent", text: "Added: Advent doors. The daily colony goes to a different North Pole level from Dec 1 to 25." },
     { id: "2026-10-29-quiet", text: "Added: fewer words. The report says what happened, and the board does the rest." },
     { id: "2026-10-15-ooo", text: "Added: out-of-office replies. Lost agents leave an auto-reply under the board." },

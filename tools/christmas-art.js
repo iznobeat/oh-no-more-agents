@@ -23,14 +23,15 @@ export function run(base,out) {
   const versions=[["before",before,season(old,"?season=christmas")],["after",after,season(now,"?season=christmas")]]
   const count=S.BIOMES.length, native=canvas(800,count*248), page=canvas(1600,count*496)
   const sheet=canvas(1760,count*278,"#121822"),details=canvas(1760,count*278,"#121822"),trees=canvas(1760,count*278,"#121822"),umbrellas=canvas(1760,count*278,"#121822")
-  for(let level=1;level<=count;level++) {
+  for(let index=0;index<count;index++) {
+    const level=S.biomeShowcaseLevel(index)
     const shots=[],exits=[],hatches=[],canopies=[];let name
     const world=christmasWorld(level,season(now,"?season=none"))
     for(const res of [1,2])for(const[tag,D,api]of versions) {
       for(const key of Object.keys(world))if(key.startsWith("season"))delete world[key]
       const w=world;api.dress(w);const img=christmasFrame(D,api,w,res);name=w.biome
       writePNG(path.join(out,`level-${level}-${tag}-res${res}.png`),img)
-      copyPixels(res===1?native:page,img,tag==="before"?0:400*res,(level-1)*248*res)
+      copyPixels(res===1?native:page,img,tag==="before"?0:400*res,index*248*res)
       const ag=w.agents.find(a=>a.floater&&!a.gone)||w.agents.find(a=>!a.gone)||{x:25,y:25}
       const view=crop(img,Math.max(0,Math.min(180,Math.round(ag.x*4-80)))*res,Math.max(28,Math.min(128,Math.round(ag.y*4-65)))*res,220*res,120*res),e=w.exit
       const c=w.corridors[0],hx=(c.startX+c.dir*8)*4
@@ -42,10 +43,10 @@ export function run(base,out) {
       writePNG(path.join(out,`umbrella-${level}-${tag}-res${res}.png`),canopy)
       shots.push(res===1?doublePixels(view):view);exits.push(res===1?doublePixels(close):close);hatches.push(res===1?doublePixels(tree):tree);canopies.push(res===1?doublePixels(canopy):canopy)
     }
-    copyPixels(sheet,sheetRow(after,`${level} ${name}`,shots),0,(level-1)*278)
-    copyPixels(details,sheetRow(after,`${level} ${name} EXIT`,exits),0,(level-1)*278)
-    copyPixels(trees,sheetRow(after,`${level} ${name} HATCH`,hatches),0,(level-1)*278)
-    copyPixels(umbrellas,sheetRow(after,`${level} ${name} UMBRELLA`,canopies),0,(level-1)*278)
+    copyPixels(sheet,sheetRow(after,`${level} ${name}`,shots),0,index*278)
+    copyPixels(details,sheetRow(after,`${level} ${name} EXIT`,exits),0,index*278)
+    copyPixels(trees,sheetRow(after,`${level} ${name} HATCH`,hatches),0,index*278)
+    copyPixels(umbrellas,sheetRow(after,`${level} ${name} UMBRELLA`,canopies),0,index*278)
   }
   writePNG(path.join(out,"full-res1-sheet.png"),native);writePNG(path.join(out,"full-res2-sheet.png"),page)
   writePNG(path.join(out,"contact-sheet.png"),sheet);writePNG(path.join(out,"exits-sheet.png"),details);writePNG(path.join(out,"hatches-sheet.png"),trees);writePNG(path.join(out,"umbrellas-sheet.png"),umbrellas)

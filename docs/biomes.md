@@ -460,3 +460,27 @@ would otherwise have replaced the workshop's hazards on every one of them.
 - **Events:** Code Freeze (blackout ×0), Config Drift (growth), Ice Breaker
   (floor collapse).
 - Dry pit: a crevasse.
+
+## Winter Market
+
+- **Levels** start at 601 and repeat every 60 levels. The North Pole retains
+  priority on multiples of 21. The biome tour jumps directly to the market.
+- **Lanterns.** The agents head for the final corridor, where lighting three
+  lanterns unlocks the gate. This uses the established mission placement,
+  reach and timeout rules. The lanterns remain in place after lighting. The
+  market's exit aisle avoids steps that would require a climb from every agent.
+- **Art.** Striped stall roofs, decorated fir trees and thin snow caps sit
+  behind the route. The three lanterns catch in order after the objective
+  completes, then flicker independently. Reduced motion lights all three at
+  once and holds their flames still.
+
+## Aurora Ridge
+
+- **Levels** start at 631 and recur every 60 levels, with North Pole priority
+  on multiples of 21. The tour opens the first ridge directly.
+- **Crossings** reuse the zipline rules. A line can be strung across a bottom
+  chasm with free air and solid banks. The colony still brings its bridge
+  tools for a gap where the cable cannot be placed.
+- **Art.** Snowy ridges recede behind the passages. A moving aurora is clipped
+  to open air and drawn before the cable, people and hazards. Reduced motion
+  holds the aurora at a fixed shape.

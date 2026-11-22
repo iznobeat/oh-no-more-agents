@@ -2,6 +2,19 @@
 
 Moved out of AGENTS.md: staying current across deploys, and how to check gameplay, looks and the page itself.
 
+For a release that needs both the full check and a fresh complexity report,
+collect coverage during the check and pass that report into CRAP:
+
+```bash
+AGENTS_GATE_COVERAGE=1 npm run check &&
+  npm run crap -- --changed --threshold 30 --use-existing-coverage
+```
+
+This runs the full test suite once under the shared lock. Instrumented
+tests get three minutes per test because the historical art comparisons
+take longer with coverage enabled.
+
+
 ## Staying current
 
 A tab is left open for days, so a deploy has to reach it without anyone pressing

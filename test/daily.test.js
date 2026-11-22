@@ -89,6 +89,10 @@ test("on the page: the button plays today's colony, copy link carries ?daily, an
     assert.equal(await ev(`getComputedStyle(document.getElementById("dailyBadge")).animationName`), "advent-badge")
     await b.cmd("Emulation.setEmulatedMedia", { features: [{name:"prefers-reduced-motion", value:"reduce"}] })
     assert.equal(await ev(`getComputedStyle(document.getElementById("dailyBadge")).animationName`), "none")
+    await ev(`Date.now = () => Date.UTC(2026, 11, 26); document.dispatchEvent(new Event("visibilitychange"))`)
+    assert.equal(await ev(`document.getElementById("dailyDate").textContent`), "2026-12-26")
+    assert.equal(await ev(`document.getElementById("dailyNote").textContent`), "Today's standup is mandatory.")
+    assert.equal(await ev(`document.getElementById("daily").classList.contains("advent")`), false)
     assert.deepEqual(b.errors, [])
   } finally { await b.close(); server.close() }
 })

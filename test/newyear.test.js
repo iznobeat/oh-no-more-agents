@@ -34,10 +34,10 @@ test('New Year wraps Dec 31–Jan 1 only, with strict previews and Christmas sep
   assert.equal(api.pick('?season=none',new Date(2026,11,31)),null)
   assert.equal(api.pick('?season=NEWYEAR',new Date(2026,5,1)),null)
 })
-test('all biomes retain exact Christmas and out-of-season full frames at both resolutions',()=>{
+test('the original 21 biomes retain exact Christmas and out-of-season full frames at both resolutions',()=>{
   for(const mode of ['none','christmas']) {
     const a=season(oldSource,`?season=${mode}`),b=season(source,`?season=${mode}`)
-    for(let level=1;level<=S.BIOMES.length;level++)for(const res of[1,2]) {
+    for(let level=1;level<=21;level++)for(const res of[1,2]) {
       const wa=christmasWorld(level,a),wb=christmasWorld(level,b)
       const pin=workPins.newyear[`${mode}/${level}/${res}`],before=hash(christmasFrame(oldD,a,wa,res).buf)
       if(pin)assert.equal(before,pin.before,'historical '+`${mode} ${level} ${res}`)

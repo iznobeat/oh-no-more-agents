@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import { execSync } from "node:child_process"
-import { serve, browser } from "../tools/phone.js"
+import { serve, browser, settleCommute } from "../tools/phone.js"
 
 // The biome tour: twenty thumbnails, the current one marked, a jump that goes
 // forward to that biome and counts as nothing cleared; a row of its own that
@@ -29,6 +29,15 @@ test("the tour jumps forward to the biome, marks it, clears nothing, and scrolls
     assert.equal(await ev(`document.documentElement.scrollWidth <= innerWidth`), true, "no page scroll")
     assert.equal(await ev(`document.getElementById("tour").scrollWidth > document.getElementById("tour").clientWidth`), true, "the row scrolls")
     assert.ok(await ev(`[...document.querySelectorAll("#tour canvas")].every(c => c.getContext("2d").getImageData(23, 0, 1, 1).data[3] > 0)`), "every thumbnail painted")
+    await settleCommute(ev)
+    await ev(`document.querySelector("#tour .tour-stop[aria-label='Go to Winter Market']").click()`)
+    assert.equal(await ev(`AgentWorld().biome`), "Winter Market")
+    assert.equal(await ev(`AgentWorld().level`), 601)
+    await settleCommute(ev)
+    await ev(`document.querySelector("#tour .tour-stop[aria-label='Go to Aurora Ridge']").click()`)
+    assert.equal(await ev(`AgentWorld().biome`), "Aurora Ridge")
+    assert.equal(await ev(`AgentWorld().level`), 631)
+    assert.equal(await ev(`document.getElementById("lifetime").textContent`), "0 home, 0 levels")
     assert.deepEqual(b.errors, [])
   } finally { await b.close(); server.close() }
 })

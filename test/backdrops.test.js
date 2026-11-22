@@ -28,8 +28,8 @@ test("all back walls and ambience retain their res-1 and unspecified-res bytes",
 biomeTests(1, Math.ceil(BIOME_COUNT / 2))   // the rest in backdrops-2.test.js
 
 test("fine motes stay on half-pixels and never paint solid ground", () => {
-  for (let level = 1; level <= S.BIOMES.length; level++) {
-    const { w, pal } = sample(level)
+  for (const [index] of S.BIOMES.entries()) {
+    const { w, pal } = sample(S.biomeShowcaseLevel(index))
     w.res = 2
     const img = image(w, "#000000", 2), fill = img.ctx.fillRect.bind(img.ctx)
     const fields = D.AMBIENCE[w.biome] || D.AMBIENCE_FINE_ONLY[w.biome] || [{ size: 1, col: "bubble" }]

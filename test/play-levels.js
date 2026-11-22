@@ -17,8 +17,11 @@ const P = loadCore("Palette.js")
 // not tests, and this was one of the files on the critical path of
 // `npm run coverage`. play.test.js, play-2 and play-3 each call this.
 export function playPass(pass) {
-  const from = (pass - 1) * S.BIOMES.length + 1
-  for (let level = from; level < from + S.BIOMES.length; level++) {
+  const from = (pass - 1) * (S.BIOME_CYCLE + 1) + 1
+  const levels = Array.from({ length: S.BIOME_CYCLE + 1 }, (_, index) => from + index)
+  const winterOffset = (pass - 1) * S.WINTER_EVERY
+  levels.push(S.WINTER_FIRST + winterOffset, S.WINTER_FIRST + S.RIDGE_OFFSET + winterOffset)
+  for (const level of levels) {
     test(`level ${level} (${S.BIOMES[S.biomeIndex(level)]}) plays to the end and draws`, () => {
       const w = S.generate(level, 0, level * 7919 + 13)
       let t = 0

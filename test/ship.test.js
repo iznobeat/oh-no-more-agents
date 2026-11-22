@@ -79,12 +79,9 @@ test("the shipped Sim plays out exactly like the source", () => {
 })
 
 test("the shipped Draw paints the same bytes in every biome", () => {
-  const S = source("Sim.js"), seen = new Set(), levels = []
-  for (let level = 1; level <= 60 && levels.length < S.BIOMES.length; level++) {
-    const biome = S.generate(level, 0, 1).biome
-    if (!seen.has(biome)) { seen.add(biome); levels.push(level) }
-  }
-  assert.equal(levels.length, S.BIOMES.length, "one level per biome")
+  const S = source("Sim.js")
+  const levels = S.BIOMES.map((_, index) => S.biomeShowcaseLevel(index))
+  assert.deepEqual(levels.map(level => S.generate(level, 0, 1).biome), S.BIOMES, "one level per biome")
   const hash = img => crypto.createHash("sha1").update(img.data || img.buf || img.pixels).digest("hex")
   for (const level of levels) {
     const opts = { level, seed: 4242, ticks: 300 }

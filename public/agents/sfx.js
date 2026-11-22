@@ -334,7 +334,9 @@
     "Subway":       [.060, .30,  55, .034, .250, .010,  150],
     "Harbour":      [.025, .40,  44, .012, .250, .015,  380],
     "The Cloud":    [.160, .38,  36, .020, .125, .025,   90],
-    "North Pole":   [.040, .30,  70, .008, .500, .020, 2400] // wind, and bells
+    "North Pole":   [.040, .30,  70, .008, .500, .020, 2400], // wind, and bells
+    "Winter Market":[.028, .18, 105, .014, .285, .016, 1850], // awnings and distant chimes
+    "Aurora Ridge": [.048, .62,  92, .007, .240, .022, 2950] // wind over the crest
   }
   var bedCache = [], bed = null, fadingBed = null, sceneBiome = "", sceneActive = false
 

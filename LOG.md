@@ -16116,3 +16116,27 @@ an open tab upgrading from the previous build and the browser flows. It
 blocked five rescue counter writes.
 
 **Next:** release Winter Market and Aurora Ridge after their own gate.
+
+## 497 — 2026-11-22 · Winter Market and Aurora Ridge
+
+Winter Market opens at level 601. Agents light three lanterns to open the
+exit, with a short ignition animation and warm light around the market stalls.
+Aurora Ridge opens at level 631 with drifting auroras, cable crossings where
+the terrain permits, and a chance to escort a skier. Both are in the biome
+tour. Reduced motion holds the aurora and lanterns still. The Advent badge
+also refreshes when an open tab crosses a UTC date boundary.
+
+Across 80 seeded draws covering the new layouts and neighbouring old levels,
+94% of agents reached home, with no hangs or stalls. A four-cell step at the
+level 661 exit trapped one colony before the fix. The bashable replacement
+let all 16 agents through in each of eight replays. The 37 sampled old levels
+generated the same worlds as before.
+
+The release check can collect coverage during its test pass so the CRAP
+report can reuse it. The historical art comparison keeps its original fixture
+set. The winter scenery and tour checks cover the new layouts separately.
+The first full pass caught three checks tied to the old biome count. Frost
+and Ruins now use the showcase levels, and production verification compares
+the tour length with the loaded biome catalog.
+
+**Next:** verify the new tour stops and their shared links on production.

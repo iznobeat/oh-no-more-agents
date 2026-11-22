@@ -14,7 +14,8 @@ export function run(base,out) {
   fs.mkdirSync(out,{recursive:true})
   for(const res of [1,2]) {
     const sheets=[],details=canvas(800, S.BIOMES.length*160)
-    for(let level=1;level<=S.BIOMES.length;level++) {
+    for(let index=0;index<S.BIOMES.length;index++) {
+      const level=S.biomeShowcaseLevel(index)
       const row=canvas(800*res,248*res)
       for(let v=0;v<2;v++) {
         const w=christmasWorld(level,apis[v]);w.ticks=450
@@ -22,7 +23,7 @@ export function run(base,out) {
         copyPixels(row,img,v*400*res,0)
         writePNG(path.join(out,`${level}-${v?'after':'before'}-res${res}.png`),img)
         const close=crop(img,0,16*res,200*res,80*res)
-        copyPixels(details,res===1?doublePixels(close):close,v*400,(level-1)*160)
+        copyPixels(details,res===1?doublePixels(close):close,v*400,index*160)
       }
       sheets.push(row)
     }

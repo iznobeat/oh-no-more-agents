@@ -158,16 +158,32 @@ var SKILL_LABELS = {
 // Palette.js derives the same index with the same rule and must be kept in
 // step — see the note over poolTint there.
 //
-// The North Pole is the exception, and is kept out of the cycle on purpose:
+// The North Pole is kept out of the cycle on purpose:
 // the first twenty go round in order as they always have, and every
 // twenty-first level is the North Pole instead (biomeIndex). Appending it to
 // the cycle would have re-skinned and re-laid every level above 20; this way
-// only 21, 42, 63 and so on change, and everything else is the level it was.
-var BIOMES = ["Cavern", "Ruins", "Frost", "Foundry", "Jungle", "Ice Cave", "Spaceship", "Factory", "Skyscraper", "Trench", "Desert", "Data Center", "Library", "Mail Room", "Building Site", "Clock Tower", "Rooftops", "Subway", "Harbour", "The Cloud", "North Pole"]
+// it changed only 21, 42, 63 and so on. The winter routes follow the last
+// Advent door, so the original early rotation and daily runs keep their maps.
+var BIOMES = ["Cavern", "Ruins", "Frost", "Foundry", "Jungle", "Ice Cave", "Spaceship", "Factory", "Skyscraper", "Trench", "Desert", "Data Center", "Library", "Mail Room", "Building Site", "Clock Tower", "Rooftops", "Subway", "Harbour", "The Cloud", "North Pole", "Winter Market", "Aurora Ridge"]
 
 var BIOME_CYCLE = 20, NORTH_POLE_EVERY = 21
+var WINTER_FIRST = 601, WINTER_EVERY = 60, RIDGE_OFFSET = 30
 function biomeIndex(level) {
-  return level % NORTH_POLE_EVERY === 0 ? BIOME_CYCLE : (level - 1) % BIOME_CYCLE
+  if (level % NORTH_POLE_EVERY === 0) return BIOME_CYCLE
+  if (level >= WINTER_FIRST) {
+    var slot = (level - WINTER_FIRST) % WINTER_EVERY
+    if (slot === 0) return BIOME_CYCLE + 1
+    if (slot === RIDGE_OFFSET) return BIOME_CYCLE + 2
+  }
+  return (level - 1) % BIOME_CYCLE
+}
+
+// Thumbnails and atlas tools need a representative level, not a biome index
+// treated as a level number. The early rotation doubles as its own showcase.
+function biomeShowcaseLevel(index) {
+  if (index === BIOME_CYCLE + 1) return WINTER_FIRST
+  if (index === BIOME_CYCLE + 2) return WINTER_FIRST + RIDGE_OFFSET
+  return index + 1
 }
 
 // A small job on the route gives each biome a premise beyond merely reaching
@@ -211,6 +227,8 @@ var MISSION_SPECS = {
   "The Cloud":     { id: "sysadmins",  verb: "BRING THE SYSADMINS ON-PREM", kind: "civilian", count: 2 },
   // Somebody left the stable door open on the busiest night of the year.
   "North Pole":    { id: "reindeer",   verb: "ROUND UP THE REINDEER", kind: "reindeer", count: 2 },
+  "Winter Market": { id: "lanterns",   verb: "LIGHT THE MARKET LANTERNS", kind: "lantern", count: 3, still: true, always: true },
+  "Aurora Ridge":  { id: "skiers",     verb: "BRING THE SKIERS TO SHELTER", kind: "explorer", count: 2 },
   // Up in the works since the last time it was wound. Nobody noticed.
   "Clock Tower": { id: "keepers", verb: "FREE THE CLOCKMAKERS",  kind: "civilian", count: 2 }
 }
@@ -1633,6 +1651,7 @@ var BIOME_MECHANISMS = {
   "Mail Room": placeTubes,
   "Building Site": placeCranes,
   "Rooftops": placeZiplines,
+  "Aurora Ridge": placeZiplines,
   "Subway": placeTrains,
   "Harbour": placeFerries,
   "The Cloud": cloudLining,
@@ -2726,8 +2745,8 @@ function placeMission(w, corridors) {
   // Optional, and rolled from its own stream so adding missions does not
   // reshuffle terrain, hazards, specials or events on established levels.
   var missionRng = makeRng(w.level * 104729 + 8191)
-  if (missionRng() >= 0.30) return
   var spec = MISSION_SPECS[w.biome]
+  if (missionRng() >= 0.30 && !spec.always) return
   // Place it deep on the final corridor, but before the exit. It is visible to
   // the audience from the start; "search" describes what the autonomous cast
   // is doing, not a fog-of-war rule. Shortcuts may deliver
@@ -2959,7 +2978,9 @@ var BIOME_SKINS = {
   "Subway": skinSubway,
   "Harbour": skinHarbour,
   "The Cloud": skinCloud,
-  "North Pole": skinNorthPole
+  "North Pole": skinNorthPole,
+  "Winter Market": skinNorthPole,
+  "Aurora Ridge": skinNorthPole
 }
 
 function skinSpaceship(w, rng) {
@@ -3902,8 +3923,10 @@ function placeObstacles(w, rng, c, index, corridors) {
   for (var n = 1; n <= count; n++) {
     var x = Math.round(lo + slot * n)
     var kind = n === forced ? "chasm" : pick(rng, kinds)
-    // rng() burns the step's second draw, so the rest of the level is as it was.
-    if (kind === "step" && lastOne && stepEarlier(corridors, index)) { kind = "wall"; rng() }
+    // Market aisles keep a level floor for the lanterns and the late crowd.
+    // Elsewhere a second step would charge every walker for a climb twice.
+    // rng() burns the step's second draw, so later rolls stay in place.
+    if (kind === "step" && lastOne && (w.biome === "Winter Market" || stepEarlier(corridors, index))) { kind = "wall"; rng() }
     if (kind === "step") c.hasStep = true
     // Kept so the level's danger can be put where the traffic is densest and
     // the timing is funniest — see placeHazard().
@@ -5580,6 +5603,10 @@ function cutPit(w, rng, c, x0, x1, openAbove) {
   return pit
 }
 
+function frequentCrossing(biome) {
+  return biome === "Rooftops" || biome === "Harbour" || biome === "Aurora Ridge"
+}
+
 // Rolled after the exit and the wall in front of it are final, because a
 // crossing has to know where both of them ended up, and before the floors are
 // roughened, which declines to hang dirt over a cell with no floor under it
@@ -5591,7 +5618,7 @@ function placeBottomPit(w, rng, c, prev, sealFrom) {
 
   // On the Rooftops nearly every level has one: the gap between two houses,
   // which is what their lines are strung across.
-  var crossing = roll >= (w.biome === "Rooftops" || w.biome === "Harbour" ? 0.15 : 0.52)
+  var crossing = roll >= (frequentCrossing(w.biome) ? 0.15 : 0.52)
   if (crossing) crossing = cutCrossing(w, rng, c, landing, sealFrom) !== null
 
   // A shaft on its own on the levels that rolled one, and behind the colony as

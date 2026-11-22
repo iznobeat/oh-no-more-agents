@@ -37,8 +37,8 @@ export function nextOfBiome(level) {
 }
 
 export function biomeTests(from, to) {
-for (let level = from; level <= to; level++) {
-  const biome = S.generate(level, 0, 99).biome
+for (let index = from - 1; index < to; index++) {
+  const level = S.biomeShowcaseLevel(index), biome = S.BIOMES[index]
   for (const [kind, draw] of [["backdrop", D.drawBackdrop], ["ambience", ambience]]) {
     test(`${biome} ${kind} draws at res 1 and 2 and adds fine pixels`, () => {
       assert.equal(typeof D.BACKDROP_FINE[biome], "function")

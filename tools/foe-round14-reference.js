@@ -1,8 +1,12 @@
 import {execFileSync} from 'node:child_process'
 import fs from 'node:fs'
 let reference
-// Restore only C34's three painters and six fan/brace/pressure helpers.
+// Remove later winter-biome hooks before reconstituting the original C34 baseline.
 export function foeRoundFourteenSourceBefore(source){
+ source=source.replace(/\n\/\/ Winter biome additions\n[\s\S]*?\n\/\/ End winter biome additions\n/,'')
+ source=source.replace('  if (w.biome === "Winter Market" || w.biome === "Aurora Ridge") return drawWinterSnow(ctx, w)\n','')
+ source=source.replace('  if (w.biome === "Aurora Ridge") drawRidgeLife(ctx, w, pal)\n','')
+ source=source.replace('  if (m.kind === "lantern") return drawMarketMission(ctx, w, pal)\n','')
  reference ||= execFileSync('git',['show','fe891415d168b38bc8110e47977b9b396e0a46d4:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
  for(const name of ['drawHzHotaisle','drawHzPolisher','drawHzVent']){
   const re=new RegExp('function '+name+'\\([^]*?\\n}\\n')

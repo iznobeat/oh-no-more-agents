@@ -2389,6 +2389,7 @@ function drawMachines(ctx, w, pal) {
   if (w.biome === "Building Site") drawSiteMachines(ctx, w, pal)
   if (w.biome === "Clock Tower") drawClockMachines(ctx, w, pal)
   if (w.biome === "Rooftops") drawRoofMachines(ctx, w, pal)
+  if (w.biome === "Aurora Ridge") drawRidgeLife(ctx, w, pal)
   if (w.biome === "Subway") drawSubwayMachines(ctx, w, pal)
   if (w.biome === "Harbour") drawHarbourMachines(ctx, w, pal)
   if (w.biome === "Foundry") drawFoundryHeat(ctx, w, pal)
@@ -5337,6 +5338,7 @@ function drawDeathGeneric(ctx, w, pal, age) {
 function drawMission(ctx, w, pal) {
   var m = w.mission
   if (!m) return
+  if (m.kind === "lantern") return drawMarketMission(ctx, w, pal)
   var C = w.k.CELL
 
   ctx.save()
@@ -26021,6 +26023,7 @@ function drawNorthChimney(ctx, w, run, age) {
 // the terrain repaint, at every resolution: it is what the biome is made of.
 var NP_DRIFT = "#c9dcf2", NP_ICE = "#9fd0ea"
 function drawNorthPoleSurfaces(ctx, w) {
+  if (w.biome === "Winter Market" || w.biome === "Aurora Ridge") return drawWinterSnow(ctx, w)
   if (w.biome !== "North Pole") return
   var k = w.k, cols = k.COLS
   ctx.save()
@@ -28496,3 +28499,264 @@ function orbitalCrescentAir(w,x) {
   }
   return score
 }
+
+// Winter biome additions
+var MARKET_AWNINGS = ["#703a61", "#325964", "#734944"]
+var MARKET_WICK = ["#ffb860", "#ffcc77", "#ffb050", "#ffd47f"]
+
+BACKDROPS["Winter Market"] = backWinterMarket
+BACKDROP_FINE["Winter Market"] = backWinterMarketFine
+EXIT_FRAMES["Winter Market"] = drawMarketExit
+EXIT_FINE["Winter Market"] = drawMarketExitFine
+AMBIENCE["Winter Market"] = [{ n: 38, vx: 0.09, vy: 0.16, sway: 2, size: 1, col: "dust", alpha: 0.42 }]
+AMBIENCE_FINE["Winter Market"] = drawMoteFrostFine
+DUSK_OUTDOOR["Winter Market"] = true
+LEVEL_TITLE_LINES["Winter Market"] = ["Everything must glow.", "Open till the last agent leaves.", "All sales final. All exits conditional."]
+
+TOUR_ICON_PIXELS.push(
+  // Winter Market
+  [".........yy.........", "........yyyy........", ".......rrwwrr.......", "......rrrwwrrr......",
+   ".....rrwwrrwwrr.....", "....rrrwwrrwwrrr....", "...rrrrwwrrwwrrrr...", "...oyyyyyyyyyyyyo...",
+   "....oo.yyyy.oo......", "....ooooooooooo.....", "....oo.......oo.....", "wwwwwwwwwwwwwwwwwwww"]
+)
+
+function backWinterMarket(ctx, rng, b, pal) {
+  ctx.fillStyle = pal.backDim
+  ctx.fillRect(b.x, b.y, b.w, b.h)
+  var w = b.world, C = w.k.CELL
+  for (var i = 0; i < w.corridors.length; i++) {
+    var corridor = w.corridors[i], floor = corridor.floorY * C
+    backNorthHills(ctx, rng, b, pal, floor)
+    for (var x = 12 + Math.floor(rng() * 24); x < b.w - 36; x += 43 + Math.floor(rng() * 26)) {
+      var wide = 23 + Math.floor(rng() * 10), shade = (i + Math.floor(rng() * 3)) % 3
+      if ((x + i) % 5 === 0) drawMarketFir(ctx, x + 13, floor - 2, shade)
+      else drawMarketStall(ctx, pal, x, floor - 3, wide, shade)
+    }
+  }
+}
+
+function drawMarketStall(ctx, pal, x, floor, wide, shade) {
+  ctx.fillStyle = pal.back
+  ctx.fillRect(x + 2, floor - 16, wide - 4, 16)
+  ctx.fillStyle = "#b48264"
+  ctx.fillRect(x + 3, floor - 9, wide - 6, 2)
+  ctx.fillRect(x + 3, floor - 7, 2, 7)
+  ctx.fillRect(x + wide - 5, floor - 7, 2, 7)
+  drawMarketAwning(ctx, x, floor - 17, wide, MARKET_AWNINGS[shade])
+  ctx.fillStyle = "#e8b273"
+  ctx.fillRect(x + 7, floor - 14, 2, 3)
+  ctx.fillRect(x + wide - 9, floor - 14, 2, 3)
+  ctx.fillStyle = MARKET_AWNINGS[(shade + 1) % 3]
+  ctx.fillRect(x + 9, floor - 11, 5, 2)
+  ctx.fillRect(x + wide - 11, floor - 12, 5, 3)
+  ctx.fillStyle = "#a68b73"
+  ctx.fillRect(x + wide - 9, floor - 12, 1, 3)
+}
+
+function drawMarketFir(ctx, x, y, shade) {
+  ctx.fillStyle = "#71505a"
+  ctx.fillRect(x - 1, y - 4, 3, 4)
+  ctx.fillStyle = "#36585d"
+  for (var tier = 0; tier < 3; tier++) {
+    var span = 2 + tier * 2
+    for (var row = 0; row < 6; row++) {
+      var edge = span + Math.floor(row / 2)
+      ctx.fillRect(x - edge, y - 23 + tier * 6 + row, edge * 2 + 1, 1)
+    }
+  }
+  ctx.fillStyle = "#db9f8a"
+  ctx.fillRect(x, y - 24, 1, 2)
+  ctx.fillRect(x - 2 - shade, y - 13, 1, 2)
+  ctx.fillRect(x + 2 + shade, y - 9, 1, 2)
+  ctx.fillStyle = "#dfc5a4"
+  ctx.fillRect(x + 1, y - 17, 1, 1)
+  ctx.fillRect(x - 4, y - 8, 1, 1)
+}
+
+function drawMarketAwning(ctx, x, y, width, colour) {
+  ctx.fillStyle = colour
+  ctx.fillRect(x + 3, y - 4, width - 6, 5)
+  ctx.fillRect(x, y - 1, width, 4)
+  ctx.fillStyle = "#ccacbc"
+  for (var stripe = 3; stripe < width - 3; stripe += 6) ctx.fillRect(x + stripe, y - 3, 2, 5)
+  ctx.fillStyle = "#cbd4ec"
+  ctx.fillRect(x + 5, y - 5, width - 10, 1)
+  ctx.fillRect(x + 2, y - 4, 3, 1)
+  ctx.fillRect(x + width - 5, y - 4, 3, 1)
+}
+
+function backWinterMarketFine(ctx, b, pal) {
+  if (b.h !== 16) return
+  ctx.globalAlpha = 0.28
+  ctx.fillStyle = pal.backLit
+  ctx.fillRect(b.x + 1, b.y + 8.5, b.w - 2, 0.5)
+  ctx.fillRect(b.x + 2, b.y + 10, 0.5, 6)
+  ctx.fillRect(b.x + b.w - 2.5, b.y + 10, 0.5, 6)
+}
+
+function drawWinterSnow(ctx, w) {
+  var k = w.k
+  for (var y = k.SKY; y < k.ROWS - 1; y++) {
+    for (var x = 0; x < k.COLS; x++) {
+      var i = y * k.COLS + x, cell = w.terrain[i]
+      if (cell === k.DIRT && w.terrain[i - k.COLS] === k.EMPTY) drawNorthCap(ctx, w, x, y)
+    }
+  }
+}
+
+function drawMarketExit(ctx, pal, x, y, width, height) {
+  ctx.fillStyle = "#b48264"
+  ctx.fillRect(x - 4, y, 4, height)
+  ctx.fillRect(x + width, y, 4, height)
+  drawMarketAwning(ctx, x - 6, y - 3, width + 12, MARKET_AWNINGS[0])
+  ctx.fillStyle = pal.exitLight
+  ctx.fillRect(x - 3, y + 3, 2, 2)
+  ctx.fillRect(x + width + 1, y + 3, 2, 2)
+}
+
+function drawMarketExitFine(ctx, pal, x, y, width, height) {
+  ctx.fillStyle = pal.dirtEdge
+  ctx.fillRect(x - 5, y - 4, width + 10, 0.5)
+  ctx.fillRect(x - 3.5, y + 6, 0.5, height - 7)
+  ctx.fillRect(x + width + 0.5, y + 6, 0.5, height - 7)
+}
+
+function drawMarketMission(ctx, w, pal) {
+  var mission = w.mission
+  ctx.save()
+  drawSkyMission(ctx, w, pal)
+  for (var i = 0; i < mission.targets.length; i++) {
+    var target = mission.targets[i]
+    drawMarketLantern(ctx, w, target, i)
+  }
+  ctx.restore()
+}
+
+function drawMarketLantern(ctx, w, target, index) {
+  var x = Math.round(target.x * w.k.CELL), y = Math.round(target.y * w.k.CELL)
+  ctx.fillStyle = "#342740"
+  ctx.fillRect(x - 3, y - 2, 7, 2)
+  ctx.fillRect(x, y - 11, 2, 10)
+  ctx.fillRect(x - 4, y - 19, 9, 9)
+  ctx.fillStyle = "#b38666"
+  ctx.fillRect(x - 2, y - 20, 5, 1)
+  ctx.fillRect(x - 3, y - 19, 7, 1)
+  ctx.fillRect(x - 3, y - 11, 7, 1)
+  ctx.fillStyle = "#5d686f"
+  ctx.fillRect(x - 2, y - 17, 5, 5)
+  if (target.freed) drawMarketFlame(ctx, w, x, y, index)
+}
+
+function drawMarketFlame(ctx, w, x, y, index) {
+  var age = w.reducedMotion ? 30 : w.ticks - w.mission.openedAt - index * 4
+  if (age < 0) return
+  var phase = w.reducedMotion ? 0 : Math.floor((w.ticks + index * 7) / 8) % MARKET_WICK.length
+  ctx.globalAlpha = age < 6 ? 0.30 : 0.16
+  ctx.fillStyle = MARKET_WICK[phase]
+  ctx.fillRect(x - 5, y - 20, 11, 11)
+  ctx.globalAlpha = 1
+  ctx.fillRect(x - 2, y - 17, 5, 5)
+  ctx.fillStyle = "#fff0bd"
+  ctx.fillRect(x - 1, y - 14 - phase % 2, 2, 2 + phase % 2)
+  if ((w.res || 1) >= 2) ctx.fillRect(x + 1, y - 14.5, 0.5, 1.5)
+}
+
+BACKDROPS["Aurora Ridge"] = backAuroraRidge
+BACKDROP_FINE["Aurora Ridge"] = backRidgeFine
+EXIT_FRAMES["Aurora Ridge"] = drawRidgeExit
+EXIT_FINE["Aurora Ridge"] = drawRidgeExitFine
+AMBIENCE["Aurora Ridge"] = [{ n: 46, vx: 0.28, vy: 0.17, sway: 3, size: 1, col: "dust", alpha: 0.48 }]
+AMBIENCE_FINE["Aurora Ridge"] = drawMoteFrostFine
+DUSK_OUTDOOR["Aurora Ridge"] = true
+LEVEL_TITLE_LINES["Aurora Ridge"] = ["One way down. Mind the cable.", "The sky is working late.", "No tickets. Just hold on."]
+
+TOUR_ICON_PIXELS.push(
+  // Aurora Ridge
+  ["....t..tt...........", "...tttttttt..g......", ".ttttt..tttggg......", "tttt.....ttttggg....",
+   "......www..ggggg....", ".....wtbww..........", "....wbbbtww.........", "...wbbbcbtww..ww....",
+   "..bbbbccbbbwwwwbw...", ".bccccbbccccbbbbtw..", "bbccbbccccccbbbctww.", "wwwwwwwwwwwwwwwwwwww"]
+)
+
+function backAuroraRidge(ctx, rng, b, pal) {
+  ctx.fillStyle = pal.backDim
+  ctx.fillRect(b.x, b.y, b.w, b.h)
+  var w = b.world
+  for (var row = 0; row < w.corridors.length; row++) {
+    var base = w.corridors[row].floorY * w.k.CELL - 1
+    for (var x = 12 + Math.floor(rng() * 28); x < b.w - 44; x += 56 + Math.floor(rng() * 30)) {
+      drawRidgePeak(ctx, pal, x, base, 19 + Math.floor(rng() * 16))
+    }
+  }
+}
+
+function drawRidgePeak(ctx, pal, x, base, height) {
+  for (var y = 0; y < height; y += 2) {
+    var left = 1 + y, right = 2 + Math.floor(y * 0.6), top = base - height + y
+    ctx.fillStyle = pal.back
+    ctx.fillRect(x - left, top, left + right, 2)
+    ctx.fillStyle = pal.backLit
+    ctx.fillRect(x - left, top, 2, 2)
+    if (y < 8) ctx.fillRect(x - left + 2, top, left, 1)
+  }
+}
+
+function backRidgeFine(ctx, b, pal) {
+  if (b.h !== 2 || b.w < 6) return
+  ctx.fillStyle = pal.backDim
+  ctx.fillRect(b.x + b.w - 2, b.y + 0.5, 1.5, 1)
+}
+
+function drawRidgeExit(ctx, pal, x, y, width, height) {
+  ctx.fillStyle = pal.oreShade
+  ctx.fillRect(x - 4, y - 3, width + 8, 3)
+  ctx.fillRect(x - 4, y, 4, height)
+  ctx.fillRect(x + width, y, 4, height)
+  ctx.fillStyle = pal.oreEdge
+  for (var i = 0; i < 5; i++) ctx.fillRect(x - 6 + i * 3, y - 4 - i, width + 12 - i * 6, 1)
+  ctx.fillStyle = pal.exitLight
+  ctx.fillRect(x - 3, y + 2, 2, 3)
+  ctx.fillRect(x + width + 1, y + 2, 2, 3)
+}
+
+function drawRidgeExitFine(ctx, pal, x, y, width, height) {
+  ctx.fillStyle = pal.ore
+  ctx.fillRect(x - 5, y - 4, width + 10, 0.5)
+  ctx.fillRect(x - 3.5, y + 6, 0.5, height - 7)
+  ctx.fillRect(x + width + 0.5, y + 6, 0.5, height - 7)
+}
+
+function drawRidgeLife(ctx, w, pal) {
+  ctx.save()
+  drawRidgeAurora(ctx, w)
+  for (var i = 0; i < w.ziplines.length; i++) drawRoofLine(ctx, w, pal, w.ziplines[i], i)
+  ctx.restore()
+}
+
+function drawRidgeAurora(ctx, w) {
+  var phase = w.reducedMotion ? 0 : Math.floor(w.ticks / 6) * 0.045
+  var width = w.k.COLS * w.k.CELL
+  for (var i = 0; i < w.corridors.length; i++) {
+    var base = w.corridors[i].floorY * w.k.CELL - 25
+    var start = Math.floor(width * (0.06 + (i % 3) * 0.17))
+    drawRidgeCurtain(ctx, w, start, base, Math.floor(width / 2.05), phase + i * 0.75)
+  }
+}
+
+function drawRidgeCurtain(ctx, w, start, base, width, phase) {
+  for (var dx = 0; dx < width; dx += 4) {
+    var x = start + dx
+    var fold = Math.sin(dx / 16 + phase), y = base + Math.round(5 * Math.sin(dx / 39 + phase) + 3 * fold)
+    var endFade = Math.sin(Math.PI * dx / width)
+    ctx.globalAlpha = (0.43 + 0.08 * fold) * endFade
+    ctx.fillStyle = "#74e6ba"
+    moteFineRect(ctx, w, x, y, 4, 1)
+    ctx.globalAlpha *= 0.58
+    ctx.fillStyle = "#698dc5"
+    moteFineRect(ctx, w, x, y - 4, 4, 4)
+    if ((w.res || 1) >= 2) {
+      ctx.fillStyle = "#c3b0ea"
+      moteFineRect(ctx, w, x + 0.5, y - 7 - Math.round(fold * 2), 0.5, 5)
+    }
+  }
+}
+// End winter biome additions

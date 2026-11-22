@@ -42,10 +42,10 @@ function footprint(c, visit) {
     for (let x = c[0]; x < c[0] + c[2]; x += 0.5) visit(x, y)
 }
 
-test("Frost additions are absent at panel resolution and in the other eighteen biomes", () => {
-  for (let level = 1; level <= S.BIOMES.length; level++) for (const res of [undefined, 1, 2]) {
+test("Frost additions are absent at panel resolution and in every other biome", () => {
+  for (const level of S.BIOMES.map((_, index) => S.biomeShowcaseLevel(index))) for (const res of [undefined, 1, 2]) {
     const { w } = sample(level); w.res = res
-    const visible = level === 3 && res === 2
+    const visible = w.biome === "Frost" && res === 2
     assert.equal(D.frostPage(w), visible)
     for (const draw of layers) {
       const img = picture(ctx => draw(ctx, w))

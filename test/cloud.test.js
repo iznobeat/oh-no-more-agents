@@ -10,7 +10,7 @@ const S = loadCore("Sim.js"), D = loadCore("Draw.js"), P = loadCore("Palette.js"
 const CLOUD = [20, 40, 60, 80, 100]
 
 test("The Cloud is the twentieth biome, on the end: levels 1-19 keep theirs", () => {
-  assert.equal(S.BIOMES.length, 21, "twenty in the cycle, and the North Pole")
+  assert.equal(S.BIOMES[20], "North Pole", "the first exception follows the twenty in the cycle")
   assert.equal(S.BIOMES[19], "The Cloud")
   for (const level of CLOUD) assert.equal(S.generate(level, 0, 1).biome, "The Cloud")
   assert.deepEqual([1, 9, 19].map(l => S.generate(l, 0, 1).biome), ["Cavern", "Skyscraper", "Harbour"])

@@ -106,8 +106,18 @@ var VOID = { r: 0, g: 0, b: 0 }
 // the biome name and the two must agree — they are derived from the same level
 // number by the same rule, which is how every other per-biome difference in
 // this game stays in step across two files that cannot call each other.
+function paletteBiome(level) {
+  if (level % 21 === 0) return 20
+  if (level >= 601) {
+    var slot = (level - 601) % 60
+    if (slot === 0) return 21
+    if (slot === 30) return 22
+  }
+  return (level - 1) % 20
+}
+
 function poolTint(level) {
-  switch (level % 21 === 0 ? 20 : (level - 1) % 20) {
+  switch (paletteBiome(level)) {
     case 1: return WATER      // Ruins: a flooded cistern
     case 3: return LAVA       // Foundry: what the place is for
     case 4: return WATER      // Jungle: the swamp, and what lives in it
@@ -132,7 +142,7 @@ function poolTint(level) {
 }
 
 function biomeTint(theme, level) {
-  switch (level % 21 === 0 ? 20 : (level - 1) % 20) {
+  switch (paletteBiome(level)) {
     case 0: return theme.accent                              // Cavern
     case 1: return theme.urgent                              // Ruins
     case 2: return lighter(theme.accent, 1.7)                // Frost
@@ -181,6 +191,8 @@ function biomeTint(theme, level) {
     // Fresh snow under a winter night: whiter than the Frost's blue ice and
     // the Cloud's lilac, so the workshop's reds and golds are what stand out.
     case 20: return toward(lighter(theme.foreground, 1.1), SNOWFIELD, 0.86)  // North Pole
+    case 21: return toward(theme.muted, {r: 0.52, g: 0.39, b: 0.62}, 0.82) // Winter Market
+    case 22: return toward(theme.muted, {r: 0.32, g: 0.64, b: 0.68}, 0.85) // Aurora Ridge
     default: return toward(theme.muted, BRINE, 0.72)              // Harbour
   }
 }
