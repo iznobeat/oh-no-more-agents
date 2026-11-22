@@ -161,6 +161,30 @@ test("stand-down and mission completion have bounded lifetimes; absent and tight
   assert.equal(D.skyFitText(fitted.ctx, "two", 30), "two")
 })
 
+test("the full Market objective fits with or without a character card", () => {
+  for (const [level, seed, hero, openedAt] of [[5161, 87327561, "Rubber Duck", 309], [901, 53592621, null, 302]]) {
+    const w = S.generate(level, 0, seed), marketPal = P.build(theme.theme, level)
+    assert.equal(w.specialSpec?.name ?? null, hero)
+    for (const [tick, expected] of [[120, "LIGHT THE MARKET LANTERNS"], [openedAt, "MISSION COMPLETE — EXIT ONLINE"]]) {
+      while (w.ticks < tick) S.step(w)
+      for (const res of [1, 2]) {
+        w.res = res
+        const r = recording(), box = D.skyLayout(w)
+        D.drawSpecialCard(r.ctx, w, marketPal)
+        D.drawSkyMission(r.ctx, w, marketPal)
+        const line = r.texts.at(-1)
+        const slot = hero ? D.skyCardTextBox(box) : { x: box.x + 7, width: box.width - 14 }
+        assert.equal(line.text, expected)
+        assert.ok(line.x + line.width <= slot.x + slot.width)
+        if (hero) {
+          const name = r.texts.find(t => t.text === hero)
+          assert.ok(name.x + name.width < line.x)
+        }
+      }
+    }
+  }
+})
+
 test("the Ridge banner names release, shelter arrivals, and a descoped rescue separately", () => {
   const w = S.generate(1531, 0, 58581591)
   const ridgePal = P.build(theme.theme, w.level)

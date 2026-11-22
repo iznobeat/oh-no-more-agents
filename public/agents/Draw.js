@@ -6802,6 +6802,7 @@ function drawSkyMissionText(ctx, w, pal, box, alpha) {
   ctx.textAlign = "left"
   ctx.fillStyle = w.mission.done ? pal.exitLight : pal.warn
   var text = w.mission.done ? "MISSION COMPLETE — EXIT ONLINE" : "MISSION: " + w.mission.verb
+  if (w.mission.kind === "lantern" && !w.mission.done) text = w.mission.verb
   if (w.mission.id === "skiers") text = w.mission.done ? ridgeSkierNotice(w.mission).text : "ESCORT SKIERS TO SHELTER"
   ctx.fillText(skyFitText(ctx, text, width), x, 11)
 }

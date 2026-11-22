@@ -16265,3 +16265,21 @@ changed-file CRAP score of 29.0.
 
 **Next:** shorten the pending Market objective. Level 5161 truncates the
 instruction beside Rubber Duck at both canvas resolutions.
+
+## 504 — 2026-11-22 · Keep the Market objective readable
+
+The pending Market banner reads “Light the market lanterns.” Chromium
+measured the full instruction at 120 of the 155 art pixels available
+beside Rubber Duck on level 5161. The old line ended in an ellipsis.
+
+The native and page frames showed the complete instruction on level
+5161 and on level 901's standalone mission panel. Both still display
+“Mission complete — exit online” on the existing unlock tick. All 17
+focused sky and winter tests passed, as did the historical renderer
+reconstruction.
+
+The objective passed the full check with 2,050 tests and a maximum
+changed-file CRAP score of 29.0.
+
+**Next:** keep Model Collapse copies on supported ground. On level 6001
+the copy spawns past the original's ledge and splats in all eight replays.
