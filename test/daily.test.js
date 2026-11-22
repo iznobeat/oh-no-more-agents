@@ -30,6 +30,7 @@ test("an advent calendar: December 1st to 25th, a different North Pole every day
   const levels = []
   for (let d = 1; d <= 25; d++) {
     const date = `2026-12-${String(d).padStart(2, "0")}`, day = A.daily(date)
+    assert.equal(A.adventDay(date), d)
     assert.equal(day.level, 21 * d, date)
     assert.equal(S.generate(day.level, 0, day.seed).biome, "North Pole", date)
     levels.push(day.level)
@@ -77,9 +78,17 @@ test("on the page: the button plays today's colony, copy link carries ?daily, an
     const d = await ev(`AgentShare.daily(AgentShare.today())`)
     assert.deepEqual(await ev(`[AgentWorld().level, AgentWorld().colonySeed, AgentWorld().daily]`), [d.level, d.seed, today])
     assert.equal(await ev(`document.getElementById("lifetime").textContent`), "0 home, 0 levels", "a move, not a clear")
-    await b.cmd("Page.navigate", { url: base + "?daily=2026-10-15" }); await sleep(1200)
-    const want = await ev(`AgentShare.daily("2026-10-15")`)
-    assert.deepEqual(await ev(`[AgentWorld().level, AgentWorld().colonySeed, AgentWorld().daily]`), [want.level, want.seed, "2026-10-15"])
+    await b.cmd("Page.addScriptToEvaluateOnNewDocument", { source: `Date.now = () => Date.UTC(2026, 11, 8)` })
+    await b.cmd("Page.navigate", { url: base + "?daily=2026-12-08&season=christmas" })
+    for (let i = 0; i < 80 && !(await ev(`window.AgentWorld && AgentWorld()?.daily === "2026-12-08"`)); i++) await sleep(100)
+    const want = await ev(`AgentShare.daily("2026-12-08")`)
+    assert.deepEqual(await ev(`[AgentWorld().level, AgentWorld().colonySeed, AgentWorld().daily]`), [want.level, want.seed, "2026-12-08"])
+    assert.equal(await ev(`document.getElementById("dailyNote").textContent`), "North Pole · Door 8 of 25")
+    assert.equal(await ev(`location.search`), "?season=christmas")
+    assert.equal(await ev(`AgentWorld().season.name`), "christmas")
+    assert.equal(await ev(`getComputedStyle(document.getElementById("dailyBadge")).animationName`), "advent-badge")
+    await b.cmd("Emulation.setEmulatedMedia", { features: [{name:"prefers-reduced-motion", value:"reduce"}] })
+    assert.equal(await ev(`getComputedStyle(document.getElementById("dailyBadge")).animationName`), "none")
     assert.deepEqual(b.errors, [])
   } finally { await b.close(); server.close() }
 })

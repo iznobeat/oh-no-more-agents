@@ -27,13 +27,15 @@
   // day is at the North Pole (every twenty-first level is), a different
   // workshop each day — the 1st is level 21, Christmas Day level 525.
   var ADVENT_LAST = 25, NORTH_POLE_EVERY = 21
-  function dailyLevel(date) {
+  function adventDay(date) {
     var m = /^[0-9]{4}-12-([0-9]{2})$/.exec(date), day = m ? Number(m[1]) : 0
-    return day >= 1 && day <= ADVENT_LAST ? day * NORTH_POLE_EVERY : 1 + hash(date, 0) % DAILY_LEVELS
+    return day >= 1 && day <= ADVENT_LAST ? day : 0
   }
   function daily(date) {
     if (!validDate(date)) return null
-    return { level: dailyLevel(date), seed: hash(date, 0x9e3779b9) % (MAX_SEED + 1), daily: date }
+    var day = adventDay(date)
+    var level = day ? day * NORTH_POLE_EVERY : 1 + hash(date, 0) % DAILY_LEVELS
+    return { level: level, seed: hash(date, 0x9e3779b9) % (MAX_SEED + 1), daily: date }
   }
   function today(now) { return new Date(now === undefined ? Date.now() : now).toISOString().slice(0, 10) }
   function dailyUrl(base, date) {
@@ -59,5 +61,6 @@
     return String(base).split(/[?#]/)[0] + "?level=" + level + "&seed=" + seed
   }
 
-  root.AgentShare = { parse: parse, url: url, daily: daily, today: today, dailyUrl: dailyUrl, MAX_LEVEL: MAX_LEVEL, MAX_SEED: MAX_SEED }
+  root.AgentShare = { parse: parse, url: url, daily: daily, today: today, dailyUrl: dailyUrl,
+    adventDay: adventDay, ADVENT_LAST: ADVENT_LAST, MAX_LEVEL: MAX_LEVEL, MAX_SEED: MAX_SEED }
 })(typeof window !== "undefined" ? window : globalThis)

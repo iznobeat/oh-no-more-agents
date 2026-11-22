@@ -566,9 +566,22 @@
     paintTour()
   }
 
-  function paintTour() {
+  var ADVENT_BADGE_PIXELS = [
+    "..............", "....oo.oo.....", "...oyoyoyo....", "....oyyyo.....",
+    "..rrrryyrrrr..", ".wrrrryyrrrrr.", ".rrrrryyrrrrr.", "..oooryyrooo..",
+    "..rrrryyrrrr..", "..rrrryyrrro..", "..rrrryyrrro..", "..rrrryyrrro..",
+    "..oooooyoooo..", ".............."
+  ]
+  function paintDailyBadge() {
     var badge = document.getElementById("dailyBadge")
-    if (badge) drawDailyBadge(badge.getContext("2d"), 0, 0)
+    if (!badge) return
+    var ctx = badge.getContext("2d")
+    if (el.daily.classList.contains("advent")) drawUiPixels(ctx, ADVENT_BADGE_PIXELS, 1, 1)
+    else drawDailyBadge(ctx, 0, 0)
+  }
+
+  function paintTour() {
+    paintDailyBadge()
     if (!el.tour) return
     var t = THEMES[themeName]
     Array.prototype.forEach.call(el.tour.children, function (b, i) {
@@ -1140,6 +1153,8 @@
     var link = world.daily ? AgentShare.dailyUrl(window.location.href, world.daily)
       : AgentShare.url(window.location.href, world.level, world.colonySeed)
     if (!link) return
+    var season = seasonOverride()
+    if (season) link += "&season=" + season
     var done = function () { toast("LINK COPIED") }
     var fallback = function () { toast(copyByHand(link) ? "LINK COPIED" : "COPY FAILED") }
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, fallback)
@@ -1155,7 +1170,22 @@
     world.daily = d.daily
     saveState()
     render()
-    toast("TODAY'S STANDUP IS MANDATORY.")
+    toast(AgentShare.adventDay(d.daily) ? "NORTH POLE DISPATCH" : "TODAY'S STANDUP IS MANDATORY.")
+  }
+
+  function seasonOverride() {
+    return window.AgentSeason && AgentSeason.override(window.location.search)
+  }
+
+  function setupDaily() {
+    if (!el.daily || !window.AgentShare) return
+    var date = AgentShare.today(), door = AgentShare.adventDay(date)
+    document.getElementById("dailyDate").textContent = date
+    if (door) {
+      el.daily.classList.add("advent")
+      document.getElementById("dailyNote").textContent = "North Pole · Door " + door + " of " + AgentShare.ADVENT_LAST
+    }
+    el.daily.addEventListener("click", playDaily)
   }
 
   function copyByHand(text) {
@@ -1416,10 +1446,7 @@
   function boot() {
     el.level = document.getElementById("level")
     el.daily = document.getElementById("daily")
-    if (el.daily && window.AgentShare) {
-      document.getElementById("dailyDate").textContent = AgentShare.today()
-      el.daily.addEventListener("click", playDaily)
-    }
+    setupDaily()
     el.tour = document.getElementById("tour")
     el.announce = document.getElementById("announce")
     el.biome = document.getElementById("biome")
@@ -1514,7 +1541,10 @@
       newLevel(shared.level, shared.seed)
       if (shared.daily) { world.daily = shared.daily; render() }
       saveState()
-      try { history.replaceState(null, "", window.location.pathname + (fit ? "?full&fit" : wantFull ? "?full" : "")) } catch (e) {}
+      var query = fit ? ["full", "fit"] : wantFull ? ["full"] : []
+      var season = seasonOverride()
+      if (season) query.push("season=" + season)
+      try { history.replaceState(null, "", window.location.pathname + (query.length ? "?" + query.join("&") : "")) } catch (e) {}
     } else newLevel(level)
 
     // ?full — the visual half of fullscreen, without asking the browser for

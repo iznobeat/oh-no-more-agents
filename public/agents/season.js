@@ -24,11 +24,16 @@
     }
   }
 
+  function override(search) {
+    var m = /[?&]season=([^&]*)/.exec(search || "")
+    if (!m) return null
+    return m[1] === "none" || Object.prototype.hasOwnProperty.call(SEASONS, m[1]) ? m[1] : null
+  }
+
   // The season in force: a valid ?season= wins, anything else in it is ignored.
   function pick(search, date) {
-    var m = /[?&]season=([^&]*)/.exec(search || "")
-    if (m && m[1] === "none") return null
-    if (m && Object.prototype.hasOwnProperty.call(SEASONS, m[1])) return m[1]
+    var forced = override(search)
+    if (forced) return forced === "none" ? null : forced
     var md = (date.getMonth() + 1) * 100 + date.getDate()
     for (var name in SEASONS) {
       var s = SEASONS[name], a = s.advent ? adventStart(date) : s.from[0] * 100 + s.from[1], b = s.to[0] * 100 + s.to[1]
@@ -464,5 +469,5 @@
     return false
   }
 
-  window.AgentSeason = { name: name, pick: pick, tint: tint, dress: dress, paint: paint, SEASONS: SEASONS, settled: settled, settledDepth: settledDepth }
+  window.AgentSeason = { name: name, pick: pick, override: override, tint: tint, dress: dress, paint: paint, SEASONS: SEASONS, settled: settled, settledDepth: settledDepth }
 })()

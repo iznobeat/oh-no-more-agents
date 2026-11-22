@@ -16097,3 +16097,16 @@ passed (12–19). **Gate:** 2021/2021, CRAP green.
 ran critically low on memory (load ~12 from other work); it had made no
 changes, and its worktree is removed. The loop pauses here rather than
 start more heavy runs.
+
+## 496 — 2026-11-22 · Advent daily badge and season links
+
+Show the active Advent door on the daily button from December 1 through 25.
+The gift badge bobs briefly and stays still with reduced motion. The existing
+date-to-colony mapping keeps every Advent run reproducible. Explicit season
+choices survive opening, copying and reloading shared-run links.
+
+The December 8 fixture verifies the North Pole destination, badge motion,
+reduced motion and retained Christmas query. The first full gate flagged the
+patch note's length. The shorter line passed the focused news tests.
+
+**Next:** release after the full gate and smoke run, then finish Winter Market.
