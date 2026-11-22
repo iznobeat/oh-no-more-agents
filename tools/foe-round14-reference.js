@@ -7,6 +7,9 @@ export function foeRoundFourteenSourceBefore(source){
  source=source.replace('  if (w.biome === "Winter Market" || w.biome === "Aurora Ridge") return drawWinterSnow(ctx, w)\n','')
  source=source.replace('  if (w.biome === "Aurora Ridge") drawRidgeLife(ctx, w, pal)\n','')
  source=source.replace('  if (m.kind === "lantern") return drawMarketMission(ctx, w, pal)\n','')
+ source=source.replace('  var skiers = m.id === "skiers"\n','')
+ source=source.replace('    if (!skiers && drawMissionEscort','    if (drawMissionEscort')
+ source=source.replace('    if (skiers) drawRidgeSkier(ctx, w, pal, t, x, y)\n    else drawMissionSubject','    drawMissionSubject')
  reference ||= execFileSync('git',['show','fe891415d168b38bc8110e47977b9b396e0a46d4:public/agents/Draw.js'],{maxBuffer:4<<20}).toString()
  for(const name of ['drawHzHotaisle','drawHzPolisher','drawHzVent']){
   const re=new RegExp('function '+name+'\\([^]*?\\n}\\n')

@@ -16170,3 +16170,21 @@ The full check passed all 2,044 tests. The changed-file CRAP gate passed,
 with a highest score of 29.0 and full coverage of the new site search.
 
 **Next:** review skier poses on Aurora Ridge level 1531.
+
+## 499 — 2026-11-22 · Aurora Ridge skier art review
+
+Skiers have bright jackets, goggles, and a pair of skis carried against
+their shoulder. The walking stride rocks the skis, steep trail steps tuck
+them closer, and a brief wave marks the shelter arrival. The skis stay in
+open air, and reduced motion holds the secondary poses still.
+
+Compared waiting, walking, airborne, and arrival frames from level 1531
+at both canvas resolutions. The focused winter and pinned renderer checks
+passed. In eight matched seeded runs, both skiers reached shelter and the
+cable was used. Drawing and control runs produced identical simulation
+digests under the same random stream.
+
+The art review and full gate passed, with all 2,045 tests green and a
+highest changed-file CRAP score of 29.0.
+
+**Next:** add the approved seeded replay link beside the tour.

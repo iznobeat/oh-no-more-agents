@@ -97,6 +97,61 @@ test("ridge agents ride real cables across chasms and complete neighbouring ridg
   }
 })
 
+test("Ridge skiers change pose on the escort trail and keep skis clear of terrain", () => {
+  const level = 1531, w = S.generate(level, 0, colonySeed(level, 0, 3))
+  const pal = P.build(theme, level)
+  const frames = new Map()
+  while (!w.done && w.ticks < 6000) {
+    const t = w.mission.targets[0], pose = D.escortPose(w, t)
+    const state = t.home ? "shelter" : !t.freed ? "waiting"
+      : pose.air && pose.moving ? "air" : pose.moving ? "walking" : null
+    if (state && !frames.has(state)) frames.set(state, JSON.parse(JSON.stringify(w)))
+    S.step(w)
+  }
+  assert.deepEqual([...frames.keys()], ["waiting", "walking", "air", "shelter"])
+  assert.equal(w.escortsHome, 2)
+
+  for (const res of [1, 2]) {
+    const paint = frame => {
+      frame.res = res
+      const t = frame.mission.targets[0], { CELL } = frame.k
+      const x = Math.round(t.x * CELL), y = Math.round(t.y * CELL)
+      const img = canvas(40 * res, 24 * res)
+      img.ctx.setTransform(res, 0, 0, res, (20 - x) * res, (18 - y) * res)
+      const before = JSON.stringify(frame)
+      D.drawRidgeSkier(img.ctx, frame, pal, t, x, y)
+      assert.equal(JSON.stringify(frame), before)
+      assert.ok(img.buf.some(Boolean))
+      return createHash("sha256").update(img.buf).digest("hex")
+    }
+    assert.equal(new Set([...frames.values()].map(paint)).size, 4)
+    const walk = structuredClone(frames.get("walking"))
+    const skier = walk.mission.targets[0]
+    const stride = paint(walk)
+    skier.anim += 6
+    assert.notEqual(paint(walk), stride)
+    walk.reducedMotion = true
+    const still = paint(walk)
+    skier.anim += 6
+    assert.equal(paint(walk), still)
+  }
+
+  const { COLS, CELL, EMPTY, ROCK } = w.k, x = 100, y = 100
+  let clear = 0
+  const ctx = { fillRect(left, top, width, height) {
+    for (let py = top; py < top + height; py++) for (let px = left; px < left + width; px++)
+      assert.equal(w.terrain[Math.floor(py / CELL) * COLS + Math.floor(px / CELL)], EMPTY)
+    clear++
+  } }
+  w.terrain.fill(EMPTY)
+  D.drawRidgeSkis(ctx, w, x, y, { dir: 1, air: false, phase: 1 })
+  assert.ok(clear > 0)
+  w.terrain.fill(ROCK)
+  const beforeWall = clear
+  D.drawRidgeSkis(ctx, w, x, y, { dir: 1, air: false, phase: 1 })
+  assert.equal(clear, beforeWall)
+})
+
 test("ridge aurora drifts without crossing terrain and stays still with reduced motion", () => {
   const w = S.generate(631, 0, 3)
   for (const res of [1, 2]) {

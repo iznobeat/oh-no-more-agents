@@ -5339,6 +5339,7 @@ function drawMission(ctx, w, pal) {
   var m = w.mission
   if (!m) return
   if (m.kind === "lantern") return drawMarketMission(ctx, w, pal)
+  var skiers = m.id === "skiers"
   var C = w.k.CELL
 
   ctx.save()
@@ -5346,11 +5347,12 @@ function drawMission(ctx, w, pal) {
 
   for (var i = 0; i < m.targets.length; i++) {
     var t = m.targets[i]
-    if (drawMissionEscort(ctx, w, pal, m.kind, t)) continue
+    if (!skiers && drawMissionEscort(ctx, w, pal, m.kind, t)) continue
     var x = Math.round(t.x * C), y = Math.round(t.y * C)
 
     if (!t.freed && !t.dead) drawMissionContainer(ctx, m.kind, x, y, pal)
-    drawMissionSubject(ctx, m.kind, t, x, y, pal, (w.res || 1) >= 2)
+    if (skiers) drawRidgeSkier(ctx, w, pal, t, x, y)
+    else drawMissionSubject(ctx, m.kind, t, x, y, pal, (w.res || 1) >= 2)
 
     if (!t.freed && !t.dead && m.progress > 0) {
       ctx.fillStyle = pal.rigDark
@@ -28723,6 +28725,72 @@ function drawRidgeExitFine(ctx, pal, x, y, width, height) {
   ctx.fillRect(x - 5, y - 4, width + 10, 0.5)
   ctx.fillRect(x - 3.5, y + 6, 0.5, height - 7)
   ctx.fillRect(x + width + 0.5, y + 6, 0.5, height - 7)
+}
+
+var RIDGE_SKIER_JACKETS = ["#e47c63", "#56b6ab", "#eab969"]
+var RIDGE_SKI_LEAN = [3, 4, 3, 2]
+var RIDGE_SKIER_STRIDE = [-1, 0, 1, 0]
+
+function drawRidgeSkier(ctx, w, pal, t, x, y) {
+  var age = t.home ? w.ticks - t.homeAt : 0
+  if (t.home && !(age >= 0 && age < ESCORT_HOME_TICKS)) return
+
+  var pose = escortPose(w, t)
+  if (w.reducedMotion) pose.phase = 0
+  ctx.save()
+  if (t.home) {
+    pose.air = pose.up = !w.reducedMotion
+    if (!w.reducedMotion) {
+      y -= Math.floor(age / 3)
+      ctx.globalAlpha *= 1 - age / ESCORT_HOME_TICKS
+    }
+  } else if (pose.phase % 2 && !pose.air) y--
+
+  drawRidgeSkis(ctx, w, x, y, pose)
+  drawRidgeSkierBody(ctx, pal, t, x, y, pose, (w.res || 1) >= 2)
+  ctx.restore()
+}
+
+// Two skis strapped side by side behind the shoulder. The stride rocks the
+// bundle on the ground, and the boards tuck close during steep trail steps.
+function drawRidgeSkis(ctx, w, x, y, pose) {
+  var d = pose.dir, lean = pose.air ? 1 : RIDGE_SKI_LEAN[pose.phase]
+  for (var row = 0; row < 7; row++) {
+    var back = x - d * (3 + Math.round((6 - row) * lean / 6))
+    var left = back - (d > 0 ? 3 : 0), top = y - 15 + row * 2
+    ctx.fillStyle = row === 0 ? "#ff8d78" : "#8ddcde"
+    moteFineRect(ctx, w, left, top, 1, 2)
+    ctx.fillStyle = row === 3 ? "#465471" : "#e4f8f3"
+    moteFineRect(ctx, w, left + 2, top + 1, 1, 2)
+  }
+}
+
+function drawRidgeSkierBody(ctx, pal, t, x, y, pose, fine) {
+  var d = pose.dir, head = x + d, stride = RIDGE_SKIER_STRIDE[pose.phase]
+  var handX = x + d * 4 - (d < 0 ? 1 : 0)
+  var handY = y + (pose.up ? -12 : pose.air ? -9 : -6 - stride)
+  var coat = RIDGE_SKIER_JACKETS[t.variant || 0]
+  drawEscortFeet(ctx, "#34415d", x, y, stride, pose.air)
+
+  ctx.fillStyle = "#34415d"
+  ctx.fillRect(x - 3, y - 8, 7, 5)
+  ctx.fillRect(head - 3, y - 14, 6, 6)
+  ctx.fillStyle = coat
+  ctx.fillRect(x - 2, y - 8, 5, 4)
+  ctx.fillRect(head - 2, y - 14, 4, 2)
+  ctx.fillRect(handX - d, handY + 1, 2, 2)
+  ctx.fillStyle = pal.skin
+  ctx.fillRect(head - 1, y - 10, 3, 1)
+  ctx.fillStyle = "#b9eff1"
+  ctx.fillRect(head - 2, y - 12, 5, 2)
+  ctx.fillRect(handX, handY, 1, 2)
+  ctx.fillStyle = "#f6ecbd"
+  ctx.fillRect(x - 2, y - 8, 5, 1)
+  ctx.fillRect(x - d * (4 + Math.abs(stride)), y - 7, 2, 1)
+  if (!fine) return
+  ctx.fillStyle = "#f8ffff"
+  ctx.fillRect(head + 0.5, y - 11.5, 1.5, 0.5)
+  ctx.fillRect(x, y - 6, 0.5, 2)
 }
 
 function drawRidgeLife(ctx, w, pal) {
