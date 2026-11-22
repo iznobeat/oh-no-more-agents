@@ -25,7 +25,7 @@
 	<!-- Content hash of this page as served, written by tools/stamp-assets.js.
 	     web.js compares it with the build the Worker reports and reloads between
 	     levels when a deploy has moved on without it. -->
-<meta name="build" content="58fcbd8c">
+<meta name="build" content="5c860197">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-1-16.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-1-32.png">
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-1.png">
@@ -187,7 +187,9 @@
 		}
 		.daily-sub { grid-column: 2; }
 		.daily-sub { display: block; font-size: 9px; letter-spacing: 0.06em; color: var(--dim); text-decoration: none; opacity: 0.85; }
-		.news-row { width: var(--board-w); max-width: 100%; display: flex; justify-content: flex-end; margin-top: -10px; }
+		.news-row, .news-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0 12px; }
+		.news-row { width: var(--board-w); max-width: 100%; margin-top: -10px; }
+		#skier-replay { display: inline-flex; align-items: center; box-sizing: border-box; }
 		.linkish {
 			font: inherit; font-size: 10px; letter-spacing: 0.08em; color: var(--dim); background: none;
 			border: 0; padding: 4px 0; cursor: pointer; text-decoration: underline dotted; position: relative;
@@ -514,7 +516,13 @@
 
 	<div id="tour" class="tour" role="group" aria-label="Biome tour: jump to any of the biomes"></div>
 
-	<div class="news-row"><button id="daily" class="linkish daily" title="One level, one colony, the same for everyone today (UTC)"><canvas id="dailyBadge" width="16" height="16" aria-hidden="true"></canvas><span>colony of the day · <span id="dailyDate"></span></span><span class="daily-sub" id="dailyNote">Today's standup is mandatory.</span></button><button id="news-open" class="linkish" aria-haspopup="dialog">what's new<span class="dot" aria-label="new"></span></button></div>
+	<div class="news-row">
+		<button id="daily" class="linkish daily" title="One level, one colony, the same for everyone today (UTC)"><canvas id="dailyBadge" width="16" height="16" aria-hidden="true"></canvas><span>colony of the day · <span id="dailyDate"></span></span><span class="daily-sub" id="dailyNote">Today's standup is mandatory.</span></button>
+		<div class="news-actions">
+			<a id="skier-replay" class="linkish" href="?level=1531&amp;seed=58581591">Watch a skier rescue</a>
+			<button id="news-open" class="linkish" aria-haspopup="dialog">what's new<span class="dot" aria-label="new"></span></button>
+		</div>
+	</div>
 	<dialog id="news" aria-modal="true" aria-labelledby="news-title">
 		<div class="news-card">
 			<div id="news-title">PATCH NOTES</div>
@@ -546,7 +554,7 @@
 	<script src="agents/sfx.js?v=e90eeea7"></script>
 	<script src="agents/season.js?v=091d36f0"></script>
 	<script src="agents/news.js?v=9d05c098"></script>
-	<script src="agents/web.js?v=d7644b5e"></script>
+	<script src="agents/web.js?v=9bbcab8e"></script>
 
 </body>
 

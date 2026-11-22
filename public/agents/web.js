@@ -1504,6 +1504,9 @@
     loadPendingBatch()
     buildToolbar()
     buildTour()
+    var skierReplay = document.getElementById("skier-replay")
+    var season = seasonOverride()
+    if (skierReplay && season) skierReplay.search += "&season=" + season
 
     THEME_ORDER.forEach(function (name) {
       var b = document.createElement("button")
@@ -1551,7 +1554,6 @@
       if (shared.daily) { world.daily = shared.daily; render() }
       saveState()
       var query = fit ? ["full", "fit"] : wantFull ? ["full"] : []
-      var season = seasonOverride()
       if (season) query.push("season=" + season)
       try { history.replaceState(null, "", window.location.pathname + (query.length ? "?" + query.join("&") : "")) } catch (e) {}
     } else newLevel(level)

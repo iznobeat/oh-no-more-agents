@@ -41,3 +41,59 @@ test("the tour jumps forward to the biome, marks it, clears nothing, and scrolls
     assert.deepEqual(b.errors, [])
   } finally { await b.close(); server.close() }
 })
+
+test("the skier replay is reachable by keyboard and touch on a narrow phone", { skip: !chromium && "no chromium", timeout: 60000 }, async () => {
+  const server = await serve(), b = await browser()
+  const ev = async e => (await b.cmd("Runtime.evaluate", { expression: e, returnByValue: true })).result.value
+  const start = `http://127.0.0.1:${server.address().port}/?level=3&seed=42`
+  const waitForLevel = async level => {
+    for (let i = 0; i < 80 && await ev("window.AgentWorld && AgentWorld()?.level") !== level; i++) await sleep(100)
+    assert.equal(await ev("AgentWorld().level"), level)
+  }
+  let posts = 0
+  b.onEvent = e => {
+    if (e.method === "Network.requestWillBeSent" && e.params.request.method === "POST"
+        && new URL(e.params.request.url).pathname === "/api/saves") posts++
+  }
+  try {
+    await b.cmd("Network.enable")
+    await b.cmd("Emulation.setDeviceMetricsOverride", { width: 320, height: 740, deviceScaleFactor: 2, mobile: true })
+    await b.cmd("Emulation.setTouchEmulationEnabled", { enabled: true })
+    await b.cmd("Page.navigate", { url: start + "&season=none" })
+    await waitForLevel(3)
+    assert.ok(await ev(`(() => {
+      const replay = document.getElementById("skier-replay").getBoundingClientRect()
+      return replay.left >= 0 && replay.right <= innerWidth && replay.height >= 44
+        && document.documentElement.scrollWidth <= innerWidth
+    })()`))
+    await ev('document.getElementById("daily").focus()')
+    for (const type of ["keyDown", "keyUp"]) await b.cmd("Input.dispatchKeyEvent", { type, key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 })
+    assert.equal(await ev("document.activeElement.id"), "skier-replay")
+    for (const type of ["keyDown", "keyUp"]) await b.cmd("Input.dispatchKeyEvent", { type, key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 })
+    await waitForLevel(1531)
+    assert.deepEqual(await ev("[AgentWorld().colonySeed, AgentWorld().mission.id, AgentWorld().mission.targets.length]"), [58581591, "skiers", 2])
+    assert.equal(await ev("location.search"), "?season=none")
+    assert.equal(await ev('document.querySelectorAll("#tour .tour-stop").length'), await ev("BIOMES.length"))
+    await settleCommute(ev)
+    await ev(`document.querySelector("#tour .tour-stop[aria-label='Go to Aurora Ridge']").click()`)
+    await waitForLevel(1591)
+    assert.equal(await ev("location.search"), "?season=none")
+
+    await b.cmd("Page.navigate", { url: start })
+    await waitForLevel(3)
+    const point = await ev(`(() => {
+      const link = document.getElementById("skier-replay")
+      link.scrollIntoView({ block: "center" })
+      const r = link.getBoundingClientRect()
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+    })()`)
+    await b.cmd("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [point] })
+    await b.cmd("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] })
+    await waitForLevel(1531)
+    assert.deepEqual(await ev("[AgentWorld().colonySeed, AgentWorld().mission.id]"), [58581591, "skiers"])
+    assert.equal(await ev("location.search"), "")
+    assert.equal(await ev('document.getElementById("lifetime").textContent'), "0 home, 0 levels")
+    assert.equal(posts, 0)
+    assert.deepEqual(b.errors, [])
+  } finally { await b.close(); server.close() }
+})

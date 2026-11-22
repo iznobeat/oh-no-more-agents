@@ -16188,3 +16188,20 @@ The art review and full gate passed, with all 2,045 tests green and a
 highest changed-file CRAP score of 29.0.
 
 **Next:** add the approved seeded replay link beside the tour.
+
+## 500 — 2026-11-22 · Seeded skier replay link
+
+“Watch a skier rescue” sits beside the tour and opens level 1531 with
+colony seed 58581591 through the existing shared-run route. The web page
+adds an explicit season choice to the anchor using the same validation
+as Copy link. The tour retains its existing forward navigation.
+
+At 320 pixels, keyboard activation opened the two-skier mission and
+retained `?season=none`. Touch opened the same seed from the ordinary page.
+The Aurora stop advanced the replay to level 1591. The local lifetime
+total stayed at zero and Chromium saw no rescue POST during navigation.
+The seven focused tour and daily tests passed.
+
+The link review, all 2,046 tests, and the changed-file CRAP gate passed.
+
+**Next:** distinguish release from arrival in the Aurora Ridge mission banner.
