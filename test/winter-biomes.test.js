@@ -43,6 +43,24 @@ test("the market exit aisle lets the level 661 crowd move through together", () 
   assert.ok(w.saved >= w.toRelease * 0.9)
 })
 
+test("level 9241 fits three working lanterns in a narrow pocket before the exit", () => {
+  const w = S.generate(9241, 0, colonySeed(9241, 0, 3))
+  assert.equal(w.mission?.kind, "lantern")
+  assert.deepEqual(w.mission.targets.map(target => target.x), [44.5, 47.5, 50.5])
+  for (const { x, y } of w.mission.targets) {
+    const col = Math.floor(x)
+    for (let px = col - 1; px <= col + 1; px++) {
+      assert.ok(S.solid(w, px, y), "the lantern has a supported floor")
+      for (let py = y - 5; py < y; py++)
+        assert.ok(!S.solid(w, px, py), "the lantern clears its ceiling")
+    }
+  }
+  while (!w.done && w.ticks < 6000) S.step(w)
+  assert.ok(w.done)
+  assert.equal(w.mission.completed, 3)
+  assert.ok(w.saved > 0)
+})
+
 test("lanterns catch in sequence and hold steady with reduced motion", () => {
   const w = S.generate(level, 0, 3), m = w.mission
   m.openedAt = 400

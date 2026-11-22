@@ -2755,22 +2755,8 @@ function placeMission(w, corridors) {
   var c = corridors[w.exitCorridor]
   var exitMid = w.exit.x + w.exit.w / 2
   var desired = Math.round(c.startX + (exitMid - c.startX) * (0.32 + missionRng() * 0.22))
-  var lo = Math.min(c.startX, exitMid) + 7
-  var hi = Math.max(c.startX, exitMid) - 7
-  var site = null
-  // Search outward from the seeded preferred spot. This preserves variation,
-  // but terrain gets final say: a mission may sit between two obstacles, never
-  // inside one, hanging over a pit, or clipped into a low ceiling.
-  for (var radius = 0; radius <= hi - lo && !site; radius++) {
-    var choices = radius ? [desired - radius, desired + radius] : [desired]
-    for (var ci = 0; ci < choices.length && !site; ci++) {
-      var candidate = choices[ci]
-      if (candidate < lo || candidate > hi) continue
-      site = missionSite(w, c, candidate, spec.count)
-    }
-  }
-  // A cramped final corridor simply does not get a mission. Optional content
-  // is allowed to opt out; carving a display alcove would change gameplay.
+  var site = findMissionSite(w, c, exitMid, desired, spec.count, false)
+  if (!site && spec.kind === "lantern") site = findMissionSite(w, c, exitMid, desired, spec.count, true)
   if (!site) return
   var base = site.x
   var targets = site.targets
@@ -2797,7 +2783,28 @@ function placeMission(w, corridors) {
   w.timeLimit += 30 * 12
 }
 
-function missionSite(w, corridor, base, count) {
+function findMissionSite(w, corridor, exitMid, desired, count, centeredLanterns) {
+  var lo = Math.min(corridor.startX, exitMid) + 7
+  var hi = Math.max(corridor.startX, exitMid) - 7
+  var site = null
+  // Search outward from the seeded preference while staying clear of the
+  // corridor entrance and exit.
+  for (var radius = 0; radius <= hi - lo && !site; radius++) {
+    var choices = radius ? [desired - radius, desired + radius] : [desired]
+    for (var ci = 0; ci < choices.length && !site; ci++) {
+      var candidate = choices[ci]
+      if (candidate < lo || candidate > hi) continue
+      site = missionSite(w, corridor, candidate, count, centeredLanterns)
+    }
+  }
+  return site
+}
+
+function missionSite(w, corridor, base, count, centeredLanterns) {
+  // An 11-pixel lantern fits inside three 4-pixel cells when it is centered
+  // in the middle one. Keep the usual spacing, height and hazard clearances.
+  var halfWidth = centeredLanterns ? 1 : 2
+  var offset = centeredLanterns ? 0.5 : 0
   var targets = []
   var yTotal = 0
   for (var i = 0; i < count; i++) {
@@ -2811,9 +2818,9 @@ function missionSite(w, corridor, base, count) {
     }
     if (!floorY) return null
 
-    // Four cells of clear headroom across the full cage footprint. Walls,
+    // Five cells of clear headroom across the full footprint. Walls,
     // obstacle shoulders and low roofs all fail this same physical test.
-    for (var px = x - 2; px <= x + 2; px++) {
+    for (var px = x - halfWidth; px <= x + halfWidth; px++) {
       if (!solid(w, px, floorY)) return null
       for (var py = floorY - 5; py < floorY; py++) if (solid(w, px, py)) return null
     }
@@ -2822,10 +2829,10 @@ function missionSite(w, corridor, base, count) {
       if (Math.abs(h.floorY - floorY) < 5 && x + 3 >= h.zx0 && x - 3 <= h.zx1) return null
     }
     if (pitAt(w, x)) return null
-    targets.push({ x: x, y: floorY, done: false, progress: 0, discovered: false })
+    targets.push({ x: x + offset, y: floorY, done: false, progress: 0, discovered: false })
     yTotal += floorY
   }
-  return { x: base, y: yTotal / count, targets: targets }
+  return { x: base + offset, y: yTotal / count, targets: targets }
 }
 
 function fillEarth(w, rng) {

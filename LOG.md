@@ -16149,3 +16149,24 @@ measured 60 FPS median and 5th percentile on both seeded winter levels with
 Christmas styling enabled.
 
 **Next:** watch the new layouts for balance issues as players reach later visits.
+
+## 498 — 2026-11-22 · Winter Market lantern placement on level 9241
+
+Level 9241's final aisle has a clear pocket before the exit, but three
+five-cell cage footprints would not fit through it. The lantern fallback
+keeps the usual spacing and clearance rules while centering the smaller
+fixtures in three-cell footprints. It only runs when the regular search
+finds no site and uses the existing floor.
+
+All 157 market visits generated three lanterns at each of eight distinct
+sampled widths up to 320 columns. A request for 76 columns clamps to the
+standard 100. Level 9241 also generated all three at every width from 100
+through 320. Across those sampled visits, the only changed world was level
+9241 at 100 columns, with identical terrain. All eight standard-board
+replays lit its lanterns and averaged 93% rescued. The previous and next
+markets averaged 97% and 87% respectively, with no stalls in the 24 runs.
+
+The full check passed all 2,044 tests. The changed-file CRAP gate passed,
+with a highest score of 29.0 and full coverage of the new site search.
+
+**Next:** review skier poses on Aurora Ridge level 1531.
