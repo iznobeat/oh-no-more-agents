@@ -16109,4 +16109,10 @@ The December 8 fixture verifies the North Pole destination, badge motion,
 reduced motion and retained Christmas query. The first full gate flagged the
 patch note's length. The shorter line passed the focused news tests.
 
-**Next:** release after the full gate and smoke run, then finish Winter Market.
+**Deployed** build df0da0cd (Worker version 4cc387db), replacing e6d8d8fe.
+All 2,021 tests, the changed-file CRAP gate and the three-minute smoke test
+passed. Production verification confirmed the shipped bytes and build number,
+an open tab upgrading from the previous build and the browser flows. It
+blocked five rescue counter writes.
+
+**Next:** release Winter Market and Aurora Ridge after their own gate.
