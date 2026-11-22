@@ -16139,4 +16139,13 @@ The first full pass caught three checks tied to the old biome count. Frost
 and Ruins now use the showcase levels, and production verification compares
 the tour length with the loaded biome catalog.
 
-**Next:** verify the new tour stops and their shared links on production.
+**Deployed** build 54863e23 (Worker version 4ea8d475), replacing df0da0cd.
+All 2,043 tests passed, the highest changed-file CRAP score was 29.0, and
+the three-minute smoke test passed. Production verification confirmed the
+shipped files and open-tab upgrade. A separate read-only browser pass
+opened both seeded links, used both mobile tour stops and checked the Advent
+badge on December 8 and after its December 26 rollover. Local Chromium
+measured 60 FPS median and 5th percentile on both seeded winter levels with
+Christmas styling enabled.
+
+**Next:** watch the new layouts for balance issues as players reach later visits.
