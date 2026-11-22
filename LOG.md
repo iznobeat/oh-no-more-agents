@@ -16227,3 +16227,22 @@ CRAP score of 29.0.
 
 **Next:** give the skiers a visible grip on the cable. On level 1531 their
 hands sit three to five art pixels below it during the delayed crossing.
+
+## 502 — 2026-11-22 · Skiers grip the Ridge cable
+
+Each skier now carries the cable index on the corresponding delayed trail
+sample. The grip follows the existing cable sag while that sample is active,
+then the skier returns to the usual landing pose. The aurora restores canvas
+opacity before the cable is drawn.
+
+Reviewed boarding, crossing and release at both scales with both motion
+settings on levels 1531 and 9991. The level 1411 climb and shelter frames
+matched all 16 baseline boards. Across 18 seeded runs, 19,215 ticks kept
+the same paths, finish times and rescue totals. The 22 focused tests and
+the historical renderer reconstruction passed.
+
+The grip passed the full check with 2,048 tests and a maximum changed-file
+CRAP score of 29.0.
+
+**Next:** start Market lantern ignition on the first helper's side. On
+level 901 the helper arrives beside the right lantern, which lights last.

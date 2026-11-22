@@ -12001,12 +12001,17 @@ function stepEscorted(w, t, targets) {
       if (targets[j] !== t && targets[j].escort === ag.id && !targets[j].home) t.lag += ESCORT_GAP
   }
   var lead = agentById(w, t.escort)
-  if (lead && !lead.gone && lead.state !== "saved")
-    t.trail.push([lead.x, lead.y + 1, lead.dir])
-  else if (!lead || lead.state !== "saved") return escortLost(w, t)
+  if (lead && !lead.gone && lead.state !== "saved") {
+    var sample = [lead.x, lead.y + 1, lead.dir]
+    // The skier draws the grip for the cable in this delayed sample.
+    if (lead.state === "zip" && w.mission.id === "skiers") sample.push(lead.zip)
+    t.trail.push(sample)
+  } else if (!lead || lead.state !== "saved") return escortLost(w, t)
   if (t.trail.length > t.lag || (t.trail.length && lead && lead.state === "saved")) {
     var p = t.trail.shift()
     t.x = p[0]; t.y = p[1]; t.dir = p[2]
+    if (p[3] !== undefined) t.escortZip = p[3]
+    else if (t.escortZip !== undefined) delete t.escortZip
   }
   if (!t.trail.length && lead && lead.state === "saved") {
     t.home = true
@@ -12043,6 +12048,7 @@ function escortLost(w, t) {
   t.y = y
   t.escort = -1
   t.trail = null
+  delete t.escortZip
   t.roamMin = t.x - 6
   t.roamMax = t.x + 6
   return false

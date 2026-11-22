@@ -152,6 +152,64 @@ test("Ridge skiers change pose on the escort trail and keep skis clear of terrai
   assert.equal(clear, beforeWall)
 })
 
+test("Ridge skiers grip the visible cable only during their delayed rides", () => {
+  const replays = [
+    { level: 1531, seed: 58581591, frames: [
+      [332, [false, false]], [333, [true, false]], [350, [true, true]],
+      [365, [false, true]], [379, [false, false]], [504, [false, false]]
+    ] },
+    { level: 9991, seed: 79118742, frames: [
+      [228, [false, false]], [229, [true, false]], [260, [true, true]],
+      [290, [false, true]], [304, [false, false]], [414, [false, false]]
+    ] },
+    { level: 1411, seed: 11173722, frames: [[434, [false, false]], [497, [false, false]]] }
+  ]
+  const record = draw => {
+    const { ctx } = canvas(1, 1), rects = []
+    ctx.fillRect = (x, y, width, height) => {
+      rects.push({ x, y, width, height, color: ctx.fillStyle, alpha: ctx.globalAlpha })
+    }
+    draw(ctx)
+    return rects
+  }
+  for (const { level, seed, frames } of replays) {
+    const w = S.generate(level, 0, seed), pal = P.build(theme, level)
+    for (const [tick, riding] of frames) {
+      while (w.ticks < tick) S.step(w)
+      const targets = w.mission.targets
+      assert.deepEqual(targets.map(t => t.escortZip), riding.map(active => active ? 0 : undefined))
+      if (level === 1531 && tick === 332)
+        assert.equal(w.agents.find(a => a.id === targets[0].escort).state, "zip")
+      if (level === 1531 && tick === 365)
+        assert.equal(D.escortPose(w, targets[0]).air, true)
+      if (level === 1411 && tick === 434)
+        assert.equal(D.escortPose(w, targets[0]).air, true)
+      for (const res of [1, 2]) for (const reducedMotion of [false, true]) {
+        w.res = res
+        w.reducedMotion = reducedMotion
+        const cable = record(ctx => D.drawRidgeLife(ctx, w, pal))
+          .filter(r => r.color === pal.steelEdge && r.width === 1 / res && r.height === 1 / res)
+        if (w.ziplines.length) {
+          assert.ok(cable.length > 1)
+          assert.ok(cable.every(r => r.alpha === 1), "aurora opacity stays off the cable")
+        }
+        for (const [i, t] of targets.entries()) {
+          const x = Math.round(t.x * w.k.CELL), y = Math.round(t.y * w.k.CELL)
+          const grips = record(ctx => D.drawRidgeSkier(ctx, w, pal, t, x, y))
+            .filter(r => r.color === pal.umbrellaStem)
+          assert.equal(grips.length, riding[i] ? 1 : 0)
+          if (riding[i]) {
+            const [grip] = grips
+            assert.ok(cable.some(r => r.x === grip.x && r.y === grip.y), "the grip meets the painted cable")
+            assert.ok(grip.height >= 2 && grip.height <= 8)
+          }
+        }
+      }
+    }
+    assert.equal(w.escortsHome, 2)
+  }
+})
+
 test("ridge aurora drifts without crossing terrain and stays still with reduced motion", () => {
   const w = S.generate(631, 0, 3)
   for (const res of [1, 2]) {

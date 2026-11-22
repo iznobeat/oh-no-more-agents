@@ -5385,9 +5385,8 @@ function drawMissionEscort(ctx, w, pal, kind, t) {
   return true
 }
 
-// The trail stores positions and direction, not movement states. Look at its
-// next sample and support under the current feet, never the leader's *current*
-// state: a leader climbing now may still have a follower on the floor below.
+// Look at the next trail sample and support under the current feet: a leader
+// climbing now may still have a follower on the floor below.
 // A large first gap is the pickup delay, not a stride. No render-side history.
 function escortPose(w, t) {
   var next = t.trail && t.trail[0]
@@ -28750,6 +28749,7 @@ function drawRidgeSkier(ctx, w, pal, t, x, y) {
   if (t.home && !(age >= 0 && age < ESCORT_HOME_TICKS)) return
 
   var pose = escortPose(w, t)
+  var onCable = !t.home && t.escortZip !== undefined
   if (w.reducedMotion) pose.phase = 0
   ctx.save()
   if (t.home) {
@@ -28758,10 +28758,14 @@ function drawRidgeSkier(ctx, w, pal, t, x, y) {
       y -= Math.floor(age / 3)
       ctx.globalAlpha *= 1 - age / ESCORT_HOME_TICKS
     }
+  } else if (onCable) {
+    pose.air = true
+    pose.up = false
+    pose.phase = 0
   } else if (pose.phase % 2 && !pose.air) y--
 
   drawRidgeSkis(ctx, w, x, y, pose)
-  drawRidgeSkierBody(ctx, pal, t, x, y, pose, (w.res || 1) >= 2)
+  drawRidgeSkierBody(ctx, w, pal, t, x, y, pose, onCable)
   ctx.restore()
 }
 
@@ -28779,11 +28783,17 @@ function drawRidgeSkis(ctx, w, x, y, pose) {
   }
 }
 
-function drawRidgeSkierBody(ctx, pal, t, x, y, pose, fine) {
+function drawRidgeSkierBody(ctx, w, pal, t, x, y, pose, onCable) {
   var d = pose.dir, head = x + d, stride = RIDGE_SKIER_STRIDE[pose.phase]
   var handX = x + d * 4 - (d < 0 ? 1 : 0)
   var handY = y + (pose.up ? -12 : pose.air ? -9 : -6 - stride)
   var coat = RIDGE_SKIER_JACKETS[t.variant || 0]
+  if (onCable) {
+    var grip = ridgeSkierGripPoint(w, t.escortZip, handX)
+    handX = grip.x
+    handY = Math.max(handY, Math.ceil(grip.y + 1))
+    drawRidgeSkierGrip(ctx, w, pal, grip, handY)
+  }
   drawEscortFeet(ctx, "#34415d", x, y, stride, pose.air)
 
   ctx.fillStyle = "#34415d"
@@ -28801,17 +28811,31 @@ function drawRidgeSkierBody(ctx, pal, t, x, y, pose, fine) {
   ctx.fillStyle = "#f6ecbd"
   ctx.fillRect(x - 2, y - 8, 5, 1)
   ctx.fillRect(x - d * (4 + Math.abs(stride)), y - 7, 2, 1)
-  if (!fine) return
+  if ((w.res || 1) < 2) return
   ctx.fillStyle = "#f8ffff"
   ctx.fillRect(head + 0.5, y - 11.5, 1.5, 0.5)
   ctx.fillRect(x, y - 6, 0.5, 2)
 }
 
+function ridgeSkierGripPoint(w, zip, handX) {
+  var g = roofLineDrawing(w, w.ziplines[zip], zip)
+  var size = (w.res || 1) >= 2 ? 0.5 : 1
+  var s = Math.max(0, Math.min(g.length, (handX - g.x) * g.dir))
+  return { x: g.x + g.dir * s, y: Math.round((g.y + roofCableSag(g, s)) / size) * size }
+}
+
+function drawRidgeSkierGrip(ctx, w, pal, grip, handY) {
+  ctx.fillStyle = pal.umbrellaStem
+  moteFineRect(ctx, w, grip.x, grip.y, 1, handY - grip.y + 1)
+  ctx.fillStyle = pal.exitLight
+  moteFineRect(ctx, w, grip.x, grip.y, 1, 1)
+}
+
 function drawRidgeLife(ctx, w, pal) {
   ctx.save()
   drawRidgeAurora(ctx, w)
-  for (var i = 0; i < w.ziplines.length; i++) drawRoofLine(ctx, w, pal, w.ziplines[i], i)
   ctx.restore()
+  for (var i = 0; i < w.ziplines.length; i++) drawRoofLine(ctx, w, pal, w.ziplines[i], i)
 }
 
 function drawRidgeAurora(ctx, w) {
