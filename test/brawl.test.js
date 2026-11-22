@@ -114,6 +114,63 @@ test("the Bouncer throws a lone agent back alive, and takes BOUNCER_HP scuffles 
   assert.equal(w.lost, 0)
 })
 
+function winBrawl(kind, hp) {
+  const { w, ag, en } = face(3)
+  Object.assign(en, { kind, hp })
+  assert.equal(S.stepBrawl(w, en), true)
+  for (let t = 1; t <= S.BRAWL_TICKS; t++) {
+    w.ticks = t
+    S.stepBrawl(w, en)
+  }
+  assert.equal(en.state, "recover")
+  assert.equal(ag.state, "walk")
+  assert.equal(en.hp, hp - 1)
+  return { w, ag, en }
+}
+
+test("Bouncers give the previous winner one tick before a rematch", () => {
+  for (const hp of [S.BOUNCER_HP, S.HEAD_BOUNCER_HP]) {
+    const { w, ag, en } = winBrawl("bouncer", hp)
+    w.ticks++
+    assert.equal(S.stepBrawl(w, en), false)
+    assert.equal(ag.state, "walk")
+    w.ticks++
+    assert.equal(S.stepBrawl(w, en), true)
+    assert.equal(ag.state, "brawl")
+  }
+})
+
+test("on the next tick a staggered Bouncer can grab a different walker", () => {
+  const { w, ag, en } = winBrawl("bouncer", S.BOUNCER_HP)
+  const other = w.agents[1]
+  other.x = en.x
+  w.ticks++
+  assert.equal(S.stepBrawl(w, en), true)
+  assert.equal(en.brawlWith, other.id)
+  assert.equal(ag.state, "walk")
+})
+
+test("spacing recovery, hits outside a brawl, and staggered gunners still allow contact brawls", () => {
+  const hit = face()
+  Object.assign(hit.en, { kind: "bouncer", hp: S.BOUNCER_HP, brawlWith: hit.ag.id })
+  S.killEnemy(hit.w, hit.en)
+  hit.w.ticks++
+  assert.equal(S.stepBrawl(hit.w, hit.en), true)
+
+  const { w, ag, en } = face()
+  en.kind = "bouncer"
+  const peer = S.spawnEnemy(w, "bouncer")
+  Object.assign(peer, { x: en.x + 0.5, y: en.y })
+  w.enemies.push(peer)
+  assert.equal(S.enemyMakesRoom(w, en), true)
+  ag.x = en.x
+  assert.equal(S.stepBrawl(w, en), true)
+
+  const gunner = winBrawl("gun", S.BOSS_HP)
+  gunner.w.ticks++
+  assert.equal(S.stepBrawl(gunner.w, gunner.en), true)
+})
+
 test("a thrown agent is drawn flying back along an arc, flipped mid-flight, landing where it is", () => {
   const ag = { state: "stunned", x: 30.5, thrownFrom: 33.5, thrownAt: 100 }
   const w = { ticks: 100 }

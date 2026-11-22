@@ -8,7 +8,7 @@ import {execFileSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {load,frame,canvas,themeOf,THEMES} from '../tools/render.js'
 import {renderer} from '../tools/gag-art.js'
-import {millSourceBefore,millSheets} from '../tools/mill-art.js'
+import {millReviewSim,millSourceBefore,millSheets} from '../tools/mill-art.js'
 import {millScenes} from '../tools/mill-scenes.js'
 const source=canyonSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),D=renderer(source),S=load('Sim.js'),P=load('Palette.js')
 const before=renderer(execFileSync('git',['show','ffe87fa6a3d9dbcc991ddf046457fe0a47f1f492:public/agents/Draw.js'],{maxBuffer:4<<20}).toString())
@@ -31,9 +31,9 @@ function frozen(v,cache=new WeakMap()){
  cache.set(v,p);return p
 }
 test('C19 twelve independently reviewed Factory frames preserve predecessor and successor pins',()=>{
- const random=Math.random;Math.random=()=>0.5
+ const reviewSim=millReviewSim(),random=Math.random;Math.random=()=>0.5
  try{for(const res of[1,2])for(const level of[8,28,48])for(const ticks of[350,900]){
-  const opts={level,ticks,res,page:res===2},key=`${level}/${ticks}/${res}`,a=frame(S,before,P,opts),b=frame(S,D,P,opts)
+  const opts={level,ticks,res,page:res===2},key=`${level}/${ticks}/${res}`,a=frame(reviewSim,before,P,opts),b=frame(reviewSim,D,P,opts)
   assert.equal(b.world.biome,'Factory');assert.equal(hash(a.img.buf),pins[key].before);assert.equal(hash(b.img.buf),pins[key].after)
   let n=0;for(let i=0;i<a.img.buf.length;i+=3)if(a.img.buf[i]!==b.img.buf[i]||a.img.buf[i+1]!==b.img.buf[i+1]||a.img.buf[i+2]!==b.img.buf[i+2])n++
   assert.ok(n>1500*res*res,`${key}: ${n} visibly changed scenery pixels`)

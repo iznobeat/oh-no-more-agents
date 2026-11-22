@@ -2,6 +2,7 @@ import {canyonSourceBefore} from './canyon-art.js'
 // C19 complete-frame review: before left, after right, out of season.
 import fs from 'node:fs'
 import path from 'node:path'
+import {execFileSync} from 'node:child_process'
 import {fileURLToPath} from 'node:url'
 import {createHash} from 'node:crypto'
 import {load,frame,stack,side,writePNG} from './render.js'
@@ -9,9 +10,14 @@ import {renderer,season} from './gag-art.js'
 import {christmasWorld,christmasFrame} from './christmas-art.js'
 import {reviewWorld} from './christmas-round5-art.js'
 export function millSourceBefore(source){return canyonSourceBefore(source).replace(/^  drawMill(?:Hall|Blocks|Drums|Life)\(ctx, w, pal\)\n/gm,'')}
+// Recreate the twelve reviewed frames with the simulation from their art commit.
+export function millReviewSim() {
+  const ref = '8e48454683f984745bd5d5df8451c3fd36406879'
+  return renderer(execFileSync('git', ['show', ref + ':public/agents/Sim.js'], { encoding: 'utf8', maxBuffer: 4 << 20 }))
+}
 export function millSheets(out){
  fs.mkdirSync(out,{recursive:true})
- const source=canyonSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=renderer(millSourceBefore(source)),D=renderer(source),S=load('Sim.js'),P=load('Palette.js'),pins={},random=Math.random
+ const source=canyonSourceBefore(fs.readFileSync('public/agents/Draw.js','utf8')),before=renderer(millSourceBefore(source)),D=renderer(source),S=millReviewSim(),P=load('Palette.js'),pins={},random=Math.random
  Math.random=()=>0.5
  try{for(const res of[1,2]){
   const rows=[]

@@ -16303,3 +16303,27 @@ was 29.0.
 
 **Next:** fix Bouncer hit recovery. On level 9601, a Bouncer grabs the
 same agent a tick after losing a fight, before its recovery timer advances.
+
+## 506 — 2026-11-22 · Bouncers give the last winner one step
+
+For one tick after a won scuffle staggers a Bouncer, it skips the walker
+who landed the hit. Another walker can still start a fight immediately.
+The focused brawl, boss, and winter suites passed all 30 tests.
+
+Across 56 seeded runs, all 34 immediate same-agent re-grabs disappeared.
+Rescues matched per run, with 885 of 888 home, and fights fell from 143 to
+127. Winter Market level 9601 finished 86 ticks sooner on average, with
+32 fights instead of 35. Head Bouncer runs averaged 37 ticks faster, with
+76 fights instead of 89. One Factory run (level 28, seed 15707608) took
+431 ticks and three fights longer, with all 14 agents still rescued.
+One-, three-, six-, and twelve-tick windows all preserved the rescue totals.
+The one-tick window is the smallest that resolves the reported re-grab.
+
+The first full check found two Factory art checks running a fixed historical
+review through the current simulation. The twelve pinned frames now replay
+with the simulation from the original art commit and keep their digests.
+All ten Factory art tests and all 2,054 full-check tests passed on the rerun.
+The maximum changed-file CRAP score was 29.0.
+
+**Next:** stop the last Market sentinel from planting again after stand-down
+with no colleagues to protect. Level 4201 reproduces it in two seeds.

@@ -10769,9 +10769,12 @@ var BRAWL_GROUND = { walk: true, aim: true, recover: true, reload: true, camp: t
 function stepBrawl(w, en) {
   if (en.state === "brawl") { brawlTick(w, en); return true }
   if (en.kind === "drone" || !BRAWL_GROUND[en.state]) return false
+  // Give the last winner one step to leave a Bouncer's reach before a rematch.
+  var justStaggered = en.kind === "bouncer" && en.state === "recover" && en.hurtAt === w.ticks - 1
   for (var i = 0; i < w.agents.length; i++) {
     var ag = w.agents[i]
     if (ag.gone || ag.state !== "walk") continue
+    if (justStaggered && ag.id === en.brawlWith && ag.wonAt === w.ticks) continue
     if (Math.abs(ag.x - en.x) >= 1 || Math.abs(ag.y - en.y) >= 1.5) continue
     en.state = "brawl"; en.brawlFor = BRAWL_TICKS; en.brawlWith = ag.id
     ag.state = "brawl"; ag.idle = 0
