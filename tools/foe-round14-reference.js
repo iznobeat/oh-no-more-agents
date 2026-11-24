@@ -3,6 +3,14 @@ import fs from 'node:fs'
 let reference
 // Remove later winter-biome hooks before reconstituting the original C34 baseline.
 export function foeRoundFourteenSourceBefore(source){
+ source=source.replace(/\n\/\/ Interactive polish additions\n[\s\S]*?\n\/\/ End interactive polish additions\n/,'')
+ source=source.replace('  if (w.coffee && w.coffee.takenBy < 0) drawFloorCoffee(ctx, w, w.coffee)\n','')
+ source=source.replace('  if (w.applause) drawApplause(ctx, w)\n','')
+ source=source.replace('  drawBetWinBurst(ctx, w)\n','')
+ source=source.replace('  drawCleanSweepStars(ctx, w, pal, cx - l.width / 2, y, l.width)\n','')
+ source=source.replace('    [ag.coffeeAt, COFFEE_TEXT[(ag.coffeeLine || 0) % COFFEE_TEXT.length]],\n','')
+ source=source.replace('  drawPepHeart(ctx, w, ag, ox, oy)\n','')
+ source=source.replace('  drawAgentCoffee(ctx, w, ag, ox, oy)\n','')
  source=source.replace(/\n\/\/ Winter biome additions\n[\s\S]*?\n\/\/ End winter biome additions\n/,'')
  source=source.replace('  if (w.biome === "Winter Market" || w.biome === "Aurora Ridge") return drawWinterSnow(ctx, w)\n','')
  source=source.replace('  if (w.biome === "Winter Market") drawMarketLife(ctx, w, pal)\n','')

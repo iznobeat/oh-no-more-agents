@@ -7,14 +7,14 @@
   // Eight at most: when a line is added, the oldest (or least useful to a
   // watcher: keep the ones that say what a tap does) drops off.
   var NEWS = [
+    { id: "2026-11-24-coffee", text: "Added: coffee drops (k) and applause confetti (a). Drop espresso ahead of walkers or cheer them on." },
     { id: "2026-11-22-winter", text: "Added: Winter Market and Aurora Ridge. Find two winter stops in the biome tour." },
     { id: "2026-11-22-advent", text: "Added: Advent doors. The daily colony goes to a different North Pole level from Dec 1 to 25." },
     { id: "2026-10-29-quiet", text: "Added: fewer words. The report says what happened, and the board does the rest." },
     { id: "2026-10-15-ooo", text: "Added: out-of-office replies. Lost agents leave an auto-reply under the board." },
     { id: "2026-10-15-daily", text: "Added: colony of the day, the same level and colony for everyone. Copy link shares it." },
     { id: "2026-10-15-seasons", text: "Added: Christmas (Dec 1 to 26). Same agents, worse hats." },
-    { id: "2026-10-15-sweepstake", text: "Added: sweepstake. Tap an agent before anyone's home to back it. It will not try any harder." },
-    { id: "2026-10-15-pep", text: "Added: pep talks. Tap an agent to tell it it's absolutely right. It already knew." }
+    { id: "2026-10-15-sweepstake", text: "Added: sweepstake. Tap an agent before anyone's home to back it. It will not try any harder." }
   ]
   var SEEN_KEY = "oh-no-more-agents-news"
 

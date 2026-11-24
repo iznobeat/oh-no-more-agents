@@ -452,9 +452,10 @@ function walkStep(ag, w) {
   var run = w && w.ticks < (ag.sprintUntil || 0) ? BOULDER_SPRINT : 1
   var belt = w && w.beltAt ? 1 + beltUnder(w, ag) * ag.dir * BELT_PUSH : 1
   var pep = w && w.ticks < (ag.pepUntil || 0) ? PEP_PACE : 1
+  var coffee = w && w.ticks < (ag.coffeeUntil || 0) ? COFFEE_PACE : 1
   var aisle = w && w.aisleAt ? aislePace(aisleUnder(w, ag)) : 1
   var ice = w && w.iceAt && onIce(w, ag) ? ICE_GLIDE : 1
-  return WALK_SPEED * (traitOf(ag).pace || 1) * (ag.chilledFor > 0 ? 0.48 : 1) * swim * wind * run * belt * pep * aisle * ice
+  return WALK_SPEED * (traitOf(ag).pace || 1) * (ag.chilledFor > 0 ? 0.48 : 1) * swim * wind * run * belt * pep * coffee * aisle * ice
 }
 
 // ---------------------------------------------------------------------------
@@ -7631,6 +7632,124 @@ function pepTalk(w, ag) {
 }
 
 // ---------------------------------------------------------------------------
+// Coffee drop (watcher-triggered espresso delivery)
+// ---------------------------------------------------------------------------
+// A watcher presses k (or taps "drop coffee") to parachute a takeaway cup
+// ahead of an active walker. The first walker to reach it stops for a quick
+// gulp and gets espresso zoomies for a few seconds. Bounded per level and
+// completely inert unless triggered.
+var COFFEE_LIMIT = 3        // cups per level
+var COFFEE_COOL = 180       // ticks between drops
+var COFFEE_LIFE = 480       // ticks an unclaimed cup waits on the floor
+var COFFEE_DROP = 18        // ticks parachuting down before pickup
+var COFFEE_SIP = 10         // ticks pausing to drink
+var COFFEE_BOOST = 180      // ticks of caffeinated stride
+var COFFEE_PACE = 1.42
+var COFFEE_REACH = 6        // cells ahead or behind the walker to search
+var COFFEE_LINES = 6
+
+function dropCoffee(w) {
+  if (!w || w.done || w.nuking || w.coffee) return false
+  if ((w.coffeesDropped || 0) >= COFFEE_LIMIT) return false
+  if (w.ticks - (w.lastCoffeeAt === undefined ? -1e9 : w.lastCoffeeAt) < COFFEE_COOL) return false
+  var spot = pickCoffeeSpot(w)
+  if (!spot) return false
+  w.coffee = { x: spot.x, y: spot.y, at: w.ticks, takenBy: -1, takenAt: -1 }
+  w.lastCoffeeAt = w.ticks
+  w.coffeesDropped = (w.coffeesDropped || 0) + 1
+  feedNote(w, "COFFEE DROP INCOMING")
+  return true
+}
+
+function pickCoffeeSpot(w) {
+  var fallback = null
+  for (var i = 0; i < w.agents.length; i++) {
+    var ag = w.agents[i]
+    if (ag.gone || ag.state !== "walk") continue
+    var x = coffeeSpot(w, ag)
+    if (x < 0) continue
+    var hit = { x: x, y: Math.floor(ag.y) }
+    if (w.ticks >= (ag.coffeeUntil || 0)) return hit
+    if (!fallback) fallback = hit
+  }
+  return fallback
+}
+
+function coffeeSpot(w, ag) {
+  var x0 = Math.floor(ag.x), y = Math.floor(ag.y)
+  for (var n = 2; n <= COFFEE_REACH; n++) for (var s = 0; s < 2; s++) {
+    var x = x0 + (s ? -ag.dir : ag.dir) * n
+    if (x < 1 || x >= COLS - 1) continue
+    if (solid(w, x, y) || !solid(w, x, y + 1) || pitAt(w, x) || hazardZoneAt(w, x, y, true)) continue
+    return x
+  }
+  return -1
+}
+
+function stepCoffee(w) {
+  var c = w.coffee
+  if (!c) return
+  if (c.takenBy >= 0) {
+    if (w.ticks - c.takenAt > COFFEE_SIP) w.coffee = null
+    return
+  }
+  if (w.ticks - c.at > COFFEE_LIFE || !solid(w, c.x, c.y + 1)) { w.coffee = null; return }
+  if (w.ticks - c.at < COFFEE_DROP) return
+  pickUpCoffee(w, c)
+}
+
+function pickUpCoffee(w, c) {
+  for (var i = 0; i < w.agents.length; i++) {
+    var ag = w.agents[i]
+    if (ag.gone || ag.state !== "walk" || ag.queueFor > 0 || ag.explainFor > 0) continue
+    if (Math.floor(ag.y) !== c.y || Math.abs(ag.x - (c.x + 0.5)) > 0.85) continue
+    c.takenBy = ag.id
+    c.takenAt = w.ticks
+    ag.sipFor = COFFEE_SIP
+    ag.coffeeAt = w.ticks
+    ag.coffeeLine = (w.coffeesDrunk || 0) % COFFEE_LINES
+    ag.coffeeUntil = w.ticks + COFFEE_SIP + COFFEE_BOOST
+    if (ag.idle > PEP_STUCK && !ag.special) { ag.dir = -ag.dir; ag.turns = 0 }
+    w.coffeesDrunk = (w.coffeesDrunk || 0) + 1
+    feedNote(w, agentTag(w, ag) + " · CAFFEINATED")
+    return
+  }
+}
+
+function sipping(w, ag) {
+  if (!(ag.sipFor > 0)) return false
+  if (ag.state !== "walk" || unsupported(w, ag)) { ag.sipFor = 0; return false }
+  ag.still = 0
+  return --ag.sipFor > 0
+}
+
+// Watcher applause: pops a confetti burst over the active crowd without
+// altering any agent's route or the simulation's RNG.
+var APPLAUSE_COOL = 90
+
+function applaudColony(w) {
+  if (!w || w.done) return false
+  if (w.ticks - (w.lastApplauseAt === undefined ? -1e9 : w.lastApplauseAt) < APPLAUSE_COOL) return false
+  var best = null, bestScore = -1
+  for (var i = 0; i < w.agents.length; i++) {
+    var ag = w.agents[i]
+    if (ag.gone || ag.state === "saved") continue
+    var fy = Math.floor(ag.y), score = 0
+    for (var j = 0; j < w.agents.length; j++) {
+      var o = w.agents[j]
+      if (!o.gone && o.state !== "saved" && Math.floor(o.y) === fy && Math.abs(o.x - ag.x) <= 12) score++
+    }
+    if (score > bestScore) { bestScore = score; best = ag }
+  }
+  var cx = best ? best.x : (w.exit ? w.exit.x + w.exit.w / 2 : COLS / 2)
+  var cy = best ? best.y : (w.exit ? w.exit.y + 1 : ROWS / 2)
+  w.lastApplauseAt = w.ticks
+  w.applauseCount = (w.applauseCount || 0) + 1
+  w.applause = { x: cx, y: cy, at: w.ticks }
+  return true
+}
+
+// ---------------------------------------------------------------------------
 // Office radio
 // ---------------------------------------------------------------------------
 // Now and then the ticker narrates what is actually on screen, in the voice of
@@ -11673,7 +11792,7 @@ var AGENT_STEPS = {
 
 function agentActs(w, ag) {
   tickAgentTimers(w, ag)
-  if (queued(w, ag) || explaining(w, ag) || conflicted(w, ag)) { w.acting = null; return }
+  if (queued(w, ag) || explaining(w, ag) || sipping(w, ag) || conflicted(w, ag)) { w.acting = null; return }
   if (ag.special && ag.state === "walk") specialReacts(w, ag)
   if (ag.rescueCool > 0) ag.rescueCool--
   watchStill(w, ag)
@@ -12109,6 +12228,7 @@ function finishWorldStep(w, active, blockers, moving) {
   stepMirages(w)
   stepRateLimit(w)
   stepDuck(w)
+  stepCoffee(w)
   stepConflicts(w)
   stepAisles(w)
   stepLibrarians(w)

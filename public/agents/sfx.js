@@ -17,7 +17,7 @@
   var last = {}            // sound name -> time it last played (ms)
   var seen = null          // what the previous tick looked like
 
-  var GAPS = { chime: 600, zing: 120, whoosh: 150, scuffle: 110, pop: 70, tink: 90, pew: 55, bang: 70, boom: 160, home: 90, down: 120, fanfare: 0, clang: 200, radio: 800, jingle: 600, dream: 400, wake: 300, busy: 1500, served: 90, agi: 600, agiHome: 0, agiLost: 0, quack: 300, plop: 300, pep: 120, murmur: 300, conflict: 400, powerdown: 0, powerup: 0, letsgo: 4000, ohno: 2500, yippee: 0 }
+  var GAPS = { chime: 600, zing: 120, whoosh: 150, scuffle: 110, pop: 70, tink: 90, pew: 55, bang: 70, boom: 160, home: 90, down: 120, fanfare: 0, clang: 200, radio: 800, jingle: 600, dream: 400, wake: 300, busy: 1500, served: 90, agi: 600, agiHome: 0, agiLost: 0, quack: 300, plop: 300, pep: 120, coffeeDrop: 250, coffeeSip: 250, applause: 250, betWin: 0, murmur: 300, conflict: 400, powerdown: 0, powerup: 0, letsgo: 4000, ohno: 2500, yippee: 0 }
 
   function ensure() {
     if (ctx) return ctx
@@ -167,6 +167,10 @@
     plop: function () { tone("sine", 900, 300, 0.09, 0.4) },
     quack: function () { tone("square", 760, 520, 0.08, 0.3); tone("square", 700, 480, 0.09, 0.3, 0.1) },
     pep: function () { tone("square", 1047, 1047, 0.05, 0.25); tone("square", 1568, 1568, 0.08, 0.25, 0.06) },   // you're absolutely right
+    coffeeDrop: function () { tone("sine", 780, 420, 0.14, 0.22); tone("triangle", 260, 180, 0.05, 0.28, 0.13) },
+    coffeeSip: function () { tone("triangle", 480, 960, 0.08, 0.28); tone("square", 1047, 1047, 0.04, 0.22, 0.09); tone("square", 1319, 1319, 0.04, 0.22, 0.14); tone("square", 1568, 1568, 0.07, 0.24, 0.19) },
+    applause: function () { noise(0.08, 0.55, "highpass", 2800); tone("triangle", 660, 1320, 0.12, 0.28); tone("square", 1568, 1568, 0.06, 0.2, 0.09) },
+    betWin: function () { var n = [784, 988, 1175, 1568]; for (var i = 0; i < n.length; i++) tone("triangle", n[i], n[i], 0.09, 0.3, i * 0.06) },
     // The standup: a low murmur of voices as each one starts talking.
     murmur: function () { noise(0.3, 0.25, "lowpass", 500); tone("sine", 180, 150, 0.25, 0.15); tone("sine", 240, 210, 0.2, 0.1, 0.08) },
     // A merge conflict: two notes a semitone apart, then the one that gives way.
@@ -255,7 +259,7 @@
       saved: w.saved, lost: w.lost, parries: w.umbrellaSaves || 0, done: w.done,
       dreams: w.hallucinations || 0, wakes: count(w, "wokeAt"), served: count(w, "servedAt"),
       limited: w.rateLimited || 0, agi: w.agiId >= 0, agiHome: !!w.agiHome, agiLost: !!w.agiLost,
-      duck: !!w.duck, ducked: w.ducked || 0, peps: w.peps || 0, conflicts: w.conflicts || 0,
+      duck: !!w.duck, ducked: w.ducked || 0, peps: w.peps || 0, coffeesDropped: w.coffeesDropped || 0, coffeesDrunk: w.coffeesDrunk || 0, applauseCount: w.applauseCount || 0, betWon: w.bet !== undefined && !!(w.homeOrder && w.homeOrder[0] === w.bet), conflicts: w.conflicts || 0,
       released: w.released || 0, lit: lit(w), gifts: w.giftsOpened || 0
     }
   }
@@ -292,6 +296,10 @@
     if (now.duck && !was.duck && !now.ducked) play("plop")
     if (now.ducked > was.ducked) play("quack")
     if (now.peps > was.peps) play("pep")
+    if (now.coffeesDropped > was.coffeesDropped) play("coffeeDrop")
+    if (now.coffeesDrunk > was.coffeesDrunk) play("coffeeSip")
+    if (now.applauseCount > was.applauseCount) play("applause")
+    if (now.betWon && !was.betWon) play("betWin")
     if (now.conflicts > was.conflicts) play("conflict")
     northPoleCues(w, now, was)
     if (w.outage && w.ticks === w.outage.at) play("powerdown")

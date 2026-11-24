@@ -1056,6 +1056,16 @@
 
   function cycleSpeed() { speedIndex = (speedIndex + 1) % SPEED_INTERVALS.length; restartClock(); saveState(); render() }
   function toggleLabels() { showLabels = !showLabels; paintActors(); saveState(); render() }
+  function triggerCoffeeDrop() {
+    if (!world || world.done || !running) return
+    if (dropCoffee(world)) { paintActors(); toast("COFFEE INCOMING") }
+    else if ((world.coffeesDropped || 0) >= COFFEE_LIMIT) toast("OUT OF COFFEE")
+    else toast("COFFEE BREWING")
+  }
+  function triggerApplause() {
+    if (!world || world.done || !running) return
+    if (applaudColony(world)) { paintActors(); toast("APPLAUSE!") }
+  }
   // The agent drawn under a click, in art pixels: the sprite stands on its
   // cell's floor and is about two cells tall, so the target is the body, with
   // a little slack for a thumb.
@@ -1619,7 +1629,8 @@
       "speed": cycleSpeed,
       "who": toggleLabels,
       "c-full": toggleFullscreen,
-      "share": copyShareLink
+      "share": copyShareLink,
+      "coffee-drop": triggerCoffeeDrop
     }
     Object.keys(buttons).forEach(function (id) {
       var b = document.getElementById(id)
@@ -1647,6 +1658,8 @@
       else if (k === "w") toggleLabels()
       else if (k === "f") toggleFullscreen()
       else if (k === "m") toggleSfx()
+      else if (k === "k") triggerCoffeeDrop()
+      else if (k === "a") triggerApplause()
       // Only faux fullscreen receives Escape here.
       else if (k === "escape" && el.stage.classList.contains("faux")) setFaux(false)
       else return

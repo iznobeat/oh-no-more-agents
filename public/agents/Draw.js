@@ -4218,6 +4218,9 @@ function drawColonyAsides(ctx, w, pal) {
   if (w.mirages) for (var mi = 0; mi < w.mirages.length; mi++) drawMirage(ctx, w, pal, w.mirages[mi])
   if (w.rateLimit) drawRateLimitSign(ctx, w, pal, w.rateLimit)
   if (w.duck && w.duck.takenBy < 0) drawFloorDuck(ctx, w, w.duck)
+  if (w.coffee && w.coffee.takenBy < 0) drawFloorCoffee(ctx, w, w.coffee)
+  if (w.applause) drawApplause(ctx, w)
+  drawBetWinBurst(ctx, w)
   if (w.milestone) drawConfetti(ctx, w)
 }
 
@@ -4816,6 +4819,7 @@ function drawPageLevelResults(ctx, w, pal) {
   drawTransitionPlate(ctx, w, pal, cx - l.width / 2, y, l.height, l.width)
   drawChristmasReport(ctx,w,cx-l.width/2,y,l.width,l.height)
   drawNewyearReport(ctx,w,cx-l.width/2,y,l.width,l.height)
+  drawCleanSweepStars(ctx, w, pal, cx - l.width / 2, y, l.width)
   ctx.fillStyle = pal.label
   drawTransitionText(ctx, reportHeading(w), cx, y + (l.vignetteHeight ? 5 : 9), 1.5)
   ctx.fillStyle = pal.label
@@ -10443,6 +10447,7 @@ function quipFor(w, ag) {
     [ag.queuedAt, "AFTER YOU"],      // the front of a 429 queue
     [ag.servedAt, "200 OK"],         // each one let through
     [ag.pepAt, PEP_TEXT[(ag.pepLine || 0) % PEP_TEXT.length]],   // a watcher's pep talk
+    [ag.coffeeAt, COFFEE_TEXT[(ag.coffeeLine || 0) % COFFEE_TEXT.length]],
     [w.bet === ag.id ? w.betAt : undefined, "MY MONEY'S ON YOU"],  // the watcher's pick
     [ag.conflictAt, ag.conflictSide > 0 ? "<<<<<<<" : ">>>>>>>"],  // nose to nose in a merge conflict
     [ag.rebasedAt, "REBASED"],                                     // and the one that gave way
@@ -15309,6 +15314,8 @@ function drawAgentGlitter(ctx, w, ag, ox, oy) {
   if (w.milestone && ag.state !== "saved") drawPartyHat(ctx, w.milestone.kind, ag, ox, oy)
   else if (w.season && w.season.hats && w.season.hats !== "santa" && w.season.hats !== "party" && ag.state !== "saved") drawPartyHat(ctx, w.season.hats, ag, ox, oy)
   if (w.bet === ag.id && ag.state !== "saved") drawBetCoin(ctx, w, ox, oy)
+  drawPepHeart(ctx, w, ag, ox, oy)
+  drawAgentCoffee(ctx, w, ag, ox, oy)
 }
 
 // A community milestone (Outcome's milestoneFor; web.js puts it on the world):
@@ -29028,3 +29035,167 @@ function drawRidgeCurtain(ctx, w, start, base, width, phase) {
   }
 }
 // End winter biome additions
+
+// Interactive polish additions
+var COFFEE_TEXT = ["DECAF? NO.", "10X MODE!", "SHIPPING IT!", "ONE MORE PR", "NO SLEEP!", "FULL STACK!"]
+var COFFEE_CHUTE_TICKS = 18
+
+function drawFloorCoffee(ctx, w, c) {
+  var C = w.k.CELL, age = Math.max(0, w.ticks - c.at), fine = (w.res || 1) >= 2
+  var foot = (c.y + 1) * C, cx = Math.round((c.x + 0.5) * C)
+  var falling = !w.reducedMotion && age < COFFEE_CHUTE_TICKS
+  var lift = falling ? Math.round((COFFEE_CHUTE_TICKS - age) * 1.4) : (!w.reducedMotion && age < COFFEE_CHUTE_TICKS + 4 ? 1 : 0)
+  var sway = falling ? Math.round(Math.sin(age * 0.5) * 2) : 0
+  var x = cx - 2 + sway, y = foot - 6 - lift
+  ctx.save()
+  if (falling) drawCoffeeChute(ctx, w, x + 2, y, fine)
+  drawCoffeeCup(ctx, x, y, fine)
+  if (!falling) drawCoffeeSteam(ctx, w, x + 2, y - 1, age, fine)
+  ctx.restore()
+}
+
+function drawCoffeeChute(ctx, w, cx, cupTop, fine) {
+  ctx.fillStyle = "#d9d2c5"
+  moteFineRect(ctx, w, cx - 4, cupTop - 9, 9, 2)
+  ctx.fillStyle = "#f5efe6"
+  moteFineRect(ctx, w, cx - 3, cupTop - 10, 7, 1)
+  ctx.fillStyle = "#b56942"
+  moteFineRect(ctx, w, cx - 1, cupTop - 9, 3, 2)
+  ctx.fillStyle = "#c8c2b8"
+  moteFineRect(ctx, w, cx - 3, cupTop - 7, fine ? 0.5 : 1, 7)
+  moteFineRect(ctx, w, cx + 3, cupTop - 7, fine ? 0.5 : 1, 7)
+}
+
+function drawCoffeeCup(ctx, x, y, fine) {
+  ctx.fillStyle = "#2b2129"
+  ctx.fillRect(x, y, 5, 1)
+  ctx.fillStyle = "#f5efe6"
+  ctx.fillRect(x, y + 1, 5, 5)
+  ctx.fillStyle = "#c9854c"
+  ctx.fillRect(x, y + 2, 5, 2)
+  if (!fine) return
+  ctx.fillStyle = "#ffffff"
+  ctx.fillRect(x + 0.5, y + 1, 1, 4.5)
+  ctx.fillStyle = "#8a5229"
+  ctx.fillRect(x + 1.5, y + 2.5, 2, 1)
+}
+
+function drawCoffeeSteam(ctx, w, cx, top, age, fine) {
+  var t = w.reducedMotion ? 0 : Math.floor(age / 3)
+  ctx.fillStyle = "#f5efe6"
+  for (var p = 0; p < 2; p++) {
+    var step = (t + p * 6) % 12
+    var sx = cx - 1 + p * 2 + (w.reducedMotion ? 0 : Math.round(Math.sin(step * 0.6)))
+    ctx.globalAlpha = (1 - step / 12) * 0.72
+    moteFineRect(ctx, w, sx, top - Math.floor(step * 0.5), fine ? 0.5 : 1, 1)
+  }
+}
+
+function drawAgentCoffee(ctx, w, ag, ox, oy) {
+  if (ag.gone || ag.state === "saved") return
+  var fine = (w.res || 1) >= 2, dir = ag.dir || 1
+  if (ag.sipFor > 0) {
+    ctx.save()
+    drawCoffeeCup(ctx, ox + (dir > 0 ? 6 : -3), oy + 3, fine)
+    if (!w.reducedMotion && (w.ticks >> 1) % 2 === 0) {
+      ctx.fillStyle = "#ffd97d"
+      ctx.fillRect(ox + (dir > 0 ? 8 : -2), oy + 1, 1, 1)
+    }
+    ctx.restore()
+    return
+  }
+  if (!(w.ticks < (ag.coffeeUntil || 0))) return
+  ctx.save()
+  var back = dir > 0 ? ox - 2 : ox + 9
+  if (w.reducedMotion) {
+    ctx.fillStyle = "#ffd97d"
+    ctx.fillRect(ox + 3, oy - 3, 2, 1)
+    ctx.restore()
+    return
+  }
+  var phase = w.ticks % 6
+  ctx.fillStyle = "#ffd97d"
+  ctx.globalAlpha = 0.85
+  ctx.fillRect(back - dir * (phase % 3), oy + 5 + (phase % 2), fine ? 1.5 : 1, fine ? 0.5 : 1)
+  ctx.fillStyle = "#ff9e52"
+  ctx.globalAlpha = 0.7
+  ctx.fillRect(back - dir * ((phase + 2) % 4), oy + 11 - (phase % 2), fine ? 2 : 1, fine ? 0.5 : 1)
+  ctx.restore()
+}
+
+var APPLAUSE_TICKS = 48
+var PEP_HEART_TICKS = 26
+
+function drawApplause(ctx, w) {
+  var a = w.applause, age = w.ticks - a.at
+  if (!(age >= 0 && age < APPLAUSE_TICKS)) return
+  var C = w.k.CELL, cx = Math.round(a.x * C), cy = Math.round((a.y - 1) * C)
+  var motion = w.reducedMotion ? 10 : age, fine = (w.res || 1) >= 2
+  ctx.save()
+  ctx.globalAlpha = Math.min(1, (APPLAUSE_TICKS - age) / 14)
+  for (var i = 0; i < 22; i++) {
+    var v = CONFETTI_VECTORS[(i * 2) % CONFETTI_VECTORS.length]
+    var x = Math.round(cx + v[0] * motion * 1.15)
+    var y = Math.round(cy + v[1] * motion * 1.1 + 0.032 * motion * motion)
+    var flip = (i + (w.reducedMotion ? 0 : age >> 2)) % 2
+    ctx.fillStyle = PARTY[i % PARTY.length]
+    moteFineRect(ctx, w, x, y, flip ? (fine ? 1.5 : 2) : 1, flip ? 1 : (fine ? 1.5 : 2))
+  }
+  ctx.restore()
+}
+
+function drawPepHeart(ctx, w, ag, ox, oy) {
+  if (ag.gone || ag.state === "saved" || ag.pepAt === undefined) return
+  var age = w.ticks - ag.pepAt
+  if (!(age >= 0 && age < PEP_HEART_TICKS)) return
+  var rise = w.reducedMotion ? 3 : Math.floor(age * 0.45)
+  var x = ox + 7, y = oy - 2 - rise, fine = (w.res || 1) >= 2
+  ctx.save()
+  ctx.globalAlpha = Math.min(1, (PEP_HEART_TICKS - age) / 10)
+  ctx.fillStyle = "#ff6e9c"
+  ctx.fillRect(x, y, 1, 1); ctx.fillRect(x + 2, y, 1, 1)
+  ctx.fillRect(x, y + 1, 3, 1); ctx.fillRect(x + 1, y + 2, 1, 1)
+  if (fine) { ctx.fillStyle = "#ffd6e6"; ctx.fillRect(x, y, 0.5, 0.5) }
+  ctx.restore()
+}
+
+function drawBetWinBurst(ctx, w) {
+  if (w.bet === undefined || !betCalled(w) || !w.exit) return
+  var winner = null
+  for (var i = 0; i < w.agents.length; i++) if (w.agents[i].id === w.bet) { winner = w.agents[i]; break }
+  if (!winner || winner.state !== "saved" || !(winner.fade >= 0 && winner.fade < 15)) return
+  var C = w.k.CELL, cx = Math.round((w.exit.x + w.exit.w / 2) * C), cy = Math.round((w.exit.y + 1) * C)
+  var r = w.reducedMotion ? 8 : 4 + winner.fade * 1.1, fine = (w.res || 1) >= 2
+  ctx.save()
+  ctx.globalAlpha = Math.min(1, (15 - winner.fade) / 7)
+  for (var s = 0; s < 10; s++) {
+    var ang = s * Math.PI / 5 + (w.reducedMotion ? 0 : winner.fade * 0.14)
+    var sx = Math.round(cx + Math.cos(ang) * r), sy = Math.round(cy + Math.sin(ang) * r * 0.75)
+    ctx.fillStyle = s % 2 ? AGI_SPARK : AGI_GOLD
+    moteFineRect(ctx, w, sx, sy, fine ? 1.5 : 1, fine ? 1.5 : 1)
+  }
+  ctx.restore()
+}
+
+function drawCleanSweepStars(ctx, w, pal, left, top, width) {
+  if (!w.done || !(w.doneHold > 0) || !(w.toRelease > 0) || w.saved < w.toRelease || (w.lost || 0) > 0) return
+  var pulse = w.reducedMotion ? 0 : Math.floor((w.doneTicks || 0) / 8) % 2
+  ctx.save()
+  drawGoldStar(ctx, pal, left + 10, top + 8, pulse)
+  drawGoldStar(ctx, pal, left + width - 10, top + 8, 1 - pulse)
+  ctx.restore()
+}
+
+function drawGoldStar(ctx, pal, cx, cy, bright) {
+  ctx.fillStyle = pal.warn
+  ctx.fillRect(cx - 0.5, cy - 2.5, 1, 5)
+  ctx.fillRect(cx - 2.5, cy - 0.5, 5, 1)
+  ctx.fillRect(cx - 1.5, cy - 1.5, 3, 3)
+  ctx.fillStyle = bright ? pal.label : pal.exitLight
+  ctx.fillRect(cx - 0.5, cy - 0.5, 1, 1)
+  if (bright) {
+    ctx.fillRect(cx - 0.5, cy - 3.5, 1, 1)
+    ctx.fillRect(cx - 0.5, cy + 2.5, 1, 1)
+  }
+}
+// End interactive polish additions

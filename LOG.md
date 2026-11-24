@@ -16366,3 +16366,38 @@ first pass). Added unit tests in `test/winter-biomes.test.js` covering both
 resolutions, open-air clipping, immutability, and reduced-motion stillness.
 
 **Next:** run the full gate, soak smoke check, and deploy iterations 498–508.
+
+## 509 — 2026-11-24 · Deploy: winter polish, Bouncer & blocker fixes, living Winter Market & Aurora Ridge
+
+**Deployed** build 1508b9a8 (Worker version 6beb7a2f), replacing 54863e23;
+covers iterations 498–508. **Before:** full coverage check (2,056 tests),
+changed-file CRAP gate (all ≤ 30), and `npm run smoke` (12 samples over
+3 min, levels 1–7, steady 16.7 ms frames) passed. **After:**
+`npm run verify -- --previous 54863e23` passed (5 counter writes refused).
+
+## 510 — 2026-11-24 · Coffee drops, applause confetti, pep-talk hearts, and victory flourishes
+
+Added playful interactive touches and victory/cheering animations while keeping
+un-interacted gameplay and all pinned historical frames byte-identical:
+
+- **Coffee Drop (`k` key or `drop coffee` link):** parachutes a steaming
+  takeaway cup ahead of an active walker (up to 3 per level, rate-limited).
+  The first walker pauses briefly to sip it, drops a dry quip (`"DECAF? NO."`,
+  `"10X MODE!"`, `"SHIPPING IT!"`, …), gets espresso zoomies with trailing
+  gold speed sparks, and unstucks if pacing. Synthesised drop & sip cues in
+  `sfx.js` and updated `news.js`.
+- **Applause Confetti (`a` key):** rate-limited multi-coloured confetti burst
+  over the active crowd, clipped to open air, with party-popper SFX and
+  reduced-motion stillness.
+- **Pep-talk heart, sweepstake winner burst & clean-sweep stars:** cheered
+  agents float a rising pixel heart beside their head; backing the 1st-home
+  sweepstake winner triggers a golden sparkle ring at the exit plus a win
+  arpeggio; 100% clean-sweep page reports earn twinkling gold corner star
+  medallions inside the plate bounds.
+
+Reviewed rendered frames of coffee parachute/landing/sipping, applause bursts,
+and clean-sweep report stars. Added `test/coffee.test.js` and
+`test/celebration.test.js`.
+
+**Next:** run the full coverage + CRAP gate, 3-minute smoke soak, and deploy
+iteration 510.
