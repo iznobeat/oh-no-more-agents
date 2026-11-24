@@ -340,3 +340,54 @@ test("ridge aurora drifts without crossing terrain and stays still with reduced 
     assert.equal(paint(400), paint(560))
   }
 })
+
+test("Winter Market garlands, steam, and lantern embers stay in open air and hold still with reduced motion", () => {
+  const w = S.generate(601, 0, 3), pal = P.build(theme, 601)
+  w.mission.openedAt = 400
+  for (const t of w.mission.targets) t.freed = true
+  for (const res of [1, 2]) {
+    w.res = res
+    const paint = ticks => {
+      w.ticks = ticks
+      const img = canvas(400 * res, 248 * res)
+      img.ctx.setTransform(res, 0, 0, res, 0, 0)
+      const before = JSON.stringify(w)
+      D.drawMarketLife(img.ctx, w, pal)
+      assert.equal(JSON.stringify(w), before)
+      assert.ok(img.buf.some(Boolean))
+      return createHash("sha256").update(img.buf).digest("hex")
+    }
+    w.reducedMotion = false
+    assert.notEqual(paint(410), paint(430))
+    w.reducedMotion = true
+    assert.equal(paint(410), paint(560))
+  }
+})
+
+test("Aurora Ridge stars, spindrift, hearth smoke, and cable sparks animate and freeze cleanly", () => {
+  const w = S.generate(1531, 0, 58581591), pal = P.build(theme, 1531)
+  while (w.ticks < 340) S.step(w)
+  assert.ok(w.agents.some(a => a.state === "zip"), "an active cable rider exists")
+  for (const res of [1, 2]) {
+    w.res = res
+    const paint = (ticks, fn) => {
+      const saved = w.ticks
+      w.ticks = ticks
+      const img = canvas(400 * res, 248 * res)
+      img.ctx.setTransform(res, 0, 0, res, 0, 0)
+      fn(img.ctx)
+      w.ticks = saved
+      assert.ok(img.buf.some(Boolean))
+      return createHash("sha256").update(img.buf).digest("hex")
+    }
+    w.reducedMotion = false
+    assert.notEqual(paint(340, ctx => D.drawRidgeStars(ctx, w)), paint(358, ctx => D.drawRidgeStars(ctx, w)))
+    assert.notEqual(paint(340, ctx => D.drawRidgeSpindrift(ctx, w)), paint(360, ctx => D.drawRidgeSpindrift(ctx, w)))
+    assert.notEqual(paint(340, ctx => D.drawRidgeHearth(ctx, w)), paint(360, ctx => D.drawRidgeHearth(ctx, w)))
+    assert.notEqual(paint(340, ctx => D.drawRidgeCableSparks(ctx, w)), paint(342, ctx => D.drawRidgeCableSparks(ctx, w)))
+    w.reducedMotion = true
+    assert.equal(paint(340, ctx => D.drawRidgeStars(ctx, w)), paint(460, ctx => D.drawRidgeStars(ctx, w)))
+    assert.equal(paint(340, ctx => D.drawRidgeSpindrift(ctx, w)), paint(460, ctx => D.drawRidgeSpindrift(ctx, w)))
+    assert.equal(paint(340, ctx => D.drawRidgeHearth(ctx, w)), paint(460, ctx => D.drawRidgeHearth(ctx, w)))
+  }
+})

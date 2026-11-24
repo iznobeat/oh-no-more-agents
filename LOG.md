@@ -16344,3 +16344,25 @@ all 32 blocks with nearby colleagues and every run reached a normal ending
 with no condemned or stranded agents.
 
 **Next:** review the focused ledge fix and replay comparison before the full gate.
+
+## 508 — 2026-11-24 · Living Winter Market and Aurora Ridge atmospheres
+
+Winter Market and Aurora Ridge now have per-tick living motion matching the
+rest of the catalogue, clipped to open air and frozen cleanly under reduced
+motion:
+
+- **Winter Market (`drawMarketLife`)**: catenary festoon fairy lights strung
+  along corridor eaves with gently twinkling warm gold, amber, berry and
+  mint-ice bulbs; delicate rising cocoa steam wisps over market counters; and
+  warm golden pools with floating ember sparks once the mission lanterns light.
+- **Aurora Ridge (`drawRidgeLife`)**: twinkling alpine starfield in open
+  corridor air, wind-swept spindrift snow plumes along the floors, curling
+  hearth smoke from the shelter lodge roof, and bright ice/gold pulley sparks
+  trailing behind active zipline riders.
+
+Reviewed rendered frames on levels 601, 631 and 1531 at page resolution
+(catching and fixing the garland ceiling offset and bulb spacing parity on the
+first pass). Added unit tests in `test/winter-biomes.test.js` covering both
+resolutions, open-air clipping, immutability, and reduced-motion stillness.
+
+**Next:** run the full gate, soak smoke check, and deploy iterations 498–508.

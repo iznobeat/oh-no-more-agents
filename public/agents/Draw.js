@@ -2389,6 +2389,7 @@ function drawMachines(ctx, w, pal) {
   if (w.biome === "Building Site") drawSiteMachines(ctx, w, pal)
   if (w.biome === "Clock Tower") drawClockMachines(ctx, w, pal)
   if (w.biome === "Rooftops") drawRoofMachines(ctx, w, pal)
+  if (w.biome === "Winter Market") drawMarketLife(ctx, w, pal)
   if (w.biome === "Aurora Ridge") drawRidgeLife(ctx, w, pal)
   if (w.biome === "Subway") drawSubwayMachines(ctx, w, pal)
   if (w.biome === "Harbour") drawHarbourMachines(ctx, w, pal)
@@ -28507,6 +28508,8 @@ function orbitalCrescentAir(w,x) {
 // Winter biome additions
 var MARKET_AWNINGS = ["#703a61", "#325964", "#734944"]
 var MARKET_WICK = ["#ffb860", "#ffcc77", "#ffb050", "#ffd47f"]
+var MARKET_BULBS = ["#ffd97d", "#ff9e6b", "#f07b8a", "#9ce8d8"]
+var MARKET_GARLAND_SAG = [0, 1, 2, 2, 2, 1, 0]
 
 BACKDROPS["Winter Market"] = backWinterMarket
 BACKDROP_FINE["Winter Market"] = backWinterMarketFine
@@ -28834,11 +28837,167 @@ function drawRidgeSkierGrip(ctx, w, pal, grip, handY) {
   moteFineRect(ctx, w, grip.x, grip.y, 1, 1)
 }
 
+function drawMarketLife(ctx, w, pal) {
+  ctx.save()
+  drawMarketGarland(ctx, w)
+  drawMarketSteam(ctx, w)
+  drawMarketEmbers(ctx, w, pal)
+  ctx.restore()
+}
+
+function drawMarketGarland(ctx, w) {
+  var C = w.k.CELL, W = w.k.COLS * C, fine = (w.res || 1) >= 2
+  var phase = w.reducedMotion ? 0 : Math.floor(w.ticks / 10)
+  for (var i = 0; i < w.corridors.length; i++) {
+    var top = w.corridors[i].floorY * C - 23
+    for (var step = 0, x = 14 + (i % 2) * 8; x < W - 18; step++, x += 6) {
+      var sag = MARKET_GARLAND_SAG[(step + i * 2) % MARKET_GARLAND_SAG.length]
+      ctx.globalAlpha = 0.34
+      ctx.fillStyle = "#5b4a62"
+      moteFineRect(ctx, w, x, top + sag, 6, fine ? 0.5 : 1)
+      if (step % 2 === 1) drawMarketBulb(ctx, w, x + 2, top + sag + 1, i * 17 + step, phase, fine)
+    }
+  }
+}
+
+function drawMarketBulb(ctx, w, x, y, seed, phase, fine) {
+  var lit = (seed + phase) % 5 !== 0
+  ctx.fillStyle = MARKET_BULBS[seed % MARKET_BULBS.length]
+  ctx.globalAlpha = lit ? 0.85 : 0.32
+  moteFineRect(ctx, w, x, y, 1, 1)
+  if (!lit) return
+  ctx.globalAlpha = 0.22
+  moteFineRect(ctx, w, x - 1, y - 1, 3, 3)
+  if (fine) {
+    ctx.globalAlpha = 0.9
+    ctx.fillStyle = "#fff8df"
+    moteFineRect(ctx, w, x + 0.5, y, 0.5, 0.5)
+  }
+}
+
+function drawMarketSteam(ctx, w) {
+  var C = w.k.CELL, W = w.k.COLS * C, t = w.reducedMotion ? 0 : Math.floor(w.ticks / 4)
+  ctx.fillStyle = "#f2e7d8"
+  for (var i = 0; i < w.corridors.length; i++) {
+    var floor = w.corridors[i].floorY * C
+    for (var x = 34 + (i % 3) * 19; x < W - 36; x += 78) {
+      for (var p = 0; p < 3; p++) {
+        var age = (t + i * 7 + p * 8 + x) % 24
+        var sway = Math.round(Math.sin((age + x) * 0.45))
+        ctx.globalAlpha = (1 - age / 24) * 0.28
+        moteFineRect(ctx, w, x + sway, floor - 14 - Math.floor(age * 0.5), 1, 1)
+      }
+    }
+  }
+}
+
+function drawMarketEmbers(ctx, w, pal) {
+  var m = w.mission
+  if (!m || m.kind !== "lantern" || !m.targets) return
+  var C = w.k.CELL, fine = (w.res || 1) >= 2
+  for (var i = 0; i < m.targets.length; i++) {
+    var target = m.targets[i]
+    if (!target.freed) continue
+    var order = m.lanternsFromRight ? m.targets.length - 1 - i : i
+    var age = w.reducedMotion ? 30 : w.ticks - m.openedAt - order * 4
+    if (age < 0) continue
+    var lx = Math.round(target.x * C), ly = Math.round(target.y * C)
+    drawLightPool(ctx, w, "#ffb860", lx, ly - 12, 16, 12, 0.14)
+    if (w.reducedMotion) continue
+    for (var s = 0; s < 2; s++) {
+      var step = (w.ticks + i * 11 + s * 13) % 26
+      var ex = lx - 1 + Math.round(Math.sin((step + i * 3) * 0.35) * 2)
+      var ey = ly - 21 - Math.floor(step * 0.45)
+      ctx.globalAlpha = (1 - step / 26) * 0.85
+      ctx.fillStyle = s ? "#ff9e52" : "#ffd074"
+      moteFineRect(ctx, w, ex, ey, fine ? 0.5 : 1, 1)
+    }
+  }
+}
+
 function drawRidgeLife(ctx, w, pal) {
   ctx.save()
+  drawRidgeStars(ctx, w)
   drawRidgeAurora(ctx, w)
+  drawRidgeSpindrift(ctx, w)
+  drawRidgeHearth(ctx, w)
   ctx.restore()
   for (var i = 0; i < w.ziplines.length; i++) drawRoofLine(ctx, w, pal, w.ziplines[i], i)
+  drawRidgeCableSparks(ctx, w)
+}
+
+function drawRidgeStars(ctx, w) {
+  var C = w.k.CELL, W = w.k.COLS * C, fine = (w.res || 1) >= 2
+  var tick = w.reducedMotion ? 0 : Math.floor(w.ticks / 9)
+  for (var i = 0; i < w.corridors.length; i++) {
+    var top = w.corridors[i].floorY * C - 23
+    for (var n = 0; n < 7; n++) {
+      var x = 18 + ((i * 53 + n * 59) % Math.max(40, W - 36))
+      var y = top + ((i * 7 + n * 5) % 9)
+      var bright = (tick + i * 3 + n * 2) % 6 === 0
+      ctx.fillStyle = n % 2 ? "#c7f2ff" : "#eef6ff"
+      ctx.globalAlpha = bright ? 0.82 : 0.34
+      moteFineRect(ctx, w, x, y, fine ? 0.5 : 1, fine ? 0.5 : 1)
+      if (fine && bright) {
+        ctx.globalAlpha = 0.42
+        moteFineRect(ctx, w, x - 0.5, y, 1.5, 0.5)
+        moteFineRect(ctx, w, x, y - 0.5, 0.5, 1.5)
+      }
+    }
+  }
+}
+
+function drawRidgeSpindrift(ctx, w) {
+  var C = w.k.CELL, W = w.k.COLS * C, fine = (w.res || 1) >= 2
+  var drift = w.reducedMotion ? 0 : Math.floor(w.ticks * 0.7)
+  ctx.fillStyle = "#e6f4ff"
+  for (var i = 0; i < w.corridors.length; i++) {
+    var y = w.corridors[i].floorY * C - 4
+    for (var s = 0; s < 3; s++) {
+      var x = (drift + i * 67 + s * 131) % Math.max(60, W - 20) + 8
+      ctx.globalAlpha = 0.24
+      moteFineRect(ctx, w, x, y - (s % 2), 4, fine ? 0.5 : 1)
+      ctx.globalAlpha = 0.14
+      moteFineRect(ctx, w, x + 4, y - (s % 2) - 1, 2, fine ? 0.5 : 1)
+    }
+  }
+}
+
+function drawRidgeHearth(ctx, w) {
+  if (!w.exit) return
+  var C = w.k.CELL, fine = (w.res || 1) >= 2
+  var cx = (w.exit.x + w.exit.w - 1) * C, top = w.exit.y * C - 4
+  var t = w.reducedMotion ? 0 : Math.floor(w.ticks / 4)
+  ctx.fillStyle = "#dce8f4"
+  for (var p = 0; p < 4; p++) {
+    var age = (t + p * 6) % 24
+    var px = cx + Math.floor(age * 0.65)
+    var py = top - Math.floor(age * 0.25)
+    ctx.globalAlpha = (1 - age / 24) * 0.36
+    moteFineRect(ctx, w, px, py, age > 9 ? 2 : 1, fine ? 1 : 1)
+  }
+}
+
+function drawRidgeCableSparks(ctx, w) {
+  if (w.reducedMotion || !w.ziplines || !w.ziplines.length) return
+  var fine = (w.res || 1) >= 2
+  ctx.save()
+  for (var i = 0; i < w.ziplines.length; i++) {
+    var g = roofLineDrawing(w, w.ziplines[i], i)
+    for (var k = 0; k < g.loads.length; k++) {
+      var s = g.loads[k].s
+      var cx = g.x + g.dir * s, cy = g.y + roofCableSag(g, s)
+      for (var sp = 0; sp < 2; sp++) {
+        var step = (w.ticks + k * 3 + sp * 4) % 6
+        var sx = Math.round((cx - g.dir * (2 + step)) * (fine ? 2 : 1)) / (fine ? 2 : 1)
+        var sy = Math.round((cy - 1 + step * 0.5) * (fine ? 2 : 1)) / (fine ? 2 : 1)
+        ctx.globalAlpha = (1 - step / 6) * 0.9
+        ctx.fillStyle = sp ? "#9ef4e8" : "#ffe49e"
+        moteFineRect(ctx, w, sx, sy, fine ? 0.5 : 1, fine ? 0.5 : 1)
+      }
+    }
+  }
+  ctx.restore()
 }
 
 function drawRidgeAurora(ctx, w) {

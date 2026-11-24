@@ -5,6 +5,7 @@ let reference
 export function foeRoundFourteenSourceBefore(source){
  source=source.replace(/\n\/\/ Winter biome additions\n[\s\S]*?\n\/\/ End winter biome additions\n/,'')
  source=source.replace('  if (w.biome === "Winter Market" || w.biome === "Aurora Ridge") return drawWinterSnow(ctx, w)\n','')
+ source=source.replace('  if (w.biome === "Winter Market") drawMarketLife(ctx, w, pal)\n','')
  source=source.replace('  if (w.biome === "Aurora Ridge") drawRidgeLife(ctx, w, pal)\n','')
  source=source.replace('  if (m.kind === "lantern") return drawMarketMission(ctx, w, pal)\n','')
  source=source.replace('  var skiers = m.id === "skiers"\n','')
