@@ -16327,3 +16327,20 @@ The maximum changed-file CRAP score was 29.0.
 
 **Next:** stop the last Market sentinel from planting again after stand-down
 with no colleagues to protect. Level 4201 reproduces it in two seeds.
+
+## 507 — 2026-11-22 · A stood-down blocker needs someone to protect
+
+The bottomless ledge rule now requires at least one nearby colleague before
+an agent released by stand-down can plant again. The usual personality
+threshold still applies before stand-down. A sentinel can still take the
+post with a colleague nearby. All 42 focused winter and straggler tests passed.
+
+In 56 paired runs, the last blockers in Market 4201 seeds 79725321 and
+126182910 walked home, adding one rescue apiece and 108 ticks per run.
+Market 4141 seed 110221907 also rescued one more agent in 125 extra ticks.
+Cavern 121 seed 93873390 rescued one more agent and finished 27 ticks sooner.
+The other 52 results matched, including Factory 28. The comparison retained
+all 32 blocks with nearby colleagues and every run reached a normal ending
+with no condemned or stranded agents.
+
+**Next:** review the focused ledge fix and replay comparison before the full gate.

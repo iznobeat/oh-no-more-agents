@@ -43,6 +43,44 @@ test("the market exit aisle lets the level 661 crowd move through together", () 
   assert.ok(w.saved >= w.toRelease * 0.9)
 })
 
+test("the last Market blocker turns away from the ledge after standing down", () => {
+  for (const [seed, id, standDownAt, saved] of [[79725321, 8, 1428, 15], [126182910, 11, 1329, 10]]) {
+    const w = S.generate(4201, 0, seed)
+    while (!w.done && !w.stoodDown && w.ticks < 4500) S.step(w)
+    const ag = w.agents.find(a => a.id === id)
+    assert.ok(ag)
+    assert.equal(ag.stoodDownAt, standDownAt)
+    assert.equal(ag.state, "walk")
+    assert.equal(S.comingHere(w, ag), 0)
+    S.step(w)
+    assert.equal(ag.state, "walk")
+    assert.equal(ag.dir, -1)
+    while (!w.done && w.ticks < 4500) S.step(w)
+    assert.ok(w.done)
+    assert.equal(ag.state, "saved")
+    assert.equal(w.saved, saved)
+  }
+})
+
+test("a stood-down sentinel can still block a ledge for an approaching colleague", () => {
+  const w = S.generate(4201, 0, 79725321)
+  const ag = Object.assign(S.spawn(w), { state: "walk", trait: "sentinel", x: 89.98, y: 53, dir: 1 })
+  w.agents = [ag]
+  w.released = w.toRelease
+  w.skills.blocker = 2
+  S.edgeBottomless(w, ag, 0)
+  assert.equal(ag.state, "block", "the ordinary sentinel threshold still applies")
+  S.standDown(w)
+  S.edgeBottomless(w, ag, 0)
+  assert.equal(ag.state, "walk")
+  assert.equal(w.skills.blocker, 1)
+  ag.dir = 1
+  w.agents.push(Object.assign(S.spawn(w), { state: "walk", x: 85, y: 53, dir: 1 }))
+  S.edgeBottomless(w, ag, 0)
+  assert.equal(ag.state, "block")
+  assert.equal(w.skills.blocker, 0)
+})
+
 test("the level 6001 Model Collapse copy starts on the ledge and makes it home", () => {
   const w = S.generate(6001, 0, 47521932)
   let copy

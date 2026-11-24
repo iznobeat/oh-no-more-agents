@@ -6401,7 +6401,10 @@ function edgeBottomless(w, ag, far) {
   // arrive — x50,y55 held seven times as many blocker-ticks as the whole of
   // the rest of that level. Turning round leaves them to the climb and dig
   // rules, which are at least trying to get them out.
-  if (far <= 2 && !exitAbove(w, ag) && comingHere(w, ag) >= 2 - traitOf(ag).blockBias
+  // A last blocker sent home needs someone to protect before planting again.
+  var minimumCompany = 2 - traitOf(ag).blockBias
+  if (ag.stoodDownAt !== undefined) minimumCompany = Math.max(1, minimumCompany)
+  if (far <= 2 && !exitAbove(w, ag) && comingHere(w, ag) >= minimumCompany
       && spend(w, ag, "blocker")) { ag.state = "block"; return }
   turnAround(w, ag)
 }
