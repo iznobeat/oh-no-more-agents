@@ -16401,3 +16401,14 @@ and clean-sweep report stars. Added `test/coffee.test.js` and
 
 **Next:** run the full coverage + CRAP gate, 3-minute smoke soak, and deploy
 iteration 510.
+
+## 511 — 2026-11-24 · Deploy: coffee drops, applause confetti, pep-talk hearts, and victory flourishes
+
+**Deployed** build 3a49b129 (Worker version ce805606), replacing 1508b9a8;
+covers iteration 510. **Before:** full coverage check (2,065 tests),
+changed-file CRAP gate (all ≤ 29.0), and `npm run smoke` (12 samples over
+3 min, levels 1–8, steady 16.7 ms frames) passed. **After:**
+`npm run verify -- --previous 1508b9a8` passed (5 counter writes refused).
+
+**Next:** consider adding a subtle applause trigger alongside `drop coffee`
+for touch-only visitors, or a new autonomous walk gag / biome ambient pass.
